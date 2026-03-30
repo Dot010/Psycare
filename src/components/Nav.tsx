@@ -1,5 +1,6 @@
 "use client";
 
+import { title } from 'process';
 import { useState } from 'react';
 import { 
   BsArrowLeftShort, 
@@ -10,7 +11,9 @@ import {
   BsChatDots, 
   BsCreditCard, 
   BsBoxArrowRight, 
-  BsChevronDown
+  BsChevronDown,
+  BsGear,
+  BsQuestionCircle
 } from 'react-icons/bs';
 import { FaHome } from "react-icons/fa";
 import { MdPsychology } from 'react-icons/md';
@@ -36,11 +39,13 @@ const Nav = () => {
      },
     { title: "Mensagens", icon: <BsChatDots /> },
     { title: "Meus Pagamentos", icon: <BsCreditCard />, gap: true },
+    { title: "Ajuda" , icon: <BsQuestionCircle />, path: "/help"  },
+    { title: "Configurações", icon: <BsGear/>, path: "/settings" },
     { title: "Sair", icon: <BsBoxArrowRight />, logout: true },
   ];
 
   return (
-    <div className='flex'>
+    <div className='flex hidden md:flex'>
       {/* Sidebar - Emerald-600 para um visual profissional e calmo */}
       <div className={`bg-emerald-600 h-screen p-5 pt-8 ${open ? "w-72" : "w-20"} duration-300 relative shadow-xl transition-all`}>
         

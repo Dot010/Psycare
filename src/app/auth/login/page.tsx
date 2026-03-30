@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link"; // Importante para navegar
 import SocialButtons from "@/components/SocialButtons";
+import PageTransition from "@/components/PageTransition";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function LoginPage() {
   };
 
   return (
+    <PageTransition>
     <section className="bg-slate-100 min-h-screen flex items-center justify-center p-4">
       <div className="bg-white flex rounded-2xl shadow-lg max-w-4xl w-full overflow-hidden min-h-[550px]">
         
@@ -54,7 +56,7 @@ export default function LoginPage() {
 
           <div className="mt-8 text-sm text-slate-600 text-center">
             Não tem uma conta?{" "}
-            <Link href="/signUp" className="text-emerald-700 font-bold hover:underline">
+            <Link href="/auth/signUp" className="text-emerald-700 font-bold hover:underline">
               Cadastre-se agora!
             </Link>
           </div>
@@ -65,6 +67,7 @@ export default function LoginPage() {
           <img className="rounded-2xl h-full w-full object-cover shadow-inner" src="/assets/login/psy.jpg" alt="Login" />
         </div>
       </div>
-    </section>
+      </section>
+      </PageTransition>
   );
 }
