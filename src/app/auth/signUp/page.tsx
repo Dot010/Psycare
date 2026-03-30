@@ -3,9 +3,11 @@
 import React from "react";
 import Link from "next/link";
 import SocialButtons from "@/components/SocialButtons";
+import PageTransition from "@/components/PageTransition";
 
 export default function SignUpPage() {
   return (
+    <PageTransition>
     <section className="bg-slate-100 min-h-screen flex items-center justify-center p-4">
       <div className="bg-white flex rounded-2xl shadow-lg max-w-4xl w-full overflow-hidden min-h-[550px]">
         
@@ -29,7 +31,7 @@ export default function SignUpPage() {
 
           <div className="mt-8 text-sm text-slate-600 text-center">
             Já possui uma conta?{" "}
-            <Link href="/login" className="text-emerald-700 font-bold hover:underline">
+            <Link href="/auth/login" className="text-emerald-700 font-bold hover:underline">
               Fazer Login
             </Link>
           </div>
@@ -40,6 +42,7 @@ export default function SignUpPage() {
           <img className="rounded-2xl h-full w-full object-cover" src="/assets/login/psy.jpg" alt="Cadastro" />
         </div>
       </div>
-    </section>
+      </section>
+    </PageTransition>
   );
 }
