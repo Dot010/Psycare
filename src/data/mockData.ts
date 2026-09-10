@@ -1,3 +1,5 @@
+import { ReactNode } from "react"
+
 export interface DiaryEntry {
   id: string
   date: string
@@ -6,6 +8,16 @@ export interface DiaryEntry {
   content: string
 }
 
+  export interface Habit{
+    description?: ReactNode
+    name?: ReactNode
+    id: string
+    title: string
+    category: string
+    completedToday?: boolean
+    streak: number
+  }
+
 export const mockUser = {
   name: "Jonathan",
   nextSession: {
@@ -13,8 +25,30 @@ export const mockUser = {
     time: "15:30h",
     doctor: "Dra. Amanda Silva",
   },  
-  habitsSummary: "4 de 5 concluídos hoje",
-  recentDiary: "Hoje me senti mais produtivo e focado...",
+  habits: [
+    {
+      id: "1",
+      title: "Treinar 2 horas",
+      category: "Saúde",
+      completedToday: true,
+      streak: 5,
+    },
+    {
+      id: "2",
+      title: "Levar o cachorro para passear",
+      category: "Saúde",
+      completedToday: false,
+      streak: 0,
+    },
+    {
+      id: "3",
+      title: "Estudar 2 horas",
+      category: "Estudo",
+      completedToday: false,
+      streak: 0,
+    },
+    
+  ],
   diaryEntries: [
     {
       id: "1",
@@ -38,6 +72,7 @@ export const mockUser = {
       content: "Senti-me um pouco sobrecarregado com as tarefas, mas consegui organizar melhor meu tempo.",
     },
   ] as DiaryEntry[],
+  
 };
 
   ;
