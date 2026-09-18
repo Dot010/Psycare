@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation'; // Importante para mudar de página
 import { FaHome } from "react-icons/fa";
 import {
-  BsJournalText, BsCalendarCheck, BsGrid, BsBoxArrowRight, BsCheck2Square,
+  BsJournalText, BsCalendarCheck, BsBoxArrowRight, BsCheck2Square,
   BsChatDots, BsCapsule, BsCreditCard,
   BsGrid3X3GapFill,
   BsQuestionCircle,
@@ -12,40 +13,53 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 const NavMobile = () => {
-
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter(); // Instancia o router do Next.js
 
+  // Adicionamos o path correto para cada página
   const QuickActions = [
-   { title: "Início", icon: <FaHome /> },
-    { title: "Diário", icon: <BsJournalText /> },
-    { title: "Hábitos", icon: <BsCheck2Square /> },
-    { title: "Agenda", icon: <BsCalendarCheck />, },
+    { title: "Início", icon: <FaHome />, path: "/dashboard/home" },
+    { title: "Diário", icon: <BsJournalText />, path: "/dashboard/diary" },
+    { title: "Hábitos", icon: <BsCheck2Square />, path: "/dashboard/habits" },
+    { title: "Agenda", icon: <BsCalendarCheck />, path: "/dashboard/appointments" },
   ];
 
-    const MoreMenus= [
-    {title: "Saúde", icon: <BsCapsule />, },
-    { title: "Chat", icon: <BsChatDots /> },
-    { title: "Meus Pagamentos", icon: <BsCreditCard />, gap: true },
-    { title: "Ajuda" , icon: <BsQuestionCircle />, path: "/help"  },
-       { title: "Configurações", icon: <BsGear/>, path: "/settings" },
-      { title: "Sair", icon: <BsBoxArrowRight />, logout: true },
+  const MoreMenus = [
+    { title: "Saúde", icon: <BsCapsule />, path: "/dashboard/health" },
+    { title: "Chat", icon: <BsChatDots />, path: "/dashboard/chat" },
+    { title: "Meus Pagamentos", icon: <BsCreditCard />, path: "/dashboard/payments" },
+    { title: "Ajuda", icon: <BsQuestionCircle />, path: "/dashboard/help" },
+    { title: "Configurações", icon: <BsGear />, path: "/dashboard/settings" },
+    { title: "Sair", icon: <BsBoxArrowRight />, logout: true },
   ];
+
+  const handleNavigate = (path?: string, logout?: boolean) => {
+    if (logout) {
+      // Lógica de logout se necessário
+      router.push("/login");
+      return;
+    }
+    if (path) {
+      router.push(path);
+      setMenuOpen(false); // Fecha o drawer ao clicar numa opção
+    }
+  };
   
   return (
     <div className='md:hidden'>
       <nav className='fixed bottom-0 left-0 right-0 bg-white border-t
-             border-slate-200 h-20 px-4 flex justify-around items-center z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]'>
+            border-slate-200 h-20 px-4 flex justify-around items-center z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]'>
         {QuickActions.map((item, index) => (
-          <button key={index}
-            className='flex flex-col items-center gap-1 text-slate-400
-           active:text-emerald-600 transition-all'>
+          <button 
+            key={index}
+            onClick={() => handleNavigate(item.path)}
+            className='flex flex-col items-center gap-1 text-slate-400 active:text-emerald-600 transition-all'
+          >
             <span className='text-xl'>{item.icon}</span>
             <span className='text-[10px] font-bold uppercase tracking-tight'>{item.title}</span>
-
           </button>
         ))}
 
-   
         <button 
           onClick={() => setMenuOpen(!menuOpen)}
           className={`flex flex-col items-center gap-1 transition-all ${menuOpen ? 'text-emerald-600' : 'text-slate-400'}`}
@@ -56,7 +70,8 @@ const NavMobile = () => {
           <span className="text-[10px] font-bold uppercase tracking-tight">Mais</span>
         </button>
       </nav>
-      {/* DRAWER (MENU QUE SOBE) */}
+
+      
       <AnimatePresence>
         {menuOpen && (
           <>
@@ -84,7 +99,11 @@ const NavMobile = () => {
 
               <div className="grid grid-cols-4 gap-y-8">
                 {MoreMenus.map((item, i) => (
-                  <button key={i} className="flex flex-col items-center gap-2 group">
+                  <button 
+                    key={i} 
+                    onClick={() => handleNavigate(item.path, item.logout)}
+                    className="flex flex-col items-center gap-2 group"
+                  >
                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl transition-all shadow-sm
                       ${item.logout ? 'bg-red-50 text-red-500' : 'bg-slate-50 text-slate-600 active:bg-emerald-600 active:text-white'}`}>
                       {item.icon}
@@ -99,9 +118,8 @@ const NavMobile = () => {
           </>
         )}
       </AnimatePresence>
-
-      </div>
+    </div>
   )
 }
 
-export default NavMobile
+export default NavMobile;

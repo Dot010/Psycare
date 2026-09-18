@@ -8,7 +8,6 @@ import { NewHabitModal } from "@/components/NewHabitModal";
 const HabitPage = () => {
   const [habits, setHabits] = useState<Habit[]>([...(mockUser.habits || [])]);
 
-  // Função para adicionar um novo hábito
   const handleAddHabit = (newHabit: Habit) => {
     setHabits((prevHabits) => [...prevHabits, newHabit]);
   };
@@ -18,7 +17,7 @@ const HabitPage = () => {
   }
 
 
-  // Função para alternar o status de um hábito
+
 const toggleHabit = (id: string) => {
   setHabits((prevHabits) =>
     prevHabits.map((habit) =>

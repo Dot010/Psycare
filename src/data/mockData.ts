@@ -17,7 +17,14 @@ export interface DiaryEntry {
     completedToday?: boolean
     streak: number
   }
-
+export type Agendamento = {
+  id: string
+  profissional: string
+  data: string
+  hora: string
+  status: "pendente" | "confirmado" | "cancelado"
+  tipo: 'online' | 'presencial'
+}
 export const mockUser = {
   name: "Jonathan",
   nextSession: {
@@ -72,7 +79,25 @@ export const mockUser = {
       content: "Senti-me um pouco sobrecarregado com as tarefas, mas consegui organizar melhor meu tempo.",
     },
   ] as DiaryEntry[],
-  
+  agendamentos: [
+    {
+      id: "1",
+      profissional: "Dra. Amanda Silva",
+      data: "08/09/2026",
+      hora: "15:30",
+      status: "confirmado",
+      tipo: "online",
+    
+    },
+    {
+      id: "2",
+      profissional: "Dr. Carlos Pereira",
+      data: "09/09/2026",
+      hora: "10:00",
+      status: "pendente",
+      tipo: "presencial",
+    },
+  ] as Agendamento[],
 };
 
   ;
