@@ -14,7 +14,6 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { title } from "process";
 
 interface NewHabitModalProps {
   onAddHabit: (habit: Habit) => void;
@@ -74,7 +73,7 @@ export function NewHabitModal({ onAddHabit }: NewHabitModalProps) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-semibold upercase text-slate-500">
+            <label className="text-xs font-semibold uppercase text-slate-500">
               Categoria
             </label>
             <select
