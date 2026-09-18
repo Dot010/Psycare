@@ -35,7 +35,7 @@ const HomePage = () => {
             Resumo de Hábitos
           </span>
           <p className="text-lg font-bold text-slate-700">
-            {mockUser.habitsSummary}
+            {mockUser.habits.filter(habit => habit.completedToday).length} concluídos hoje
           </p>
           <p className="text-xs text-emerald-600 font-medium">
             Mantenha a sequência diária!
