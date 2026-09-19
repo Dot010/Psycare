@@ -8,6 +8,34 @@ export interface DiaryEntry {
   content: string
 }
 
+export interface Medicamento{
+  id: string
+  nome: string
+  dosagem: string
+  frequencia: string
+  horario: string
+}
+
+export interface Exame{
+  id: string
+  titulo: string
+  data: string
+  resultado: string
+}
+export interface Sintoma {
+  id: string;
+  descricao: string;
+  data: string;
+  nota: string;
+}
+export interface HealthData {
+  habits: Habit[]
+  diaryEntries: DiaryEntry[]
+  agendamentos: Agendamento[]
+  remedios: Medicamento[]
+  exames: Exame[]
+  sintomas: Sintoma[]
+}
   export interface Habit{
     description?: ReactNode
     name?: ReactNode
@@ -98,6 +126,56 @@ export const mockUser = {
       tipo: "presencial",
     },
   ] as Agendamento[],
+  remedios: [
+    {
+      id: "1",
+      nome: "Lyberdia",
+      dosagem: "70mg",
+      frequencia: "Diária",
+      horario: "08:00",
+    },
+    {
+      id: "2",
+      nome: "topiramato",
+      dosagem: "100mg",
+      frequencia: "Diária",
+      horario: "20:00",
+    }
+
+  ] as Medicamento[],
+  exames: [
+    {
+      id: "1",
+      titulo: "Exame de sangue",
+      data: "01/09/2026",
+      resultado: "Normal",
+    },
+    {
+      id: "2",
+      titulo: "Exame de urina", 
+      data: "05/09/2026",
+      resultado: "Normal",
+    },
+  ] as Exame[],
+  sintomas: [
+    {
+      id: "1",
+      descricao: "Hemorrágia bucal",
+      data: "03/09/2026",
+      nota: "Leve",
+    },
+    {
+      id: "2",
+      descricao: "Dor de cabeça",
+      data: "04/09/2026",
+      nota: "Moderada",
+    },
+  ] as Sintoma[],
+  
+
+
+  
+  
 };
 
   ;

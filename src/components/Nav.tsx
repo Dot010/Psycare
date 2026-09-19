@@ -9,8 +9,7 @@ import {
   BsCapsule, 
   BsChatDots, 
   BsCreditCard, 
-  BsBoxArrowRight, 
-  BsChevronDown,
+  BsBoxArrowRight,
   BsGear,
   BsQuestionCircle
 } from 'react-icons/bs';
@@ -20,22 +19,13 @@ import Link from 'next/link';
 
 const Nav = () => {
   const [open, setOpen] = useState(true);
-  const [submenuOpen, setSubmenuOpen] = useState(false);
 
   const Menus = [
     { title: "Início", icon: <FaHome />, path: "/dashboard/home" },
     { title: "Meu Diário", icon: <BsJournalText />, path: "/dashboard/diary" },
     { title: "Meus Hábitos", icon: <BsCheck2Square />, path: "/dashboard/habits" },
     { title: "Agendar Consulta", icon: <BsCalendarCheck />, path: "/dashboard/appointments", gap: true },
-    {
-      title: "Gestão de Saúde", icon: <BsCapsule />,
-      submenu: true,
-      submenuItems: [
-        { title: "Meus Remédios", path: "/dashboard/health/meds" },
-        { title: "Meus Exames", path: "/dashboard/health/exams" },
-        { title: "Meus Sintomas", path: "/dashboard/health/symptoms" },
-      ],
-    },
+    { title: "Gestão de Saúde", icon: <BsCapsule />, path: "/dashboard/health" }, 
     { title: "Mensagens", icon: <BsChatDots />, path: "/dashboard/messages" },
     { title: "Meus Pagamentos", icon: <BsCreditCard />, path: "/dashboard/payments", gap: true },
     { title: "Ajuda", icon: <BsQuestionCircle />, path: "/dashboard/help" },
@@ -66,14 +56,12 @@ const Nav = () => {
         </div>
 
         {/* Lista de Menus */}
-        <ul className='pt-10'>
+        <ul className='pt-10 space-y-2'>
           {Menus.map((menu, index) => (
-            <div key={index}>
+            <div key={index} className={menu.gap ? "mt-8" : "mt-2"}>
               <li
                 className={`flex items-center gap-x-4 cursor-pointer p-3 hover:bg-white/20 rounded-xl transition-all duration-200
-                  ${menu.gap ? "mt-8" : "mt-2"} 
                   ${menu.logout ? "text-red-200 hover:bg-red-500/20" : "text-white"}`}
-                onClick={() => { if (menu.submenu) setSubmenuOpen(!submenuOpen) }}
               >
                 <Link href={menu.path || "#"} className="flex items-center gap-x-4 w-full">
                   <span className={`text-2xl block float-left duration-300 ${!open && "mx-auto"}`}>
@@ -83,26 +71,7 @@ const Nav = () => {
                     {menu.title}
                   </span>
                 </Link>
-
-                {menu.submenu && open && (
-                  <BsChevronDown
-                    className={`duration-300 ${submenuOpen ? "rotate-180" : ""}`}
-                  />
-                )}
               </li>
-
-              {/* Submenu */}
-              {menu.submenu && submenuOpen && open && (
-                <ul className='mt-2 pl-6 transition-all duration-500 space-y-2'>
-                  {menu.submenuItems.map((subItem, subIndex) => (
-                    <li key={subIndex} className='text-white/80 hover:text-white text-sm flex items-center cursor-pointer'>
-                      <Link href={subItem.path || "#"}>
-                        {subItem.title}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
             </div>
           ))}
         </ul>
