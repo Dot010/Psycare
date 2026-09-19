@@ -7,7 +7,22 @@ export interface DiaryEntry {
   title: string
   content: string
 }
+export interface MessageItem {
+  id: string
+  sender: "user" | "doctor"
+  content: string
+  timestamp: string
 
+}
+
+export interface Chat {
+  id: string
+  doctorName: string
+  specialty: string
+  avatarUrl: string
+  lastMessage: string
+  messages: MessageItem[]
+}
 export interface Medicamento{
   id: string
   nome: string
@@ -171,6 +186,44 @@ export const mockUser = {
       nota: "Moderada",
     },
   ] as Sintoma[],
+  mensagens : [
+    {
+      id: "1",
+      sender: "user",
+      content: "Olá, doutora!",
+      timestamp: "03/09/2026 08:00",
+    },
+    {
+      id: "2",
+      sender: "doctor",
+      content: "Olá, Jonathan! Como você está se sentindo hoje?",
+      timestamp: "03/09/2026 08:05",
+    }
+  ] as MessageItem[],
+  chats: [
+    {
+      id: "1",
+      doctorName: "Dra. Amanda Silva",
+      specialty: "Cardiologia",
+      avatarUrl: "https://example.com/avatar.jpg",
+      lastMessage: "Olá, Jonathan! Como você está se sentindo hoje?",
+      messages: [
+        {
+          id: "1",
+          sender: "user",
+          content: "Olá, doutora!",
+          timestamp: "03/09/2026 08:00",
+        },
+        {
+          id: "2",
+          sender: "doctor",
+          content: "Olá, Jonathan! Como você está se sentindo hoje?",
+          timestamp: "03/09/2026 08:05",
+        }
+      ]
+    },
+   
+  ] as Chat[],
   
 
 
