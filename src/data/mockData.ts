@@ -1,3 +1,4 @@
+import { sub } from "motion/react-client"
 import { ReactNode } from "react"
 
 export interface DiaryEntry {
@@ -68,6 +69,33 @@ export type Agendamento = {
   status: "pendente" | "confirmado" | "cancelado"
   tipo: 'online' | 'presencial'
 }
+
+export interface PaymentMethod{
+  id: string
+  type: "credit_card" | "debit_card" | "pix" 
+  brand?: string
+  last4?: string
+  expiry?: string
+  pixKey?: string
+  isDefault: boolean
+}
+export interface Invoice {
+  id: string;
+  description: string;
+  amount: number;
+  date: string;
+  status: "paid" | "pending" | "failed";
+  pdfUrl?: string;
+}
+
+export interface Subscription {
+  planName: string;
+  price: number;
+  billingCycle: "mensal" | "anual";
+  nextBillingDate: string;
+  status: "active" | "canceled";
+}
+
 export const mockUser = {
   name: "Jonathan",
   nextSession: {
@@ -75,6 +103,50 @@ export const mockUser = {
     time: "15:30h",
     doctor: "Dra. Amanda Silva",
   },  
+
+  subscription: {
+    planName: "Plano PsyCare Premium",
+    price: 49.90,
+    billingCycle: "mensal",
+    nextBillingDate: "08/10/2026",
+    status: "active",
+  } as Subscription,
+  paymentMethods: [
+    {
+      id: "1",
+      type: "credit_card",
+      brand: "Visa",
+      last4: "1234",
+      expiry: "12/26",
+      isDefault: true,
+    },
+    {
+      id: "2",
+      type: "pix",
+      pixKey: "meu-pix@exemplo.com",
+      isDefault: false,
+    },
+  ] as PaymentMethod[],
+  invoices: [
+    {
+      id: "1",
+      description: "Assinatura Mensal - Setembro",
+      amount: 49.90,
+      date: "01/09/2026",
+      status: "paid",
+      pdfUrl: "https://example.com/invoice-september.pdf",
+    },
+    {
+      id: "2",
+      description: "Assinatura Mensal - Outubro",
+      amount: 49.90,
+      date: "01/10/2026",
+      status: "pending",
+      pdfUrl: "https://example.com/invoice-october.pdf",
+    },
+  ] as Invoice[],
+
+
   habits: [
     {
       id: "1",
@@ -222,8 +294,11 @@ export const mockUser = {
         }
       ]
     },
+  
    
   ] as Chat[],
+
+
   
 
 
