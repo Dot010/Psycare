@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { mockUser, Chat, MessageItem } from "@/data/mockData";
 
 export default function MessagesPage() {
@@ -76,9 +77,11 @@ export default function MessagesPage() {
                   }`}
                 >
                   <div className="relative">
-                    <img
+                    <Image
                       src={chat.avatarUrl}
                       alt={chat.doctorName}
+                      width={44}
+                      height={44}
                       className="w-11 h-11 rounded-full object-cover border border-slate-200"
                     />
                     <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
@@ -110,9 +113,11 @@ export default function MessagesPage() {
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <img
+                  <Image
                     src={activeChat.avatarUrl}
                     alt={activeChat.doctorName}
+                    width={40}
+                    height={40}
                     className="w-10 h-10 rounded-full object-cover border"
                   />
                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
