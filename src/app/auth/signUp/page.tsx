@@ -38,7 +38,7 @@ export default function SignUpPage() {
         </div>
 
         {/* Lado Direito: Mesma Imagem para consistência */}
-        <div className="hidden md:block md:w-1/2 p-5 bg-emerald-50 flex items-center justify-center">
+        <div className="hidden md:block md:w-1/2 p-5 bg-emerald-50 items-center justify-center">
           <img className="rounded-2xl h-full w-full object-cover" src="/assets/login/psy.jpg" alt="Cadastro" />
         </div>
       </div>

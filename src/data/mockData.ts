@@ -1,84 +1,90 @@
-import { sub } from "motion/react-client"
-import { ReactNode } from "react"
+import { ReactNode } from "react";
+
 
 export interface DiaryEntry {
-  id: string
-  date: string
-  mood: string
-  title: string
-  content: string
+  id: string;
+  date: string;
+  mood: string;
+  title: string;
+  content: string;
 }
-export interface MessageItem {
-  id: string
-  sender: "user" | "doctor"
-  content: string
-  timestamp: string
 
+export interface MessageItem {
+  id: string;
+  sender: "user" | "doctor";
+  content: string;
+  timestamp: string;
 }
 
 export interface Chat {
-  id: string
-  doctorName: string
-  specialty: string
-  avatarUrl: string
-  lastMessage: string
-  messages: MessageItem[]
-}
-export interface Medicamento{
-  id: string
-  nome: string
-  dosagem: string
-  frequencia: string
-  horario: string
+  id: string;
+  doctorName: string;
+  specialty: string;
+  avatarUrl: string;
+  lastMessage: string;
+  messages: MessageItem[];
 }
 
-export interface Exame{
-  id: string
-  titulo: string
-  data: string
-  resultado: string
+export interface Medicamento {
+  id: string;
+  nome: string;
+  dosagem: string;
+  frequencia: string;
+  horario: string;
 }
+
+export interface Exame {
+  id: string;
+  titulo: string;
+  data: string;
+  resultado: string;
+}
+
 export interface Sintoma {
   id: string;
   descricao: string;
   data: string;
   nota: string;
 }
-export interface HealthData {
-  habits: Habit[]
-  diaryEntries: DiaryEntry[]
-  agendamentos: Agendamento[]
-  remedios: Medicamento[]
-  exames: Exame[]
-  sintomas: Sintoma[]
-}
-  export interface Habit{
-    description?: ReactNode
-    name?: ReactNode
-    id: string
-    title: string
-    category: string
-    completedToday?: boolean
-    streak: number
-  }
-export type Agendamento = {
-  id: string
-  profissional: string
-  data: string
-  hora: string
-  status: "pendente" | "confirmado" | "cancelado"
-  tipo: 'online' | 'presencial'
+
+export interface Habit {
+  id: string;
+  title: string;
+  category: string;
+  completedToday?: boolean;
+  streak: number;
+  description?: ReactNode;
+  name?: ReactNode;
 }
 
-export interface PaymentMethod{
-  id: string
-  type: "credit_card" | "debit_card" | "pix" 
-  brand?: string
-  last4?: string
-  expiry?: string
-  pixKey?: string
-  isDefault: boolean
+export type Agendamento = {
+  id: string;
+  profissional: string;
+  data: string;
+  hora: string;
+  status: "pendente" | "confirmado" | "cancelado";
+  tipo: "online" | "presencial";
+};
+
+export interface HealthData {
+  habits: Habit[];
+  diaryEntries: DiaryEntry[];
+  agendamentos: Agendamento[];
+  remedios: Medicamento[];
+  exames: Exame[];
+  sintomas: Sintoma[];
 }
+
+export interface PaymentMethod {
+  id: string;
+  type: "credit_card" | "debit_card" | "pix";
+  brand?: string;
+  last4?: string;
+  expiry?: string;
+  pixKey?: string;
+  isDefault: boolean;
+}
+
 export interface Invoice {
   id: string;
   description: string;
@@ -96,13 +102,17 @@ export interface Subscription {
   status: "active" | "canceled";
 }
 
+
+
 export const mockUser = {
-  name: "Jonathan",
+  name: "Usuário Demonstração",
+  
   nextSession: {
     date: "Terça-feira, 08 de Setembro",
     time: "15:30h",
     doctor: "Dra. Amanda Silva",
-  },  
+    getSummary: (userName: string) => `Plano de acompanhamento individual de ${userName}`,
+  },
 
   subscription: {
     planName: "Plano PsyCare Premium",
@@ -111,6 +121,7 @@ export const mockUser = {
     nextBillingDate: "08/10/2026",
     status: "active",
   } as Subscription,
+
   paymentMethods: [
     {
       id: "1",
@@ -127,6 +138,7 @@ export const mockUser = {
       isDefault: false,
     },
   ] as PaymentMethod[],
+
   invoices: [
     {
       id: "1",
@@ -145,7 +157,6 @@ export const mockUser = {
       pdfUrl: "https://example.com/invoice-october.pdf",
     },
   ] as Invoice[],
-
 
   habits: [
     {
@@ -169,8 +180,8 @@ export const mockUser = {
       completedToday: false,
       streak: 0,
     },
-    
-  ],
+  ] as Habit[],
+
   diaryEntries: [
     {
       id: "1",
@@ -194,6 +205,7 @@ export const mockUser = {
       content: "Senti-me um pouco sobrecarregado com as tarefas, mas consegui organizar melhor meu tempo.",
     },
   ] as DiaryEntry[],
+
   agendamentos: [
     {
       id: "1",
@@ -202,7 +214,6 @@ export const mockUser = {
       hora: "15:30",
       status: "confirmado",
       tipo: "online",
-    
     },
     {
       id: "2",
@@ -213,6 +224,7 @@ export const mockUser = {
       tipo: "presencial",
     },
   ] as Agendamento[],
+
   remedios: [
     {
       id: "1",
@@ -223,13 +235,13 @@ export const mockUser = {
     },
     {
       id: "2",
-      nome: "topiramato",
+      nome: "Topiramato",
       dosagem: "100mg",
       frequencia: "Diária",
       horario: "20:00",
-    }
-
+    },
   ] as Medicamento[],
+
   exames: [
     {
       id: "1",
@@ -239,15 +251,16 @@ export const mockUser = {
     },
     {
       id: "2",
-      titulo: "Exame de urina", 
+      titulo: "Exame de urina",
       data: "05/09/2026",
       resultado: "Normal",
     },
   ] as Exame[],
+
   sintomas: [
     {
       id: "1",
-      descricao: "Hemorrágia bucal",
+      descricao: "Hemorragia bucal",
       data: "03/09/2026",
       nota: "Leve",
     },
@@ -258,7 +271,8 @@ export const mockUser = {
       nota: "Moderada",
     },
   ] as Sintoma[],
-  mensagens : [
+
+  mensagens: [
     {
       id: "1",
       sender: "user",
@@ -268,17 +282,18 @@ export const mockUser = {
     {
       id: "2",
       sender: "doctor",
-      content: "Olá, Jonathan! Como você está se sentindo hoje?",
+      content: "Olá! Como você está se sentindo hoje?",
       timestamp: "03/09/2026 08:05",
-    }
+    },
   ] as MessageItem[],
+
   chats: [
     {
       id: "1",
       doctorName: "Dra. Amanda Silva",
       specialty: "Cardiologia",
       avatarUrl: "https://example.com/avatar.jpg",
-      lastMessage: "Olá, Jonathan! Como você está se sentindo hoje?",
+      lastMessage: "Olá! Como você está se sentindo hoje?",
       messages: [
         {
           id: "1",
@@ -289,21 +304,33 @@ export const mockUser = {
         {
           id: "2",
           sender: "doctor",
-          content: "Olá, Jonathan! Como você está se sentindo hoje?",
+          content: "Olá! Como você está se sentindo hoje?",
           timestamp: "03/09/2026 08:05",
-        }
-      ]
+        },
+      ],
     },
-  
-   
   ] as Chat[],
-
-
-  
-
-
-  
-  
 };
 
-  ;
+
+
+export const getMockUser = (userName?: string) => {
+  const activeName = userName && userName.trim() !== "" ? userName : mockUser.name;
+
+  return {
+    ...mockUser,
+    name: activeName,
+    chats: mockUser.chats.map((chat) => ({
+      ...chat,
+      lastMessage: chat.lastMessage.replace(/Jonathan/g, activeName),
+      messages: chat.messages.map((msg) => ({
+        ...msg,
+        content: msg.content.replace(/Jonathan/g, activeName),
+      })),
+    })),
+    mensagens: mockUser.mensagens.map((msg) => ({
+      ...msg,
+      content: msg.content.replace(/Jonathan/g, activeName),
+    })),
+  };
+};

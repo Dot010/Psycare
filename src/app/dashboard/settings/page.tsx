@@ -1,8 +1,80 @@
 "use client";
 
 import { useState } from "react";
+import { useUser } from "@/context/page";
+
+// Componente do formulário isolado
+function ProfileForm({
+  user,
+  updateUser,
+  onSaveSuccess,
+}: {
+  user: { name: string; email: string } | null;
+  updateUser: (data: { name: string; email: string }) => void;
+  onSaveSuccess: () => void;
+}) {
+  // Inicializa diretamente com os dados do usuário
+  const [name, setName] = useState(user?.name || "");
+  const [email, setEmail] = useState(user?.email || "");
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateUser({
+      name: name.trim(),
+      email: email.trim(),
+    });
+    onSaveSuccess();
+  };
+
+  return (
+    <form onSubmit={handleSave} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
+      <h2 className="font-bold text-slate-800 text-base border-b border-slate-100 pb-3">
+        Informações do Perfil
+      </h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1">
+            Nome Completo
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1">
+            Endereço de E-mail
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500"
+          />
+        </div>
+      </div>
+
+      <div className="pt-2 flex justify-end">
+        <button
+          type="submit"
+          className="px-5 py-2.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition shadow-sm"
+        >
+          Salvar Alterações
+        </button>
+      </div>
+    </form>
+  );
+}
 
 export default function SettingsPage() {
+  const { user, updateUser } = useUser();
+
   const [activeTab, setActiveTab] = useState<"general" | "notifications" | "security">("general");
 
   // Estados dos Toggles
@@ -11,12 +83,7 @@ export default function SettingsPage() {
   const [twoFactorAuth, setTwoFactorAuth] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
-  // Estados do Perfil
-  const [name, setName] = useState("Usuário Demonstração");
-  const [email, setEmail] = useState("usuario@exemplo.com");
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSuccess = () => {
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 2500);
   };
@@ -80,46 +147,12 @@ export default function SettingsPage() {
 
       {/* Conteúdo da Aba Geral */}
       {activeTab === "general" && (
-        <form onSubmit={handleSave} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
-          <h2 className="font-bold text-slate-800 text-base border-b border-slate-100 pb-3">
-            Informações do Perfil
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">
-                Nome Completo
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">
-                Endereço de E-mail
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-          </div>
-
-          <div className="pt-2 flex justify-end">
-            <button
-              type="submit"
-              className="px-5 py-2.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition shadow-sm"
-            >
-              Salvar Alterações
-            </button>
-          </div>
-        </form>
+        <ProfileForm
+          key={user?.email || "loading"}
+          user={user}
+          updateUser={updateUser}
+          onSaveSuccess={handleSuccess}
+        />
       )}
 
       {/* Conteúdo da Aba Notificações */}

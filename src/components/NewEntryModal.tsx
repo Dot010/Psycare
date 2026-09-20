@@ -55,7 +55,7 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
                 </button>
             </DialogTrigger>
 
-            <DialogContent className="sm:max-w-[500px] rounded-2xl bg-white p-6 shadow-xl border border-slate-100">
+            <DialogContent className="sm:max-w-125 rounded-2xl bg-white p-6 shadow-xl border border-slate-100">
                 <DialogHeader className="mb-4">
                     <DialogTitle className="text-xl font-bold text-slate-800">
                         Novo Registro no Diário

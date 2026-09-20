@@ -14,9 +14,9 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const NavMobile = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const router = useRouter(); // Instancia o router do Next.js
+  const router = useRouter(); 
 
-  // Adicionamos o path correto para cada página
+
   const QuickActions = [
     { title: "Início", icon: <FaHome />, path: "/dashboard/home" },
     { title: "Diário", icon: <BsJournalText />, path: "/dashboard/diary" },
@@ -30,18 +30,18 @@ const NavMobile = () => {
     { title: "Meus Pagamentos", icon: <BsCreditCard />, path: "/dashboard/payments" },
     { title: "Ajuda", icon: <BsQuestionCircle />, path: "/dashboard/help" },
     { title: "Configurações", icon: <BsGear />, path: "/dashboard/settings" },
-    { title: "Sair", icon: <BsBoxArrowRight />, logout: true },
+    { title: "Sair", icon: <BsBoxArrowRight />, logout: true, path: "/auth/login" },
   ];
 
   const handleNavigate = (path?: string, logout?: boolean) => {
     if (logout) {
-      // Lógica de logout se necessário
-      router.push("/login");
+
+      router.push("/auth/login");
       return;
     }
     if (path) {
       router.push(path);
-      setMenuOpen(false); // Fecha o drawer ao clicar numa opção
+      setMenuOpen(false); 
     }
   };
   
@@ -84,7 +84,7 @@ const NavMobile = () => {
               className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40"
             />
             
-            {/* Modal de Opções */}
+       
             <motion.div 
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
@@ -92,7 +92,7 @@ const NavMobile = () => {
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[40px] p-8 pb-28 z-50 shadow-2xl"
             >
-              {/* Alça do Drawer */}
+           
               <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-8" />
               
               <h3 className="text-slate-400 text-xs font-bold uppercase tracking-[2px] mb-6 text-center">Gestão & Outros</h3>

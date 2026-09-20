@@ -46,7 +46,7 @@ const Nav = () => {
 
         {/* Logo */}
         <div className={`flex items-center transition-all duration-300 ${!open ? "justify-center" : "ml-1"}`}>
-          <div className={`bg-white p-2 rounded-lg duration-500 shadow-md ${!open && "rotate-[360deg]"}`}>
+          <div className={`bg-white p-2 rounded-lg duration-500 shadow-md ${!open && "rotate-360"}`}>
             <MdPsychology className='text-emerald-600 text-3xl block' />
           </div>
           

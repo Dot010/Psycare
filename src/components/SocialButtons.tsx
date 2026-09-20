@@ -18,9 +18,9 @@ const SocialButtons = () => {
       </div>
 
       <div className="relative flex py-3 items-center">
-        <div className="flex-grow border-t border-slate-200"></div>
-        <span className="flex-shrink mx-4 text-slate-400 text-[10px] uppercase font-bold tracking-wider"> ou continue com email </span> 
-        <div className="flex-grow border-t border-slate-200"></div>
+        <div className="grow border-t border-slate-200"></div>
+        <span className="shrink mx-4 text-slate-400 text-[10px] uppercase font-bold tracking-wider"> ou continue com email </span> 
+        <div className="grow border-t border-slate-200"></div>
       </div>
 
     </div>

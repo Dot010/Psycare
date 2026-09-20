@@ -29,9 +29,8 @@ const DiaryPage = () => {
         <NewEntryModal onAddEntry={addEntry} />
       </div>
 
-      {/* Listagem usando o estado reativo "entries" */}
       <div className="space-y-4">
-        {entries.map((entry) => ( // 2. Mudado de mockUser.diaryEntries para entries
+        {entries.map((entry) => ( 
           <article
             key={entry.id}
             className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-slate-200 transition space-y-3"

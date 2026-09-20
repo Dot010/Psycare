@@ -63,7 +63,7 @@ export default function LoginPage() {
         </div>
 
         {/* Lado Direito: Imagem */}
-        <div className="hidden md:block md:w-1/2 p-5 bg-emerald-50 flex items-center justify-center">
+        <div className="hidden md:block md:w-1/2 p-5 bg-emerald-50 items-center justify-center">
           <img className="rounded-2xl h-full w-full object-cover shadow-inner" src="/assets/login/psy.jpg" alt="Login" />
         </div>
       </div>

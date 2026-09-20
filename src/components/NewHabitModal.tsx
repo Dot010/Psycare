@@ -50,7 +50,7 @@ export function NewHabitModal({ onAddHabit }: NewHabitModalProps) {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>Criar Novo Hábito</DialogTitle>
         </DialogHeader>
