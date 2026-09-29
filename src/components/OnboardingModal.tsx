@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useUser } from "@/context/page";
+import { useUser } from "@/context/UserContext";
 
 export default function OnboardingModal() {
   const { user, updateUser, isLoading } = useUser();

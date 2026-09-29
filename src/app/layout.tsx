@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Montserrat } from "next/font/google";
-import { UserProvider } from "@/context/page";
+import { UserProvider } from "@/context/UserContext";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });

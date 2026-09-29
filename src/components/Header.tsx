@@ -1,6 +1,6 @@
 "use client";
 
-import { useUser } from "@/context/page";
+import { useUser } from "@/context/UserContext";
     
 export default function Header() {
   const { user } = useUser();

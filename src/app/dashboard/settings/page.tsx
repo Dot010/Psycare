@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useUser } from "@/context/page";
+import { useUser } from "@/context/UserContext";
 
 // Componente do formulário isolado
 function ProfileForm({

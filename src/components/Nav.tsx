@@ -30,7 +30,7 @@ const Nav = () => {
     { title: "Meus Pagamentos", icon: <BsCreditCard />, path: "/dashboard/payments", gap: true },
     { title: "Ajuda", icon: <BsQuestionCircle />, path: "/dashboard/help" },
     { title: "Configurações", icon: <BsGear />, path: "/dashboard/settings" },
-    { title: "Sair", icon: <BsBoxArrowRight />, logout: true, path: "/auth/login" },
+    { title: "Sair", icon: <BsBoxArrowRight />, logout: true, path: "/login" },
   ];
 
   return (

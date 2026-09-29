@@ -30,13 +30,13 @@ const NavMobile = () => {
     { title: "Meus Pagamentos", icon: <BsCreditCard />, path: "/dashboard/payments" },
     { title: "Ajuda", icon: <BsQuestionCircle />, path: "/dashboard/help" },
     { title: "Configurações", icon: <BsGear />, path: "/dashboard/settings" },
-    { title: "Sair", icon: <BsBoxArrowRight />, logout: true, path: "/auth/login" },
+    { title: "Sair", icon: <BsBoxArrowRight />, logout: true, path: "/login" },
   ];
 
   const handleNavigate = (path?: string, logout?: boolean) => {
     if (logout) {
 
-      router.push("/auth/login");
+      router.push("/login");
       return;
     }
     if (path) {

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { getMockUser } from "@/data/mockData";
-import { useUser } from "@/context/page";
+import { useUser } from "@/context/UserContext";
 
 const HomePage = () => {
   const { user, updateUser } = useUser();
