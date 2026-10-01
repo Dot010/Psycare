@@ -42,7 +42,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-8 max-w-6xl mx-auto">
+    <div className="p-4 md:p-8 space-y-8 max-w-6xl mx-auto animate-enter">
   
       <div className="bg-linear-to-r from-emerald-500/10 via-teal-500/5 to-transparent p-6 md:p-8 rounded-3xl border border-emerald-100/60 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
         <div className="space-y-1">

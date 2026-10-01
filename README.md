@@ -64,3 +64,86 @@ A plataforma oferece um painel completo para acompanhamento de rotinas, registro
    ```bash
    git clone [https://github.com/Dot010/Psycare.git](https://github.com/Dot010/Psycare.git)
    cd Psycare
+  ```
+
+2. **Instale as dependências:**
+  ```bash
+  npm install
+  ```
+
+3. **Configure variáveis de ambiente:**
+  ```bash
+  cp .env.example .env.local
+  ```
+
+4. **Rode em desenvolvimento:**
+  ```bash
+  npm run dev
+  ```
+
+---
+
+## 🎞️ Motion Principles e UX de Carregamento
+
+- Skeletons globais com `loading.tsx` no App Router.
+- Lazy loading do shell do dashboard (navegação desktop/mobile).
+- Transição suave de entrada e saída por rota com `PageTransition`.
+- Barra de progresso global de navegação com `nextjs-toploader`.
+- Respeito a `prefers-reduced-motion` para acessibilidade.
+
+---
+
+## 📈 Observabilidade
+
+Integrações prontas com inicialização opcional por ambiente:
+
+- Sentry (`@sentry/nextjs`)
+- Datadog RUM (`@datadog/browser-rum`)
+- New Relic Browser (`@newrelic/browser-agent`)
+- OpenTelemetry server-side (`@vercel/otel`)
+
+### Variáveis opcionais
+
+Defina apenas as plataformas que deseja ativar:
+
+- `NEXT_PUBLIC_SENTRY_DSN`
+- `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE`
+- `NEXT_PUBLIC_DD_APPLICATION_ID`
+- `NEXT_PUBLIC_DD_CLIENT_TOKEN`
+- `NEXT_PUBLIC_DD_SITE`
+- `NEXT_PUBLIC_DD_SERVICE`
+- `NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY`
+- `NEXT_PUBLIC_NEW_RELIC_APP_ID`
+- `OTEL_SERVICE_NAME`
+
+---
+
+## ✅ Qualidade e Testes
+
+### Qualidade e lint
+
+- Arch contract: `dependency-cruiser`
+- Biome: `@biomejs/biome`
+- Commitlint: `@commitlint/cli` + `@commitlint/config-conventional`
+- Knip: detecção de código/arquivos não usados
+- Stryker: mutation testing
+
+### Testes
+
+- Unitário e integração: Vitest + Testing Library
+- End-to-end: Playwright
+- Cobertura: Codecov (`codecov.yml` + workflow CI)
+
+### Scripts úteis
+
+```bash
+npm run lint:eslint
+npm run lint:biome
+npm run quality:arch
+npm run quality:knip
+npm run test
+npm run test:coverage
+npm run test:e2e
+npm run mutate
+npm run check
+```

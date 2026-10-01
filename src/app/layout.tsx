@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Montserrat } from "next/font/google";
 import { UserProvider } from "@/context/UserContext";
+import { AppProviders } from "@/components/AppProviders";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -18,9 +19,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${inter.variable} ${montserrat.variable} h-full antialiased`}
     >
       <body className={`${montserrat.className} min-h-full antialiased`}>
-        <UserProvider>
-          {children}
-        </UserProvider>
+        <AppProviders>
+          <UserProvider>{children}</UserProvider>
+        </AppProviders>
       </body>
     </html>
   );

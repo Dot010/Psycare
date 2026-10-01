@@ -26,7 +26,7 @@ const NavMobile = () => {
 
   const MoreMenus = [
     { title: "Saúde", icon: <BsCapsule />, path: "/dashboard/health" },
-    { title: "Chat", icon: <BsChatDots />, path: "/dashboard/chat" },
+    { title: "Chat", icon: <BsChatDots />, path: "/dashboard/messages" },
     { title: "Meus Pagamentos", icon: <BsCreditCard />, path: "/dashboard/payments" },
     { title: "Ajuda", icon: <BsQuestionCircle />, path: "/dashboard/help" },
     { title: "Configurações", icon: <BsGear />, path: "/dashboard/settings" },

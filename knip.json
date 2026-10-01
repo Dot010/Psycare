@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": ["src/app/layout.tsx"],
+  "project": ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}", "*.config.ts"],
+  "ignore": ["src/components/ui/**"],
+  "ignoreDependencies": [
+    "react-bootstrap-icons",
+    "shadcn",
+    "tw-animate-css",
+    "tailwindcss",
+    "@testing-library/react",
+    "@testing-library/user-event"
+  ]
+}

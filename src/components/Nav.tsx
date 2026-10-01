@@ -16,6 +16,7 @@ import {
 import { FaHome } from "react-icons/fa";
 import { MdPsychology } from 'react-icons/md';
 import Link from 'next/link';
+import { logoutAction } from "@/lib/auth-utils/actions";
 
 const Nav = () => {
   const [open, setOpen] = useState(true);
@@ -63,14 +64,27 @@ const Nav = () => {
                 className={`flex items-center gap-x-4 cursor-pointer p-3 hover:bg-white/20 rounded-xl transition-all duration-200
                   ${menu.logout ? "text-red-200 hover:bg-red-500/20" : "text-white"}`}
               >
-                <Link href={menu.path || "#"} className="flex items-center gap-x-4 w-full">
-                  <span className={`text-2xl block float-left duration-300 ${!open && "mx-auto"}`}>
-                    {menu.icon}
-                  </span>
-                  <span className={`text-base font-medium flex-1 duration-200 ${!open && "hidden"}`}>
-                    {menu.title}
-                  </span>
-                </Link>
+                {menu.logout ? (
+                  <form action={logoutAction} className="w-full">
+                    <button type="submit" className="flex items-center gap-x-4 w-full text-left">
+                      <span className={`text-2xl block float-left duration-300 ${!open && "mx-auto"}`}>
+                        {menu.icon}
+                      </span>
+                      <span className={`text-base font-medium flex-1 duration-200 ${!open && "hidden"}`}>
+                        {menu.title}
+                      </span>
+                    </button>
+                  </form>
+                ) : (
+                  <Link href={menu.path || "#"} className="flex items-center gap-x-4 w-full">
+                    <span className={`text-2xl block float-left duration-300 ${!open && "mx-auto"}`}>
+                      {menu.icon}
+                    </span>
+                    <span className={`text-base font-medium flex-1 duration-200 ${!open && "hidden"}`}>
+                      {menu.title}
+                    </span>
+                  </Link>
+                )}
               </li>
             </div>
           ))}
