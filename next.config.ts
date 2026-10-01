@@ -1,5 +1,18 @@
 import type { NextConfig } from "next";
 
+const forbiddenPublicServerVars = [
+  "NEXT_PUBLIC_JWT_SECRET",
+  "NEXT_PUBLIC_API_SECRET_KEY",
+  "NEXT_PUBLIC_DATABASE_URL",
+  "NEXT_PUBLIC_SENTRY_AUTH_TOKEN",
+];
+
+const leakedEnvVar = forbiddenPublicServerVars.find((envName) => Boolean(process.env[envName]));
+
+if (leakedEnvVar) {
+  throw new Error(`Variável sensível exposta em client bundle: ${leakedEnvVar}`);
+}
+
 const cspHeader = `
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline';

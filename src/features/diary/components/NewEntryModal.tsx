@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { z } from "zod";
 import {
     Dialog,
     DialogContent,
@@ -8,21 +9,43 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { DiaryEntry } from "@/data/mockData";
+import type { DiaryEntry } from "@/types/domain";
 const moods = ["Calmo", "Ansioso", "Motivado", "Sobrecarregado", "Reflexivo"];
 
 interface NewEntryModalProps { 
     onAddEntry: (entry: DiaryEntry) => void;
 }
+
+const entrySchema = z.object({
+    title: z.string().trim().min(2, "Título muito curto").max(120),
+    mood: z.string().trim().min(2),
+    content: z.string().trim().min(8, "Escreva um pouco mais sobre como se sente"),
+    anxietyLevel: z.number().min(1).max(5),
+});
+
 export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
     const [open, setOpen] = useState(false);
     const [title, setTitle] = useState("");
     const [selectedMood, setSelectedMood] = useState("Calmo");
     const [anxietyLevel, setAnxietyLevel] = useState(2);
     const [content, setContent] = useState("");
+        const [error, setError] = useState("");
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+                const parsed = entrySchema.safeParse({
+                    title,
+                    mood: selectedMood,
+                    content,
+                    anxietyLevel,
+                });
+
+                if (!parsed.success) {
+                    setError(parsed.error.issues[0]?.message || "Dados inválidos");
+                    return;
+                }
+
+                setError("");
       
         const newEntry: DiaryEntry = {
             id: Date.now().toString(),
@@ -32,9 +55,9 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
                 year: "numeric",
 
             }),
-            mood: selectedMood,
-            title: title,
-            content: content,
+            mood: parsed.data.mood,
+            title: parsed.data.title,
+            content: parsed.data.content,
         };
         onAddEntry(newEntry)
         
@@ -143,6 +166,8 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
                             Marcar para discutir na próxima consulta
                         </span>
                     </label>
+
+                    {error && <p className="text-xs text-red-600">{error}</p>}
 
                     {/* Ações */}
                     <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">

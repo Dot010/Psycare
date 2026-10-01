@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { Habit } from "@/data/mockData";
+import type { Habit } from "@/types/domain";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -19,19 +20,31 @@ interface NewHabitModalProps {
   onAddHabit: (habit: Habit) => void;
 }
 
+const habitSchema = z.object({
+  title: z.string().trim().min(2, "Informe um nome válido"),
+  category: z.string().trim().min(2, "Categoria inválida"),
+});
+
 export function NewHabitModal({ onAddHabit }: NewHabitModalProps) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Saude");
+  const [error, setError] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    const parsed = habitSchema.safeParse({ title, category });
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message || "Dados inválidos");
+      return;
+    }
+
+    setError("");
 
     onAddHabit({
       id: Date.now().toString(),
-      title,
-      category,
+      title: parsed.data.title,
+      category: parsed.data.category,
       completedToday: false,
       streak: 0,
       description: undefined,
@@ -89,6 +102,7 @@ export function NewHabitModal({ onAddHabit }: NewHabitModalProps) {
               <option value="Lazer">Lazer</option>
             </select>
           </div>
+          {error && <p className="text-xs text-red-600">{error}</p>}
           <DialogFooter className="pt-4">
             <Button
               type="button"

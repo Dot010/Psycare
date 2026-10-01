@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { PaymentMethod } from "@/data/mockData";
+import type { PaymentMethod } from "@/types/domain";
+import { z } from "zod";
 
 interface AddPaymentMethodModalProps {
   isOpen: boolean;
@@ -11,6 +12,17 @@ interface AddPaymentMethodModalProps {
 }
 
 type PixKeyType = "cpf" | "email" | "phone" | "random";
+
+const creditCardSchema = z.object({
+  cardBrand: z.string().min(2),
+  cardNumber: z.string().regex(/^\d{4}\s\d{4}\s\d{4}\s\d{4}$/, "Número do cartão inválido"),
+  cardExpiry: z.string().regex(/^(0[1-9]|1[0-2])\/[0-9]{2}$/, "Validade inválida"),
+});
+
+const pixSchema = z.object({
+  pixKeyType: z.enum(["cpf", "email", "phone", "random"]),
+  pixKey: z.string().trim().min(4, "Chave PIX inválida"),
+});
 
 export default function AddPaymentMethodModal({
   isOpen,
@@ -29,6 +41,7 @@ export default function AddPaymentMethodModal({
   // Campos do PIX
   const [pixKeyType, setPixKeyType] = useState<PixKeyType>("cpf");
   const [pixKey, setPixKey] = useState("");
+  const [formError, setFormError] = useState("");
 
   // Reset de formulário
   const resetForm = useCallback(() => {
@@ -38,6 +51,7 @@ export default function AddPaymentMethodModal({
     setPixKeyType("cpf");
     setCardBrand("Visa");
     setPaymentType("credit_card");
+    setFormError("");
   }, []);
 
   // Fechamento seguro
@@ -107,6 +121,35 @@ export default function AddPaymentMethodModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    if (paymentType === "credit_card") {
+      const cardValidation = creditCardSchema.safeParse({
+        cardBrand,
+        cardNumber,
+        cardExpiry,
+      });
+
+      if (!cardValidation.success) {
+        setIsSubmitting(false);
+        setFormError(cardValidation.error.issues[0]?.message || "Dados inválidos");
+        return;
+      }
+    }
+
+    if (paymentType === "pix") {
+      const pixValidation = pixSchema.safeParse({
+        pixKeyType,
+        pixKey,
+      });
+
+      if (!pixValidation.success) {
+        setIsSubmitting(false);
+        setFormError(pixValidation.error.issues[0]?.message || "Dados inválidos");
+        return;
+      }
+    }
+
+    setFormError("");
 
     // Simulação de gateway de pagamento
     await new Promise((resolve) => setTimeout(resolve, 800));
@@ -295,6 +338,8 @@ export default function AddPaymentMethodModal({
               </div>
             </div>
           )}
+
+          {formError && <p className="text-xs text-red-600">{formError}</p>}
 
           {/* Botões do Rodapé */}
           <div className="flex gap-3 pt-4 border-t border-slate-100">
