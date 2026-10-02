@@ -2,6 +2,8 @@ export interface Habit {
   id: string;
   title: string;
   category: string;
-  completedToday?: boolean;
+  /** Dias seguidos já concluídos. */
   streak: number;
+  /** Último dia em que foi concluído (AAAA-MM-DD). */
+  lastCompleted?: string;
 }

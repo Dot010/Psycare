@@ -7,15 +7,15 @@ import { HeroCanvas } from "@/components/three/HeroCanvas";
 export interface AuthLayoutProps {
   title: string;
   subtitle?: string;
-  imageSrc: string;
-  imageAlt: string;
   children: React.ReactNode;
 }
 
-export function AuthLayout({ title, subtitle, imageSrc, imageAlt, children }: AuthLayoutProps) {
+const ILLUSTRATION = "/assets/auth-illustration.webp";
+
+export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
   return (
     <section className="bg-canvas min-h-screen flex items-center justify-center p-4">
-      <div className="bg-surface flex rounded-xl shadow-sm border border-black/5 max-w-4xl w-full overflow-hidden min-h-137.5">
+      <div className="bg-surface flex rounded-xl shadow-sm border border-border max-w-4xl w-full overflow-hidden min-h-137.5">
         <div className="md:w-1/2 w-full p-8 md:p-12 flex flex-col justify-center">
           <div className="mb-2">
             <AnimatedText
@@ -33,8 +33,8 @@ export function AuthLayout({ title, subtitle, imageSrc, imageAlt, children }: Au
           <HeroCanvas />
           <div className="absolute inset-0 bg-linear-to-br from-brand-200/20 via-transparent to-taupe/20" />
           <Image
-            src={imageSrc}
-            alt={imageAlt}
+            src={ILLUSTRATION}
+            alt=""
             fill
             priority
             sizes="(max-width: 768px) 0px, 50vw"

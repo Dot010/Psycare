@@ -2,23 +2,34 @@
 
 import { CreditCard, FileText, Plus, QrCode, X } from "lucide-react";
 import { useState } from "react";
+import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
+import { EmptyState } from "@/components/feedback/EmptyState";
 import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/ui/button";
 import AddPaymentMethodModal from "@/features/payments/components/AddPaymentMethodModal";
 import { PixDialog } from "@/features/payments/components/PixDialog";
 import type { Invoice, PaymentMethod, Subscription } from "@/features/payments/types";
 import { formatCurrencyBRL } from "@/lib/format";
+import { useLocalStorage } from "@/lib/useLocalStorage";
 import { cn } from "@/lib/utils";
 import { mockUser } from "@/mocks/user";
 
 const panelClass = "rounded-2xl border border-border bg-card p-6 shadow-sm";
 
 export default function PaymentsView() {
-  const [invoices] = useState<Invoice[]>(mockUser.invoices);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(mockUser.paymentMethods);
-  const [subscription, setSubscription] = useState<Subscription>(mockUser.subscription);
+  const invoices: Invoice[] = mockUser.invoices;
+  const [paymentMethods, setPaymentMethods] = useLocalStorage<PaymentMethod[]>(
+    "psycare:payment-methods:v1",
+    mockUser.paymentMethods,
+  );
+  const [subscription, setSubscription] = useLocalStorage<Subscription>(
+    "psycare:subscription:v1",
+    mockUser.subscription,
+  );
   const [addOpen, setAddOpen] = useState(false);
   const [pixInvoice, setPixInvoice] = useState<Invoice | null>(null);
+  const [removing, setRemoving] = useState<PaymentMethod | null>(null);
+  const [cancelingPlan, setCancelingPlan] = useState(false);
 
   const isActive = subscription.status === "active";
 
@@ -81,7 +92,7 @@ export default function PaymentsView() {
           </p>
           <button
             type="button"
-            onClick={toggleSubscription}
+            onClick={() => (isActive ? setCancelingPlan(true) : toggleSubscription())}
             className={cn(
               "mt-3 rounded-xl px-4 py-2 text-xs font-semibold transition-colors",
               isActive
@@ -105,7 +116,16 @@ export default function PaymentsView() {
           </div>
 
           {paymentMethods.length === 0 ? (
-            <p className="py-6 text-center text-xs text-muted-foreground">Nenhum método cadastrado.</p>
+            <EmptyState
+              title="Nenhum método cadastrado"
+              description="Adicione um cartão ou uma chave PIX para pagar suas faturas."
+              action={
+                <Button size="sm" onClick={() => setAddOpen(true)}>
+                  <Plus />
+                  Adicionar método
+                </Button>
+              }
+            />
           ) : (
             <ul className="space-y-3">
               {paymentMethods.map((method) => (
@@ -155,7 +175,7 @@ export default function PaymentsView() {
                     )}
                     <button
                       type="button"
-                      onClick={() => removeMethod(method.id)}
+                      onClick={() => setRemoving(method)}
                       aria-label="Remover método de pagamento"
                       className="rounded p-1 text-muted-foreground transition-colors hover:text-danger-500"
                     >
@@ -227,6 +247,26 @@ export default function PaymentsView() {
         onClose={() => setAddOpen(false)}
         onAddPaymentMethod={addMethod}
         isFirstMethod={paymentMethods.length === 0}
+      />
+      <ConfirmDialog
+        open={removing !== null}
+        onOpenChange={(open) => !open && setRemoving(null)}
+        title="Remover método de pagamento?"
+        description={
+          removing?.type === "pix"
+            ? "A chave PIX será removida da sua conta."
+            : `O cartão ${removing?.brand ?? ""} final ${removing?.last4 ?? ""} será removido da sua conta.`
+        }
+        confirmLabel="Remover"
+        onConfirm={() => removing && removeMethod(removing.id)}
+      />
+      <ConfirmDialog
+        open={cancelingPlan}
+        onOpenChange={setCancelingPlan}
+        title="Cancelar assinatura?"
+        description="Você mantém o acesso até o fim do período já pago e pode reativar quando quiser."
+        confirmLabel="Cancelar assinatura"
+        onConfirm={toggleSubscription}
       />
       <PixDialog invoice={pixInvoice} onClose={() => setPixInvoice(null)} />
     </Page>

@@ -5,21 +5,12 @@ import type { Exame, Medicamento, Sintoma } from "@/features/health/types";
 import type { Habit } from "@/features/habits/types";
 import type { Invoice, PaymentMethod, Subscription } from "@/features/payments/types";
 
-
-
 export const mockUser = {
   name: "Usuário Demonstração",
-  
-  nextSession: {
-    date: "Terça-feira, 08 de Setembro",
-    time: "15:30h",
-    doctor: "Dra. Amanda Silva",
-    getSummary: (userName: string) => `Plano de acompanhamento individual de ${userName}`,
-  },
 
   subscription: {
     planName: "Plano PsyCare Premium",
-    price: 49.90,
+    price: 49.9,
     billingCycle: "mensal",
     nextBillingDate: "08/10/2026",
     status: "active",
@@ -46,7 +37,7 @@ export const mockUser = {
     {
       id: "1",
       description: "Assinatura Mensal - Setembro",
-      amount: 49.90,
+      amount: 49.9,
       date: "01/09/2026",
       status: "paid",
       pdfUrl: "https://example.com/invoice-september.pdf",
@@ -54,7 +45,7 @@ export const mockUser = {
     {
       id: "2",
       description: "Assinatura Mensal - Outubro",
-      amount: 49.90,
+      amount: 49.9,
       date: "01/10/2026",
       status: "pending",
       pdfUrl: "https://example.com/invoice-october.pdf",
@@ -66,21 +57,18 @@ export const mockUser = {
       id: "1",
       title: "Treinar 2 horas",
       category: "Saúde",
-      completedToday: true,
       streak: 5,
     },
     {
       id: "2",
       title: "Levar o cachorro para passear",
       category: "Saúde",
-      completedToday: false,
       streak: 0,
     },
     {
       id: "3",
       title: "Estudar 2 horas",
       category: "Estudo",
-      completedToday: false,
       streak: 0,
     },
   ] as Habit[],
@@ -88,24 +76,28 @@ export const mockUser = {
   diaryEntries: [
     {
       id: "1",
-      date: "03 de Setembro, 2026",
+      date: "2026-09-03",
       mood: "Motivado",
       title: "Progresso no Dashboard",
       content: "Consegui estruturar o modal e resolver os erros de rota do Next.js.",
+      anxietyLevel: 2,
     },
     {
       id: "2",
-      date: "02 de Setembro, 2026",
+      date: "2026-09-02",
       mood: "Calmo",
       title: "Estudos de Frontend",
       content: "Dia focado em entender melhor os componentes de cliente e servidor no App Router.",
+      anxietyLevel: 1,
     },
     {
       id: "3",
-      date: "01 de Setembro, 2026",
+      date: "2026-09-01",
       mood: "Ansioso",
       title: "Desafios da semana",
       content: "Senti-me um pouco sobrecarregado com as tarefas, mas consegui organizar melhor meu tempo.",
+      anxietyLevel: 4,
+      discussInSession: true,
     },
   ] as DiaryEntry[],
 
@@ -113,7 +105,7 @@ export const mockUser = {
     {
       id: "1",
       profissional: "Dra. Amanda Silva",
-      data: "08/09/2026",
+      data: "2026-10-15",
       hora: "15:30",
       status: "confirmado",
       tipo: "online",
@@ -121,10 +113,18 @@ export const mockUser = {
     {
       id: "2",
       profissional: "Dr. Carlos Pereira",
-      data: "09/09/2026",
+      data: "2026-10-20",
       hora: "10:00",
       status: "pendente",
       tipo: "presencial",
+    },
+    {
+      id: "3",
+      profissional: "Dra. Amanda Silva",
+      data: "2026-09-08",
+      hora: "15:30",
+      status: "confirmado",
+      tipo: "online",
     },
   ] as Agendamento[],
 

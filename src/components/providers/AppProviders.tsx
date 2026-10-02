@@ -3,6 +3,7 @@
 import { MotionConfig } from "framer-motion";
 import NextTopLoader from "nextjs-toploader";
 import { type ReactNode, useEffect } from "react";
+import { UndoProvider } from "@/components/feedback/UndoProvider";
 import { initClientObservability } from "@/lib/observability/client";
 
 interface AppProvidersProps {
@@ -27,7 +28,7 @@ export function AppProviders({ children }: AppProvidersProps) {
         speed={280}
         shadow="0 0 10px #5e7638,0 0 6px #5e7638"
       />
-      {children}
+      <UndoProvider>{children}</UndoProvider>
     </MotionConfig>
   );
 }

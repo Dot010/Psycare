@@ -1,12 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useLocalStorage } from "@/lib/useLocalStorage";
 import { mockUser } from "@/mocks/user";
 import type { Chat, MessageItem } from "@/features/messages/types";
 import { sendMessageSchema, type SendMessageInput } from "@/features/messages/types";
 
+export const CHATS_KEY = "psycare:chats:v1";
+
 export function useMessages() {
-  const [chats, setChats] = useState<Chat[]>(mockUser.chats || []);
+  const [chats, setChats] = useLocalStorage<Chat[]>(CHATS_KEY, mockUser.chats);
   const [activeChatId, setActiveChatId] = useState<string>(mockUser.chats?.[0]?.id || "");
 
   const activeChat = useMemo(

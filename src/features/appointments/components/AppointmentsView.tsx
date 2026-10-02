@@ -1,15 +1,21 @@
 "use client";
 
-import { Plus } from "lucide-react";
-import { useState, type FormEvent } from "react";
-import { MagneticButton } from "@/components/motion/MagneticButton";
+import { CalendarPlus, Plus } from "lucide-react";
+import { useState } from "react";
+import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
+import { EmptyState } from "@/components/feedback/EmptyState";
+import { ItemMenu } from "@/components/feedback/ItemMenu";
 import { Page } from "@/components/layout/Page";
+import { MagneticButton } from "@/components/motion/MagneticButton";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
-import { Field, SelectField } from "@/components/ui/field";
+import { AppointmentModal } from "@/features/appointments/components/AppointmentModal";
 import { NextSessionCard } from "@/features/appointments/components/NextSessionCard";
 import { useAppointments } from "@/features/appointments/hooks/useAppointments";
-import type { Agendamento, AppointmentType } from "@/features/appointments/types";
+import { splitAppointments } from "@/features/appointments/logic";
+import type { Agendamento } from "@/features/appointments/types";
+import { toISODate } from "@/lib/dates";
+import { formatDateBR } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 const STATUS_STYLES: Record<Agendamento["status"], string> = {
   confirmado: "bg-brand-100 text-brand-800",
@@ -17,30 +23,61 @@ const STATUS_STYLES: Record<Agendamento["status"], string> = {
   cancelado: "bg-sunken text-muted-foreground",
 };
 
+function AppointmentRow({
+  item,
+  onReschedule,
+  onCancel,
+}: {
+  item: Agendamento;
+  onReschedule?: () => void;
+  onCancel?: () => void;
+}) {
+  return (
+    <li className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <div className="min-w-0">
+        <p className="font-medium text-foreground">{item.profissional}</p>
+        <p className="text-sm text-muted-foreground">
+          {formatDateBR(item.data)} às {item.hora} · {item.tipo === "online" ? "Online" : "Presencial"}
+        </p>
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
+        <span
+          className={cn(
+            "rounded-full px-3 py-1 text-xs font-semibold capitalize",
+            STATUS_STYLES[item.status],
+          )}
+        >
+          {item.status}
+        </span>
+        {(onReschedule || onCancel) && (
+          <ItemMenu
+            label={`consulta com ${item.profissional}`}
+            editLabel="Remarcar"
+            deleteLabel="Cancelar consulta"
+            onEdit={onReschedule}
+            onDelete={onCancel}
+          />
+        )}
+      </div>
+    </li>
+  );
+}
+
 export function AppointmentsView() {
-  const { appointments, addAppointment } = useAppointments();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [profissional, setProfissional] = useState("");
-  const [data, setData] = useState("");
-  const [hora, setHora] = useState("");
-  const [tipo, setTipo] = useState<AppointmentType>("online");
-  const [formError, setFormError] = useState("");
+  const { appointments, saveAppointment, cancelAppointment } = useAppointments();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState<Agendamento | undefined>();
+  const [cancelling, setCancelling] = useState<Agendamento | undefined>();
 
-  const handleCreateAppointment = (e: FormEvent) => {
-    e.preventDefault();
+  const now = new Date();
+  const { upcoming, past } = splitAppointments(
+    appointments,
+    `${toISODate(now)}T${now.toTimeString().slice(0, 5)}`,
+  );
 
-    const result = addAppointment({ profissional, data, hora, tipo });
-    if (!result.success) {
-      setFormError(result.error);
-      return;
-    }
-
-    setFormError("");
-    setProfissional("");
-    setData("");
-    setHora("");
-    setTipo("online");
-    setIsModalOpen(false);
+  const openNew = () => {
+    setEditing(undefined);
+    setModalOpen(true);
   };
 
   return (
@@ -51,8 +88,8 @@ export function AppointmentsView() {
       actions={
         <MagneticButton
           type="button"
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+          onClick={openNew}
+          className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-brand-700"
         >
           <Plus className="size-4" />
           Novo agendamento
@@ -67,94 +104,72 @@ export function AppointmentsView() {
         }
       />
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-ink">Histórico</h2>
-
-        {appointments.length === 0 ? (
-          <div className="rounded-xl border border-black/5 bg-surface p-8 text-center shadow-sm">
-            <p className="text-base font-semibold text-ink">Nenhum agendamento ainda</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Comece adicionando sua primeira sessão com um profissional.
-            </p>
-          </div>
-        ) : (
-          <ul className="space-y-3">
-            {appointments.map((item) => (
-              <li
-                key={item.id}
-                className="flex flex-col justify-between gap-2 rounded-xl border border-black/5 bg-surface p-4 shadow-sm sm:flex-row sm:items-center"
-              >
-                <div>
-                  <p className="font-medium text-ink">{item.profissional}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {item.data} às {item.hora} · {item.tipo === "online" ? "Online" : "Presencial"}
-                  </p>
-                </div>
-                <span
-                  className={`self-start rounded-full px-3 py-1 text-xs font-semibold capitalize sm:self-auto ${STATUS_STYLES[item.status]}`}
-                >
-                  {item.status}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent aria-describedby={undefined} className="gap-4 rounded-2xl p-6 sm:max-w-md">
-          <DialogTitle className="text-xl font-semibold text-ink">Agendar nova sessão</DialogTitle>
-
-          <form onSubmit={handleCreateAppointment} className="space-y-4">
-            <Field
-              label="Profissional"
-              value={profissional}
-              onChange={(e) => setProfissional(e.target.value)}
-              placeholder="Ex: Dra. Ana Silva"
-              required
-            />
-
-            <div className="grid grid-cols-2 gap-3">
-              <Field
-                label="Data"
-                type="date"
-                value={data}
-                onChange={(e) => setData(e.target.value)}
-                required
-              />
-              <Field
-                label="Hora"
-                type="time"
-                value={hora}
-                onChange={(e) => setHora(e.target.value)}
-                required
-              />
-            </div>
-
-            <SelectField
-              label="Tipo"
-              value={tipo}
-              onChange={(e) => setTipo(e.target.value as AppointmentType)}
-            >
-              <option value="online">Online</option>
-              <option value="presencial">Presencial</option>
-            </SelectField>
-
-            {formError && (
-              <p role="alert" className="text-xs text-danger-600">
-                {formError}
-              </p>
+      {appointments.length === 0 ? (
+        <EmptyState
+          title="Nenhum agendamento ainda"
+          description="Comece adicionando sua primeira sessão com um profissional."
+          action={
+            <Button onClick={openNew}>
+              <CalendarPlus />
+              Agendar sessão
+            </Button>
+          }
+        />
+      ) : (
+        <>
+          <section className="space-y-3">
+            <h2 className="text-xl font-semibold text-foreground">Próximas</h2>
+            {upcoming.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhuma sessão futura.</p>
+            ) : (
+              <ul className="space-y-3">
+                {upcoming.map((item) => (
+                  <AppointmentRow
+                    key={item.id}
+                    item={item}
+                    onReschedule={() => {
+                      setEditing(item);
+                      setModalOpen(true);
+                    }}
+                    onCancel={() => setCancelling(item)}
+                  />
+                ))}
+              </ul>
             )}
+          </section>
 
-            <DialogFooter className="-mx-6 -mb-6 mt-2 rounded-b-2xl px-6 py-4">
-              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit">Salvar</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+          {past.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="text-xl font-semibold text-foreground">Histórico</h2>
+              <ul className="space-y-3">
+                {past.map((item) => (
+                  <AppointmentRow key={item.id} item={item} />
+                ))}
+              </ul>
+            </section>
+          )}
+        </>
+      )}
+
+      <AppointmentModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        appointment={editing}
+        onSave={saveAppointment}
+      />
+
+      <ConfirmDialog
+        open={cancelling !== undefined}
+        onOpenChange={(open) => !open && setCancelling(undefined)}
+        title="Cancelar esta consulta?"
+        description={
+          cancelling
+            ? `A sessão com ${cancelling.profissional} em ${formatDateBR(cancelling.data)} às ${cancelling.hora} será cancelada e ficará no histórico.`
+            : ""
+        }
+        confirmLabel="Cancelar consulta"
+        onConfirm={() => cancelling && cancelAppointment(cancelling.id)}
+      />
     </Page>
   );
 }

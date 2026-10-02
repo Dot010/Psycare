@@ -54,11 +54,11 @@ src/
 ├── components/          Código compartilhado entre áreas
 │   ├── ui/              Primitivos (Button, Input, Field, Dialog, Skeleton)
 │   ├── layout/          Page, Nav, NavMobile, lista de itens do menu
-│   ├── feedback/        Skeleton de página, ErrorState, DemoBanner
+│   ├── feedback/        ItemMenu (editar/excluir), UndoProvider, ConfirmDialog, EmptyState, CrisisButton, ErrorState, skeletons
 │   ├── motion/          Animações (AnimatedText, TiltCard, MagneticButton)
 │   ├── three/           Canvas 3D
 │   └── providers/       Contextos globais
-├── lib/                 Utilitários sem UI: sessão, formatação, CSP, observabilidade
+├── lib/                 Utilitários sem UI: sessão, datas, listas, armazenamento local, formatação, CSP, observabilidade
 ├── mocks/               Dados fictícios usados enquanto não há backend
 ├── proxy.ts             Proteção das rotas e CSP por requisição
 └── instrumentation.ts   Sentry no servidor
@@ -71,6 +71,9 @@ src/
 - **Nova tela:** crie `features/<área>/components/<Área>View.tsx` usando `<Page title="…">` e uma `app/dashboard/<rota>/page.tsx` que só renderiza a View. Adicione o item em `components/layout/nav-items.ts`.
 - **Formulários:** use `Field` / `SelectField` (`components/ui/field.tsx`), que já ligam rótulo, erro e `aria-*`. Botões: sempre `Button`.
 - **Ícones:** lucide-react. Sem emojis na interface.
+- **Editar e excluir:** cada item de lista usa `ItemMenu` (três pontos). Excluir mostra "Desfazer" por 6 s (`useUndo`); cancelar consulta e remover pagamento usam `ConfirmDialog`. Modais de formulário aceitam o item a editar (`entry`, `habit`, `item`) e viram o modo de edição.
+- **Listas vazias:** use `EmptyState` com um próximo passo.
+- **Persistência:** estado que deve sobreviver ao recarregar usa `useLocalStorage(chave, valorInicialConstante)`.
 - **Datas e valores:** `formatDateBR` e `formatCurrencyBRL` em `lib/format.ts`.
 - **Textos:** português do Brasil.
 - **Animação:** `TiltCard` e `MagneticButton` só em destaques e na ação principal, nunca em listas ou formulários.
@@ -88,7 +91,7 @@ O hook de pré-commit (Husky) formata os arquivos alterados com Prettier (`.pret
 
 ## Dados de demonstração
 
-- `mocks/user.ts` guarda o perfil, hábitos, diário, consultas, faturas etc. As alterações feitas na interface ficam só em memória e somem ao recarregar. O perfil editado em Configurações fica no `localStorage`.
+- `mocks/user.ts` guarda o perfil, hábitos, diário, consultas, faturas etc. As alterações feitas na interface (hábitos, diário, saúde, consultas, mensagens, pagamentos) ficam no `localStorage` do navegador, em chaves `psycare:<área>:v1`, via `useLocalStorage` (`lib/useLocalStorage.ts`). Para voltar aos dados iniciais, limpe o armazenamento do site. Os dados não são criptografados e não saem do navegador.
 - `features/auth/mock-login.ts` simula o login e só responde com `DEMO_MODE=true`.
 - Botões sem função real (enviar exame, baixar recibo, redefinir senha, 2FA) aparecem desabilitados.
 - Não informe dados pessoais, de saúde ou de pagamento reais.
@@ -110,6 +113,7 @@ Antes de aceitar dados reais são necessários backend, autenticação gerenciad
 
 ## Próximos passos
 
+- Imagem do login: confirmar origem e licença em `public/assets/CREDITS.md`.
 - Backend e banco de dados (Supabase ou Prisma).
 - Autenticação real.
 - Chamada de vídeo nas consultas online.
