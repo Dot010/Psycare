@@ -1,6 +1,7 @@
 "use client";
 
 import { useUndo } from "@/components/feedback/UndoProvider";
+import { grantWater } from "@/features/garden/water";
 import type { DiaryEntry } from "@/features/diary/types";
 import { insertAt, removeById, upsertById } from "@/lib/list";
 import { useLocalStorage } from "@/lib/useLocalStorage";
@@ -12,7 +13,11 @@ export function useDiary() {
   const [entries, setEntries] = useLocalStorage<DiaryEntry[]>(DIARY_KEY, mockUser.diaryEntries);
   const { showUndo } = useUndo();
 
-  const saveEntry = (entry: DiaryEntry) => setEntries((current) => upsertById(current, entry));
+  const saveEntry = (entry: DiaryEntry) => {
+    const isNew = !entries.some((item) => item.id === entry.id);
+    setEntries((current) => upsertById(current, entry));
+    if (isNew) grantWater("diary");
+  };
 
   const deleteEntry = (id: string) => {
     const index = entries.findIndex((entry) => entry.id === id);

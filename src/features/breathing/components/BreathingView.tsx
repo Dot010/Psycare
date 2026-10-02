@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/ui/button";
 import { BreathingStage } from "@/features/breathing/components/BreathingStage";
 import { useBreathingSession } from "@/features/breathing/hooks/useBreathingSession";
+import { grantWater } from "@/features/garden/water";
 import { formatClock, SESSION_MINUTES, TECHNIQUES } from "@/features/breathing/techniques";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,11 @@ export default function BreathingView() {
   const { scaleRef, view, start, pause, resume, reset } = useBreathingSession(technique, sessionSeconds);
 
   const { status, position, elapsed } = view;
+
+  // Terminar uma sessão rega o jardim.
+  useEffect(() => {
+    if (status === "done") grantWater("breathing");
+  }, [status]);
   const isActive = status === "running" || status === "paused";
 
   const headline =
@@ -106,7 +112,7 @@ export default function BreathingView() {
               {SESSION_MINUTES.map((m) => (
                 <label
                   key={m}
-                  className="cursor-pointer rounded-xl border border-border bg-card py-2 text-center text-sm font-semibold text-muted-foreground transition has-checked:border-brand-600 has-checked:bg-brand-50 has-checked:text-brand-800 has-disabled:cursor-not-allowed has-disabled:opacity-60 has-focus-visible:ring-2 has-focus-visible:ring-brand-600/40"
+                  className="cursor-pointer rounded-xl border border-border bg-card py-2 text-center text-sm font-semibold text-muted-foreground transition has-checked:border-brand-600 has-checked:bg-brand-50 has-checked:text-brand-ink has-disabled:cursor-not-allowed has-disabled:opacity-60 has-focus-visible:ring-2 has-focus-visible:ring-brand-600/40"
                 >
                   <input
                     type="radio"
@@ -159,7 +165,7 @@ export default function BreathingView() {
                 Como você se sente agora?{" "}
                 <Link
                   href="/dashboard/diary"
-                  className="font-semibold text-brand-800 underline underline-offset-2"
+                  className="font-semibold text-brand-ink underline underline-offset-2"
                 >
                   Registrar no diário
                 </Link>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useUndo } from "@/components/feedback/UndoProvider";
-import { toggleHabitToday } from "@/features/habits/logic";
+import { grantWater } from "@/features/garden/water";
+import { isDoneToday, toggleHabitToday } from "@/features/habits/logic";
 import type { Habit } from "@/features/habits/types";
 import { toISODate } from "@/lib/dates";
 import { insertAt, removeById, upsertById } from "@/lib/list";
@@ -22,6 +23,9 @@ export function useHabits() {
 
   const toggleHabit = (id: string) => {
     const today = toISODate(new Date());
+    const target = habits.find((habit) => habit.id === id);
+    // Concluir rega o jardim; desmarcar não tira a água (o jardim nunca murcha).
+    if (target && !isDoneToday(target, today)) grantWater("habit", id);
     setHabits((current) =>
       current.map((habit) => (habit.id === id ? toggleHabitToday(habit, today) : habit)),
     );
