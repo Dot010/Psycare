@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   addDrop,
+  availableDrops,
   careStreak,
   dropId,
   dropsToNextPlant,
   gardenPlants,
   lastDays,
+  sourcesOnDay,
 } from "@/features/garden/logic";
 import type { WaterDrop } from "@/features/garden/types";
 
@@ -51,5 +53,21 @@ describe("garden logic", () => {
     expect(careStreak(drops, "2026-10-02")).toBe(2);
     expect(careStreak([...drops, drop("2026-10-02")], "2026-10-02")).toBe(3);
     expect(careStreak([], "2026-10-02")).toBe(0);
+  });
+});
+
+describe("regador", () => {
+  it("gotas disponíveis nunca ficam negativas", () => {
+    expect(availableDrops(5, 2)).toBe(3);
+    expect(availableDrops(2, 5)).toBe(0);
+  });
+
+  it("lista as ações já feitas no dia", () => {
+    const drops = [
+      drop("2026-10-02", "habit", "h1"),
+      drop("2026-10-02", "diary"),
+      drop("2026-10-01", "checkin"),
+    ];
+    expect([...sourcesOnDay(drops, "2026-10-02")].sort()).toEqual(["diary", "habit"]);
   });
 });

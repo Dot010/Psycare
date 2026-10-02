@@ -11,16 +11,18 @@ export type SheetSnap = (typeof SHEET_SNAPS)[number];
 const PEEK_PX = 84;
 
 /** Altura visível (px) da gaveta em cada posição, dada a altura do espaço disponível. */
-export function snapHeight(snap: SheetSnap, available: number): number {
+export function snapHeight(snap: SheetSnap, available: number, topInset = 12): number {
+  const full = Math.max(PEEK_PX, available - topInset);
   if (snap === "peek") return PEEK_PX;
-  if (snap === "half") return Math.round(available * 0.5);
-  return Math.max(PEEK_PX, available - 12);
+  if (snap === "half") return Math.min(Math.round(available * 0.5), full);
+  return full;
 }
 
 /** Posição mais próxima de uma altura visível qualquer (usada ao soltar o arrasto). */
-export function nearestSnap(visible: number, available: number): SheetSnap {
+export function nearestSnap(visible: number, available: number, topInset = 12): SheetSnap {
   return SHEET_SNAPS.reduce((best, snap) =>
-    Math.abs(snapHeight(snap, available) - visible) < Math.abs(snapHeight(best, available) - visible)
+    Math.abs(snapHeight(snap, available, topInset) - visible) <
+    Math.abs(snapHeight(best, available, topInset) - visible)
       ? snap
       : best,
   );
@@ -31,6 +33,8 @@ interface ActionSheetProps {
   onSnapChange: (snap: SheetSnap) => void;
   /** Texto visível quando a gaveta está recolhida. */
   title: string;
+  /** Espaço livre no topo quando a gaveta está aberta (para o cabeçalho da página continuar visível). */
+  topInset?: number;
   children: ReactNode;
   className?: string;
 }
@@ -39,7 +43,14 @@ interface ActionSheetProps {
  * Gaveta que sobe da parte de baixo do espaço pai (que precisa ser `relative`).
  * Três posições: recolhida, metade e aberta. Arraste a alça, use as setas ↑ ↓ ou toque nela.
  */
-export function ActionSheet({ snap, onSnapChange, title, children, className }: ActionSheetProps) {
+export function ActionSheet({
+  snap,
+  onSnapChange,
+  title,
+  topInset = 12,
+  children,
+  className,
+}: ActionSheetProps) {
   const reduced = usePrefersReducedMotion();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [available, setAvailable] = useState(640);
@@ -55,8 +66,8 @@ export function ActionSheet({ snap, onSnapChange, title, children, className }: 
     return () => observer.disconnect();
   }, []);
 
-  const sheetHeight = snapHeight("full", available);
-  const baseVisible = snapHeight(snap, available);
+  const sheetHeight = snapHeight("full", available, topInset);
+  const baseVisible = snapHeight(snap, available, topInset);
   const visible =
     dragDelta === null ? baseVisible : Math.min(sheetHeight, Math.max(PEEK_PX, baseVisible - dragDelta));
 
@@ -76,7 +87,7 @@ export function ActionSheet({ snap, onSnapChange, title, children, className }: 
   const onPointerUp = () => {
     if (dragDelta === null) return;
     if (drag.current.moved) {
-      onSnapChange(nearestSnap(visible, available));
+      onSnapChange(nearestSnap(visible, available, topInset));
     } else {
       // Toque simples: avança para a próxima posição.
       onSnapChange(SHEET_SNAPS[(SHEET_SNAPS.indexOf(snap) + 1) % SHEET_SNAPS.length]);

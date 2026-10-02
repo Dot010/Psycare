@@ -3,6 +3,7 @@
 import { MotionConfig } from "framer-motion";
 import NextTopLoader from "nextjs-toploader";
 import { type ReactNode, useEffect } from "react";
+import { WaterToast } from "@/features/garden/components/WaterToast";
 import { UndoProvider } from "@/components/feedback/UndoProvider";
 import { initClientObservability } from "@/lib/observability/client";
 
@@ -29,6 +30,7 @@ export function AppProviders({ children }: AppProvidersProps) {
         shadow="0 0 10px #5e7638,0 0 6px #5e7638"
       />
       <UndoProvider>{children}</UndoProvider>
+      <WaterToast />
     </MotionConfig>
   );
 }

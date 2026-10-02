@@ -16,6 +16,24 @@ export const PLANT_NAMES: Record<PlantKind, string> = {
   lavender: "Lavanda",
 };
 
+/** As quatro ações de cuidado que enchem o regador, na ordem em que aparecem na tela. */
+export const CARE_ACTIONS: { source: WaterSource; label: string; href?: string }[] = [
+  { source: "checkin", label: "Check-in" },
+  { source: "habit", label: "Hábito", href: "/dashboard/habits" },
+  { source: "diary", label: "Diário", href: "/dashboard/diary" },
+  { source: "breathing", label: "Respirar", href: "/dashboard/breathing" },
+];
+
+/** Quantas gotas estão no regador: ganhas e ainda não despejadas. */
+export function availableDrops(earned: number, poured: number): number {
+  return Math.max(0, earned - poured);
+}
+
+/** Quais ações de cuidado já renderam gota em `date`. */
+export function sourcesOnDay(drops: WaterDrop[], date: string): Set<WaterSource> {
+  return new Set(drops.filter((drop) => drop.date === date).map((drop) => drop.source));
+}
+
 export const MAX_DROPS_KEPT = 400;
 
 /** Uma gota por ação por dia: o mesmo hábito, ou o diário, o check-in e a respiração, uma vez ao dia. */

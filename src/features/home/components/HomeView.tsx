@@ -1,6 +1,15 @@
 "use client";
 
-import { ArrowRight, BookOpen, Droplets, Volume2, VolumeX, Wind } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  CircleHelp,
+  Droplets,
+  SquareCheckBig,
+  Volume2,
+  VolumeX,
+  Wind,
+} from "lucide-react";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { ActionSheet, type SheetSnap } from "@/components/layout/ActionSheet";
@@ -10,8 +19,12 @@ import { NextSessionCard } from "@/features/appointments/components/NextSessionC
 import { useAppointments } from "@/features/appointments/hooks/useAppointments";
 import { splitAppointments } from "@/features/appointments/logic";
 import { useDiary } from "@/features/diary/hooks/useDiary";
+import { Button } from "@/components/ui/button";
 import { CheckIn } from "@/features/garden/components/CheckIn";
 import { GardenScene } from "@/features/garden/components/GardenScene";
+import { IntroHint } from "@/features/garden/components/IntroHint";
+import { WaterCard } from "@/features/garden/components/WaterCard";
+import { WaterHelp } from "@/features/garden/components/WaterHelp";
 import { WeekStrip } from "@/features/garden/components/WeekStrip";
 import { PLANT_NAMES } from "@/features/garden/logic";
 import type { PlantKind } from "@/features/garden/types";
@@ -19,6 +32,7 @@ import { useGardenSound } from "@/features/garden/hooks/useGardenSound";
 import { useGarden } from "@/features/garden/hooks/useGarden";
 import { useHabits } from "@/features/habits/hooks/useHabits";
 import { toISODate } from "@/lib/dates";
+import { useMediaQuery } from "@/lib/motion";
 import { useLocalStorage } from "@/lib/useLocalStorage";
 import { mockUser } from "@/mocks/user";
 
@@ -27,7 +41,7 @@ const SHEET_KEY = "psycare:home-sheet:v1";
 const quickLinks = [
   { href: "/dashboard/diary", label: "Escrever no diário", icon: BookOpen },
   { href: "/dashboard/breathing", label: "Respirar um minuto", icon: Wind },
-  { href: "/dashboard/habits", label: "Marcar hábitos", icon: Droplets },
+  { href: "/dashboard/habits", label: "Marcar hábitos", icon: SquareCheckBig },
 ];
 
 export default function HomeView() {
@@ -35,6 +49,7 @@ export default function HomeView() {
   const { appointments } = useAppointments();
   const { entries } = useDiary();
   const garden = useGarden();
+  const compact = useMediaQuery("(max-width: 767px)");
   const sound = useGardenSound();
   const [selected, setSelected] = useState<string | null>(null);
   const selectedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -66,41 +81,62 @@ export default function HomeView() {
         <GardenScene plants={garden.plants} lift={lift} onSelect={selectPlant} />
       </div>
 
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-[1] flex items-start justify-between gap-3 bg-gradient-to-b from-canvas/70 to-transparent p-4 pb-10 md:p-8 md:pb-12">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold text-ink">Olá, {mockUser.name}</h1>
-          <p className="flex w-fit items-center gap-2 rounded-full bg-card/80 px-3 py-1.5 text-xs font-medium text-foreground backdrop-blur">
-            <Droplets className="size-3.5 text-brand-accent" aria-hidden />
-            <span>
-              <CountUp value={garden.total} /> {garden.total === 1 ? "gota" : "gotas"} no jardim
-              {garden.toNext !== null && ` · faltam ${garden.toNext} para uma nova planta`}
-            </span>
-          </p>
-          {selected && (
-            <p
-              role="status"
-              className="w-fit rounded-full bg-strong px-3 py-1.5 text-xs font-semibold text-white"
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-[11] flex items-start justify-between gap-3 bg-gradient-to-b from-canvas/80 via-canvas/40 to-transparent p-4 pb-8 md:p-8 md:pb-10">
+        <div className="flex min-w-0 flex-col gap-2">
+          <h1 className="truncate text-xl font-bold text-ink md:text-2xl">Olá, {mockUser.name}</h1>
+          <WaterHelp poured={garden.poured} toNext={garden.toNext}>
+            <button
+              type="button"
+              className="pointer-events-auto flex w-fit items-center gap-2 rounded-full bg-card/85 px-3 py-1.5 text-xs font-medium text-foreground backdrop-blur transition-colors hover:bg-card focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
             >
-              {selected}
-            </p>
-          )}
+              <Droplets className="size-3.5 text-brand-accent" aria-hidden />
+              <span>
+                <CountUp value={garden.poured} /> {garden.poured === 1 ? "gota" : "gotas"} no jardim
+              </span>
+              <CircleHelp className="size-3.5 text-muted-foreground" aria-label="Como o jardim cresce" />
+            </button>
+          </WaterHelp>
         </div>
 
-        <button
-          type="button"
-          role="switch"
-          aria-checked={sound.enabled}
-          aria-label="Som do jardim"
-          onClick={sound.toggle}
-          className="pointer-events-auto flex size-10 shrink-0 items-center justify-center rounded-full bg-card/80 text-foreground backdrop-blur transition-colors hover:bg-card focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
-        >
-          {sound.enabled ? (
-            <Volume2 className="size-5" aria-hidden />
-          ) : (
-            <VolumeX className="size-5" aria-hidden />
-          )}
-        </button>
+        <div className="pointer-events-auto flex shrink-0 items-center gap-2">
+          <Button
+            onClick={garden.pour}
+            disabled={garden.available === 0 || garden.pouring}
+            className="shadow-md"
+          >
+            <Droplets aria-hidden />
+            {garden.pouring ? "Regando..." : "Regar"}
+            {garden.available > 0 && !garden.pouring && (
+              <span className="ml-1 rounded-full bg-white/25 px-1.5 text-xs font-bold">
+                {garden.available}
+              </span>
+            )}
+          </Button>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={sound.enabled}
+            aria-label="Som do jardim"
+            onClick={sound.toggle}
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-card/85 text-foreground backdrop-blur transition-colors hover:bg-card focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
+          >
+            {sound.enabled ? (
+              <Volume2 className="size-5" aria-hidden />
+            ) : (
+              <VolumeX className="size-5" aria-hidden />
+            )}
+          </button>
+        </div>
       </header>
+
+      <div className="pointer-events-none absolute inset-x-0 top-28 z-[1] flex flex-col items-center gap-2 px-4 md:top-32">
+        {selected && (
+          <p role="status" className="rounded-full bg-strong px-3 py-1.5 text-xs font-semibold text-white">
+            {selected}
+          </p>
+        )}
+        <IntroHint />
+      </div>
 
       {/* No celular a barra de navegação cobre os 5rem de baixo; a gaveta fica acima dela. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 bottom-20 md:bottom-0">
@@ -109,8 +145,17 @@ export default function HomeView() {
           snap={snap}
           onSnapChange={setSnap}
           title="Seu painel de hoje"
+          topInset={compact ? 112 : 124}
         >
           <Stagger className="space-y-8 pt-2">
+            <WaterCard
+              available={garden.available}
+              pouring={garden.pouring}
+              doneToday={garden.doneToday}
+              toNext={garden.toNext}
+              onPour={garden.pour}
+            />
+
             <CheckIn mood={garden.todayCheckIn?.mood} onSelect={garden.checkIn} />
 
             <ul className="grid grid-cols-1 gap-2 sm:grid-cols-3">
