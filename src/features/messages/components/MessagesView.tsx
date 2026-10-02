@@ -13,6 +13,8 @@ export function MessagesView() {
   const [error, setError] = useState("");
 
   const handleSendMessage = (chatId: string) => {
+    if (!newMessage.trim()) return;
+
     const result = sendMessage({
       chatId,
       content: newMessage,
@@ -32,18 +34,20 @@ export function MessagesView() {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6 bg-[#f7f6f2] min-h-full">
+    // Fundo transparente para permitir a visibilidade do BackgroundCharacter
+    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6 bg-transparent min-h-full">
       <div>
         <AnimatedText as="h1" text="Minhas Mensagens" className="text-2xl font-semibold text-[#2f3a32]" />
         <p className="text-slate-600 text-sm mt-1">Converse em tempo real com a sua equipa médica.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-        <TiltCard className="md:col-span-4 bg-[#fdfcf9] p-4 rounded-xl border border-black/5 shadow-sm space-y-3">
+        {/* Painel Lateral de Conversas */}
+        <TiltCard className="md:col-span-4 bg-[#fdfcf9]/85 backdrop-blur-sm p-4 rounded-xl border border-black/5 shadow-sm space-y-3">
           <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2">Conversas</h2>
 
           {chats.length === 0 ? (
-            <div className="rounded-lg border border-neutral-200/60 p-4 bg-white">
+            <div className="rounded-lg border border-neutral-200/60 p-4 bg-white/80">
               <p className="text-sm font-medium text-[#2f3a32]">Nenhuma conversa ativa</p>
               <p className="text-xs text-slate-600 mt-1">Assim que você iniciar um atendimento, ele aparecerá aqui.</p>
             </div>
@@ -57,17 +61,18 @@ export function MessagesView() {
                     onClick={() => setActiveChatId(chat.id)}
                     className={`w-full text-left p-3 rounded-lg flex items-center gap-3 transition ${
                       isSelected
-                        ? "bg-emerald-50 border border-emerald-200 shadow-sm"
-                        : "hover:bg-slate-50 border border-transparent"
+                        ? "bg-emerald-50/90 border border-emerald-200 shadow-sm"
+                        : "hover:bg-slate-50/80 border border-transparent"
                     }`}
                   >
-                    <div className="relative">
+                    <div className="relative shrink-0">
                       <Image
-                        src={chat.avatarUrl}
+                        src={chat.avatarUrl || "/avatar-placeholder.png"}
                         alt={chat.doctorName}
                         width={44}
                         height={44}
                         className="w-11 h-11 rounded-full object-cover border border-slate-200"
+                        unoptimized={!chat.avatarUrl?.startsWith("/")} // Evita erros de otimização em links externos
                       />
                       <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-700 border-2 border-white rounded-full" />
                     </div>
@@ -83,17 +88,20 @@ export function MessagesView() {
           )}
         </TiltCard>
 
+        {/* Área de Chat Ativo */}
         {activeChat ? (
-          <TiltCard className="md:col-span-8 bg-[#fdfcf9] p-6 rounded-xl border border-black/5 shadow-sm flex flex-col h-150">
+          <TiltCard className="md:col-span-8 bg-[#fdfcf9]/85 backdrop-blur-sm p-6 rounded-xl border border-black/5 shadow-sm flex flex-col h-[600px]">
+            {/* Cabeçalho do Chat */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div className="flex items-center gap-3">
-                <div className="relative">
+                <div className="relative shrink-0">
                   <Image
-                    src={activeChat.avatarUrl}
+                    src={activeChat.avatarUrl || "/avatar-placeholder.png"}
                     alt={activeChat.doctorName}
                     width={40}
                     height={40}
                     className="w-10 h-10 rounded-full object-cover border"
+                    unoptimized={!activeChat.avatarUrl?.startsWith("/")}
                   />
                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-700 border-2 border-white rounded-full" />
                 </div>
@@ -104,6 +112,7 @@ export function MessagesView() {
               </div>
             </div>
 
+            {/* Lista de Mensagens */}
             <div className="flex-1 overflow-y-auto space-y-3 p-2 my-2">
               {activeChat.messages.length === 0 ? (
                 <div className="h-full flex items-center justify-center text-center px-8">
@@ -129,6 +138,7 @@ export function MessagesView() {
               )}
             </div>
 
+            {/* Ações Rápidas */}
             <div className="flex gap-2 overflow-x-auto pt-2 pb-1 text-xs no-scrollbar">
               <MagneticButton
                 type="button"
@@ -153,6 +163,7 @@ export function MessagesView() {
               </MagneticButton>
             </div>
 
+            {/* Formulário de Envio */}
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -165,7 +176,7 @@ export function MessagesView() {
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Escreva a sua mensagem..."
-                className="flex-1 border border-neutral-200/70 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-800/20"
+                className="flex-1 border border-neutral-200/70 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-800/20 bg-white/90"
               />
 
               <MagneticButton type="submit" className="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition shadow-sm">
@@ -176,7 +187,7 @@ export function MessagesView() {
             {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
           </TiltCard>
         ) : (
-          <TiltCard className="md:col-span-8 bg-[#fdfcf9] p-8 rounded-xl border border-black/5 text-center text-slate-500 shadow-sm">
+          <TiltCard className="md:col-span-8 bg-[#fdfcf9]/85 backdrop-blur-sm p-8 rounded-xl border border-black/5 text-center text-slate-500 shadow-sm">
             <p className="font-medium text-[#2f3a32]">Nenhuma conversa selecionada.</p>
             <p className="text-sm mt-1">Selecione uma conversa no painel lateral para continuar.</p>
           </TiltCard>

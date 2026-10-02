@@ -221,26 +221,3 @@ export const mockUser = {
     },
   ] as Chat[],
 };
-
-
-
-export const getMockUser = (userName?: string) => {
-  const activeName = userName && userName.trim() !== "" ? userName : mockUser.name;
-
-  return {
-    ...mockUser,
-    name: activeName,
-    chats: mockUser.chats.map((chat) => ({
-      ...chat,
-      lastMessage: chat.lastMessage.replace(/Jonathan/g, activeName),
-      messages: chat.messages.map((msg) => ({
-        ...msg,
-        content: msg.content.replace(/Jonathan/g, activeName),
-      })),
-    })),
-    mensagens: mockUser.mensagens.map((msg) => ({
-      ...msg,
-      content: msg.content.replace(/Jonathan/g, activeName),
-    })),
-  };
-};

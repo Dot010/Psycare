@@ -3,11 +3,10 @@
 import { useState, type FormEvent } from "react";
 import { mockUser } from "@/data/mockData";
 import { useAppointments } from "@/features/appointments/hooks/useAppointments";
+import type { AppointmentType } from "@/features/appointments/types";
 import { AnimatedText } from "@/components/ui/AnimatedText";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { TiltCard } from "@/components/ui/TiltCard";
-
-type AppointmentType = "online" | "presencial";
 
 export function AppointmentsView() {
   const { appointments, addAppointment } = useAppointments();

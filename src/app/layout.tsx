@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Newsreader } from "next/font/google";
 import { UserProvider } from "@/context/UserContext";
-import { AppProviders } from "@/components/AppProviders";
-import "./globals.css";
+import { AppProviders } from "@/components/providers/AppProviders";
+import "@/app/globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const newsreader = Newsreader({ subsets: ["latin"], variable: "--font-newsreader" });

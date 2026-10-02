@@ -61,12 +61,14 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "example.com",
+        protocol: 'https',
+        hostname: 'example.com',
+        port: '',
+        pathname: '/**', // Matches all paths on this domain
       },
- 
     ],
   },
+
   async headers() {
     return [
       {

@@ -35,39 +35,45 @@ const Nav = () => {
   ];
 
   return (
-    <aside className='hidden md:flex h-screen sticky top-0'>
+    <aside className="hidden md:flex h-screen sticky top-0 z-40">
       {/* Sidebar Container */}
-      <div className={`bg-emerald-600 h-screen p-5 pt-8 ${open ? "w-72" : "w-20"} duration-300 relative shadow-xl transition-all`}>
+      <div className={`bg-primary text-primary-foreground h-screen p-5 pt-8 ${open ? "w-72" : "w-20"} duration-300 relative shadow-xl transition-all`}>
         
-        {/* Botão Toggle */}
-        <BsArrowLeftShort
-          className={`bg-white text-emerald-600 text-3xl rounded-full absolute -right-3 top-9 border-2 border-emerald-600 cursor-pointer transition-all duration-500 ${!open && "rotate-180"}`}
+        {/* Botão Toggle Acessível */}
+        <button
+          type="button"
+          aria-label={open ? "Recolher menu" : "Expandir menu"}
           onClick={() => setOpen(!open)}
-        />
+          className={`bg-card text-primary text-3xl rounded-full absolute -right-3 top-9 border-2 border-primary cursor-pointer transition-all duration-500 hover:scale-105 flex items-center justify-center p-0.5 ${!open && "rotate-180"}`}
+        >
+          <BsArrowLeftShort />
+        </button>
 
         {/* Logo */}
         <div className={`flex items-center transition-all duration-300 ${!open ? "justify-center" : "ml-1"}`}>
-          <div className={`bg-white p-2 rounded-lg duration-500 shadow-md ${!open && "rotate-360"}`}>
-            <MdPsychology className='text-emerald-600 text-3xl block' />
+          <div className={`bg-card p-2 rounded-xl duration-500 shadow-md ${!open && "rotate-360"}`}>
+            <MdPsychology className="text-primary text-3xl block" />
           </div>
           
-          <h1 className={`text-white origin-left font-bold text-2xl ml-4 duration-300 ${!open ? "scale-0 w-0 overflow-hidden" : "scale-100"}`}>
+          <h1 className={`text-primary-foreground origin-left font-bold text-2xl ml-4 duration-300 ${!open ? "scale-0 w-0 overflow-hidden" : "scale-100"}`}>
             Psy Care
           </h1>
         </div>
 
         {/* Lista de Menus */}
-        <ul className='pt-10 space-y-2'>
+        <ul className="pt-10 space-y-2">
           {Menus.map((menu, index) => (
             <div key={index} className={menu.gap ? "mt-8" : "mt-2"}>
               <li
-                className={`flex items-center gap-x-4 cursor-pointer p-3 hover:bg-white/20 rounded-xl transition-all duration-200
-                  ${menu.logout ? "text-red-200 hover:bg-red-500/20" : "text-white"}`}
+                className={`flex items-center gap-x-4 cursor-pointer p-3 rounded-xl transition-all duration-200
+                  ${menu.logout 
+                    ? "text-red-200 hover:bg-destructive/20 hover:text-white" 
+                    : "text-primary-foreground/90 hover:bg-white/15 hover:text-primary-foreground"}`}
               >
                 {menu.logout ? (
                   <form action={logoutAction} className="w-full">
                     <button type="submit" className="flex items-center gap-x-4 w-full text-left">
-                      <span className={`text-2xl block float-left duration-300 ${!open && "mx-auto"}`}>
+                      <span className={`text-2xl block duration-300 ${!open && "mx-auto"}`}>
                         {menu.icon}
                       </span>
                       <span className={`text-base font-medium flex-1 duration-200 ${!open && "hidden"}`}>
@@ -77,7 +83,7 @@ const Nav = () => {
                   </form>
                 ) : (
                   <Link href={menu.path || "#"} className="flex items-center gap-x-4 w-full">
-                    <span className={`text-2xl block float-left duration-300 ${!open && "mx-auto"}`}>
+                    <span className={`text-2xl block duration-300 ${!open && "mx-auto"}`}>
                       {menu.icon}
                     </span>
                     <span className={`text-base font-medium flex-1 duration-200 ${!open && "hidden"}`}>
