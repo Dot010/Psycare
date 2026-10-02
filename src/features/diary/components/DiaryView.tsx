@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+
 import { Page } from "@/components/layout/Page";
 import { NewEntryModal } from "@/features/diary/components/NewEntryModal";
 import type { DiaryEntry } from "@/features/diary/types";
 import { mockUser } from "@/mocks/user";
+import { useLocalStorage } from "@/lib/useLocalStorage";
 
 export default function DiaryView() {
-  const [entries, setEntries] = useState<DiaryEntry[]>(mockUser.diaryEntries);
+  const [entries, setEntries] = useLocalStorage<DiaryEntry[]>("psycare:diary",mockUser.diaryEntries);
 
   const addEntry = (entry: DiaryEntry) => setEntries((current) => [entry, ...current]);
 

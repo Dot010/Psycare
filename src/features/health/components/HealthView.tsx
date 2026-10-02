@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocalStorage } from "@/lib/useLocalStorage";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
@@ -168,12 +169,11 @@ function SintomaDialog({
 
 export default function HealthView() {
   const [activeTab, setActiveTab] = useState<TabId>("remedios");
-  const [remedios, setRemedios] = useState<Medicamento[]>(mockUser.remedios);
+  const [remedios, setRemedios] = useLocalStorage<Medicamento[]>("psycare:remedios", mockUser.remedios);
   const [exames] = useState<Exame[]>(mockUser.exames);
-  const [sintomas, setSintomas] = useState<Sintoma[]>(mockUser.sintomas);
+  const [sintomas, setSintomas] = useLocalStorage<Sintoma[]>("psycare:sintomas", mockUser.sintomas);
   const [remedioOpen, setRemedioOpen] = useState(false);
   const [sintomaOpen, setSintomaOpen] = useState(false);
-
   return (
     <Page
       title="Gestão de Saúde"

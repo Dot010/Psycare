@@ -1,18 +1,18 @@
 "use client";
 
 import { Check, Flame, Trash2 } from "lucide-react";
-import { useState } from "react";
 import { Page } from "@/components/layout/Page";
 import { NewHabitModal } from "@/features/habits/components/NewHabitModal";
 import { getHabitStats } from "@/features/habits/stats";
 import type { Habit } from "@/features/habits/types";
 import { mockUser } from "@/mocks/user";
 import { cn } from "@/lib/utils";
+import { useLocalStorage } from "@/lib/useLocalStorage";
 
 const statLabel = "text-xs font-bold uppercase text-slate-500";
 
 export default function HabitsView() {
-  const [habits, setHabits] = useState<Habit[]>(mockUser.habits);
+  const [habits, setHabits] = useLocalStorage<Habit[]>("psycare:habits", mockUser.habits);
 
   const addHabit = (habit: Habit) => setHabits((current) => [...current, habit]);
   const removeHabit = (id: string) => setHabits((current) => current.filter((habit) => habit.id !== id));
