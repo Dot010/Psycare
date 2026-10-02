@@ -5,15 +5,34 @@ import Link from "next/link";
 import { Page } from "@/components/layout/Page";
 import { TiltCard } from "@/components/motion/TiltCard";
 import { NextSessionCard } from "@/features/appointments/components/NextSessionCard";
+import { useAppointments } from "@/features/appointments/hooks/useAppointments";
+import { splitAppointments } from "@/features/appointments/logic";
+import { useDiary } from "@/features/diary/hooks/useDiary";
+import { useHabits } from "@/features/habits/hooks/useHabits";
+import { toISODate } from "@/lib/dates";
 import { mockUser } from "@/mocks/user";
 
-const STATS = [
-  { label: "Hábitos ativos", value: mockUser.habits.length, hint: "Rotinas acompanhadas diariamente." },
-  { label: "Consultas realizadas", value: mockUser.agendamentos.length, hint: "Histórico consolidado no seu painel." },
-  { label: "Entradas no diário", value: mockUser.diaryEntries.length, hint: "Registros para acompanhar emoção e progresso." },
-];
-
 export default function HomeView() {
+  const { habits } = useHabits();
+  const { appointments } = useAppointments();
+  const { entries } = useDiary();
+
+  const now = new Date();
+  const { past } = splitAppointments(appointments, `${toISODate(now)}T${now.toTimeString().slice(0, 5)}`);
+  const stats = [
+    { label: "Hábitos ativos", value: habits.length, hint: "Rotinas acompanhadas diariamente." },
+    {
+      label: "Consultas realizadas",
+      value: past.filter((item) => item.status !== "cancelado").length,
+      hint: "Histórico consolidado no seu painel.",
+    },
+    {
+      label: "Entradas no diário",
+      value: entries.length,
+      hint: "Registros para acompanhar emoção e progresso.",
+    },
+  ];
+
   return (
     <Page
       title={`Bem-vindo(a), ${mockUser.name}`}
@@ -21,9 +40,11 @@ export default function HomeView() {
       width="wide"
     >
       <dl className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {STATS.map((stat) => (
+        {stats.map((stat) => (
           <TiltCard key={stat.label} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{stat.label}</dt>
+            <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {stat.label}
+            </dt>
             <dd className="mt-2 text-3xl font-bold text-primary">{stat.value}</dd>
             <dd className="mt-1 text-sm text-muted-foreground">{stat.hint}</dd>
           </TiltCard>

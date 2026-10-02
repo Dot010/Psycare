@@ -15,7 +15,11 @@ interface AnimatedTextProps {
   as?: "h1" | "h2" | "h3" | "p" | "span";
 }
 
-
+/**
+ * Título que "sobe" letra a letra. Usa o SplitText do GSAP, que mantém o texto acessível
+ * (aria-label no elemento) e refaz a divisão quando a fonte termina de carregar ou a largura muda.
+ * Com "reduzir movimento" ativo, o texto aparece direto, sem animação.
+ */
 export function AnimatedText({ text, className, as = "h2" }: AnimatedTextProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const reduced = usePrefersReducedMotion();

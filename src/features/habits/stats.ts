@@ -1,3 +1,4 @@
+import { currentStreak, isDoneToday } from "@/features/habits/logic";
 import type { Habit } from "@/features/habits/types";
 
 export interface HabitStats {
@@ -8,14 +9,14 @@ export interface HabitStats {
   longestStreak: number;
 }
 
-export function getHabitStats(habits: Habit[]): HabitStats {
+export function getHabitStats(habits: Habit[], today: string): HabitStats {
   const total = habits.length;
-  const completed = habits.filter((habit) => habit.completedToday).length;
+  const completed = habits.filter((habit) => isDoneToday(habit, today)).length;
 
   return {
     total,
     completed,
     successRate: total === 0 ? 0 : Math.round((completed / total) * 100),
-    longestStreak: habits.reduce((max, habit) => Math.max(max, habit.streak), 0),
+    longestStreak: habits.reduce((max, habit) => Math.max(max, currentStreak(habit, today)), 0),
   };
 }

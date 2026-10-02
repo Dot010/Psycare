@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
+import { CrisisButton } from "@/components/feedback/CrisisButton";
 import { PageSkeleton } from "@/components/feedback/PageSkeleton";
 
 const Nav = dynamic(() => import("@/components/layout/Nav"), {
@@ -12,7 +13,7 @@ const Nav = dynamic(() => import("@/components/layout/Nav"), {
 const NavMobile = dynamic(() => import("@/components/layout/NavMobile"), {
   ssr: false,
   loading: () => (
-    <div className="fixed inset-x-0 bottom-0 z-50 h-20 border-t border-slate-200 bg-white/80 md:hidden" />
+    <div className="fixed inset-x-0 bottom-0 z-50 h-20 border-t border-border bg-card/80 md:hidden" />
   ),
 });
 
@@ -21,8 +22,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex h-screen flex-col overflow-hidden md:flex-row">
       <Nav />
       <NavMobile />
+      <CrisisButton />
 
-      <main className="flex-1 overflow-y-auto bg-slate-50 pb-28 md:pb-8">
+      <main className="flex-1 overflow-y-auto bg-sunken pb-28 md:pb-8">
         <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
       </main>
     </div>

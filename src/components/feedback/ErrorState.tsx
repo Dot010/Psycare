@@ -27,9 +27,12 @@ export function ErrorState({ error, reset, title, description, actionLabel, full
         fullScreen ? "min-h-screen bg-canvas" : "mx-auto max-w-3xl md:p-8",
       )}
     >
-      <div role="alert" className="w-full max-w-lg space-y-3 rounded-xl border border-black/5 bg-surface p-6 shadow-sm">
+      <div
+        role="alert"
+        className="w-full max-w-lg space-y-3 rounded-xl border border-border bg-surface p-6 shadow-sm"
+      >
         <h2 className="text-xl font-semibold text-ink">{title}</h2>
-        <p className="text-sm text-slate-600">{description}</p>
+        <p className="text-sm text-muted-foreground">{description}</p>
         <button
           type="button"
           onClick={reset}

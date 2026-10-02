@@ -34,28 +34,28 @@ export function PixDialog({ invoice, onClose }: PixDialogProps) {
   return (
     <Dialog open={invoice !== null} onOpenChange={(open) => !open && onClose()}>
       <DialogContent aria-describedby={undefined} className="gap-5 rounded-2xl p-6 text-center sm:max-w-sm">
-        <DialogTitle className="border-b border-slate-100 pb-3 text-base font-bold text-slate-800">
+        <DialogTitle className="border-b border-border pb-3 text-base font-bold text-foreground">
           Pagamento via PIX
         </DialogTitle>
 
         {invoice && (
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             Escaneie o QR Code com o aplicativo do seu banco para pagar{" "}
-            <strong className="text-slate-800">{formatCurrencyBRL(invoice.amount)}</strong>
+            <strong className="text-foreground">{formatCurrencyBRL(invoice.amount)}</strong>
           </p>
         )}
 
-        <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-slate-50 p-6">
-          <div className="flex size-40 items-center justify-center rounded-xl bg-slate-900 text-white/70">
+        <div className="flex flex-col items-center rounded-2xl border border-border bg-sunken p-6">
+          <div className="flex size-40 items-center justify-center rounded-xl bg-ink text-white/70">
             <QrCode className="size-20" aria-hidden />
             <span className="sr-only">QR Code de demonstração</span>
           </div>
-          <span className="mt-2 font-mono text-[10px] text-slate-400">Vencimento em 15 minutos</span>
+          <span className="mt-2 font-mono text-xs text-muted-foreground">Vencimento em 15 minutos</span>
         </div>
 
         <div className="space-y-2 text-left">
-          <p className="text-[11px] font-medium text-slate-500">Ou use o código Copia e Cola:</p>
-          <div className="truncate rounded-xl border border-slate-200 bg-slate-100 p-2.5 font-mono text-[11px] text-slate-600">
+          <p className="text-xs font-medium text-muted-foreground">Ou use o código Copia e Cola:</p>
+          <div className="truncate rounded-xl border border-border bg-sunken p-2.5 font-mono text-xs text-muted-foreground">
             {DEMO_PIX_CODE}
           </div>
           <Button onClick={copyCode} className="w-full">
@@ -63,7 +63,7 @@ export function PixDialog({ invoice, onClose }: PixDialogProps) {
             {copied ? "Código copiado" : "Copiar código PIX"}
           </Button>
           {copyFailed && (
-            <p role="alert" className="text-xs text-red-600">
+            <p role="alert" className="text-xs text-danger-600">
               Não foi possível copiar. Selecione o código acima e copie manualmente.
             </p>
           )}

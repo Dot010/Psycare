@@ -9,7 +9,11 @@ interface MagneticButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   strength?: number;
 }
 
-
+/**
+ * Botão que "puxa" levemente em direção ao cursor. Reserve para a ação principal da tela:
+ * em formulários e listas, um botão que se move atrapalha a precisão do clique.
+ * Desligado em touch e com "reduzir movimento".
+ */
 export function MagneticButton({
   children,
   className,

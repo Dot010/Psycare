@@ -13,12 +13,12 @@ interface FieldShellProps {
 function FieldShell({ label, htmlFor, error, children, className }: FieldShellProps) {
   return (
     <div className={cn("w-full space-y-1", className)}>
-      <label htmlFor={htmlFor} className="block text-xs font-medium text-slate-600">
+      <label htmlFor={htmlFor} className="block text-xs font-medium text-muted-foreground">
         {label}
       </label>
       {children}
       {error && (
-        <p id={`${htmlFor}-error`} role="alert" className="text-xs text-red-600">
+        <p id={`${htmlFor}-error`} role="alert" className="text-xs text-danger-600">
           {error}
         </p>
       )}
@@ -26,10 +26,10 @@ function FieldShell({ label, htmlFor, error, children, className }: FieldShellPr
   );
 }
 
-type FieldProps = React.ComponentProps<"input"> & { label: string; error?: string };
+type FieldProps = React.ComponentProps<"input"> & { label: string; error?: string; valid?: boolean };
 
 /** Campo de texto com rótulo e mensagem de erro ligados por id (acessível por padrão). */
-export function Field({ label, error, id, className, ...props }: FieldProps) {
+export function Field({ label, error, valid, id, className, ...props }: FieldProps) {
   const autoId = React.useId();
   const inputId = id ?? autoId;
 
@@ -39,6 +39,7 @@ export function Field({ label, error, id, className, ...props }: FieldProps) {
         id={inputId}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${inputId}-error` : undefined}
+        data-valid={valid && !error ? true : undefined}
         className={className}
         {...props}
       />

@@ -134,9 +134,13 @@ export default function AddPaymentMethodModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent aria-describedby={undefined} className="gap-5 rounded-2xl p-6 sm:max-w-md">
-        <DialogTitle className="text-xl font-bold text-slate-800">Novo método de pagamento</DialogTitle>
+        <DialogTitle className="text-xl font-bold text-foreground">Novo método de pagamento</DialogTitle>
 
-        <div role="group" aria-label="Tipo de método" className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
+        <div
+          role="group"
+          aria-label="Tipo de método"
+          className="grid grid-cols-2 gap-2 rounded-xl bg-sunken p-1"
+        >
           {TYPE_OPTIONS.map(({ id, label, Icon }) => (
             <button
               key={id}
@@ -146,7 +150,9 @@ export default function AddPaymentMethodModal({
               onClick={() => setPaymentType(id)}
               className={cn(
                 "flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition-colors",
-                paymentType === id ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800",
+                paymentType === id
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               <Icon className="size-4" />
@@ -156,14 +162,19 @@ export default function AddPaymentMethodModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <p className="rounded-xl bg-amber-50 p-3 text-xs text-amber-900">
-            Demonstração: não informe dados reais. O número completo do cartão nunca é solicitado aqui; o pagamento
-            real será feito em um checkout seguro do gateway.
+          <p className="rounded-xl bg-sun-50 p-3 text-xs text-ink">
+            Demonstração: não informe dados reais. O número completo do cartão nunca é solicitado aqui; o
+            pagamento real será feito em um checkout seguro do gateway.
           </p>
 
           {paymentType === "credit_card" ? (
             <>
-              <SelectField label="Bandeira" value={brand} disabled={isSubmitting} onChange={(e) => setBrand(e.target.value)}>
+              <SelectField
+                label="Bandeira"
+                value={brand}
+                disabled={isSubmitting}
+                onChange={(e) => setBrand(e.target.value)}
+              >
                 <option value="Visa">Visa</option>
                 <option value="Mastercard">Mastercard</option>
                 <option value="Elo">Elo</option>
@@ -218,15 +229,15 @@ export default function AddPaymentMethodModal({
               <p className="flex items-start gap-2 rounded-xl border border-brand-100 bg-brand-50 p-3 text-xs text-brand-800">
                 <Info className="mt-0.5 size-4 shrink-0" />
                 <span>
-                  No dia da renovação, um código <strong>PIX Copia e Cola</strong> e o <strong>QR Code</strong> serão
-                  enviados para o seu e-mail.
+                  No dia da renovação, um código <strong>PIX Copia e Cola</strong> e o{" "}
+                  <strong>QR Code</strong> serão enviados para o seu e-mail.
                 </span>
               </p>
             </>
           )}
 
           {formError && (
-            <p role="alert" className="text-xs text-red-600">
+            <p role="alert" className="text-xs text-danger-600">
               {formError}
             </p>
           )}

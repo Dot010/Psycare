@@ -20,7 +20,7 @@ export default function NavMobile() {
     <div className="md:hidden">
       <nav
         aria-label="Principal"
-        className="fixed inset-x-0 bottom-0 z-50 flex h-20 items-center justify-around border-t border-slate-200 bg-white px-4 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]"
+        className="fixed inset-x-0 bottom-0 z-50 flex h-20 items-center justify-around border-t border-border bg-card px-4 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]"
       >
         {barItems.map(({ title, shortTitle, href, icon: Icon }) => (
           <Link
@@ -29,11 +29,11 @@ export default function NavMobile() {
             aria-current={pathname === href ? "page" : undefined}
             className={cn(
               "flex flex-col items-center gap-1 transition-colors",
-              pathname === href ? "text-brand-600" : "text-slate-400 active:text-brand-600",
+              pathname === href ? "text-brand-600" : "text-muted-foreground active:text-brand-600",
             )}
           >
             <Icon className="size-5" />
-            <span className="text-[10px] font-bold uppercase tracking-tight">{shortTitle ?? title}</span>
+            <span className="text-xs font-bold uppercase tracking-tight">{shortTitle ?? title}</span>
           </Link>
         ))}
 
@@ -43,11 +43,11 @@ export default function NavMobile() {
           onClick={() => setMenuOpen(!menuOpen)}
           className={cn(
             "flex flex-col items-center gap-1 transition-colors",
-            menuOpen ? "text-brand-600" : "text-slate-400",
+            menuOpen ? "text-brand-600" : "text-muted-foreground",
           )}
         >
           <LayoutGrid className="size-5" />
-          <span className="text-[10px] font-bold uppercase tracking-tight">Mais</span>
+          <span className="text-xs font-bold uppercase tracking-tight">Mais</span>
         </button>
       </nav>
 
@@ -59,7 +59,7 @@ export default function NavMobile() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMenuOpen(false)}
-              className="fixed inset-0 z-40 bg-slate-900/60"
+              className="fixed inset-0 z-40 bg-ink/60"
             />
 
             <motion.div
@@ -67,9 +67,9 @@ export default function NavMobile() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-white p-8 pb-28 shadow-2xl"
+              className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-card p-8 pb-28 shadow-2xl"
             >
-              <div className="mx-auto mb-8 h-1.5 w-12 rounded-full bg-slate-200" />
+              <div className="mx-auto mb-8 h-1.5 w-12 rounded-full bg-border" />
 
               <div className="grid grid-cols-4 gap-y-8">
                 {moreItems.map(({ title, shortTitle, href, icon: Icon }) => (
@@ -79,20 +79,20 @@ export default function NavMobile() {
                     onClick={() => setMenuOpen(false)}
                     className="flex flex-col items-center gap-2"
                   >
-                    <span className="flex size-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-600 transition-colors active:bg-brand-600 active:text-white">
+                    <span className="flex size-14 items-center justify-center rounded-2xl bg-sunken text-muted-foreground transition-colors active:bg-brand-600 active:text-white">
                       <Icon className="size-6" />
                     </span>
-                    <span className="text-[11px] font-bold text-slate-500">{shortTitle ?? title}</span>
+                    <span className="text-xs font-bold text-muted-foreground">{shortTitle ?? title}</span>
                   </Link>
                 ))}
 
                 {/* Encerra a sessão no servidor; um simples router.push("/login") deixava o cookie ativo. */}
                 <form action={logoutAction} className="contents">
                   <button type="submit" className="flex flex-col items-center gap-2">
-                    <span className="flex size-14 items-center justify-center rounded-2xl bg-red-50 text-red-500">
+                    <span className="flex size-14 items-center justify-center rounded-2xl bg-danger-50 text-danger-500">
                       <LogOut className="size-6" />
                     </span>
-                    <span className="text-[11px] font-bold text-red-400">Sair</span>
+                    <span className="text-xs font-bold text-danger-300">Sair</span>
                   </button>
                 </form>
               </div>

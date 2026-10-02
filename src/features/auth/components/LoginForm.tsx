@@ -76,7 +76,7 @@ export function LoginForm() {
 
       <ErrorMessage message={error} />
 
-      <p className="text-center text-sm text-slate-600 mt-4">
+      <p className="text-center text-sm text-muted-foreground mt-4">
         Não tem conta?{" "}
         <Link href="/register" className="text-brand-800 hover:text-brand-900 font-medium transition-colors">
           Criar conta

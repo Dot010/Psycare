@@ -7,7 +7,7 @@ import { useMediaQuery, usePrefersReducedMotion } from "@/lib/motion";
 function StaticBackdrop({ animate = false }: { animate?: boolean }) {
   return (
     <div
-      className={`absolute inset-0 bg-linear-to-br from-brand-100/35 via-teal-100/20 to-stone-200/40 ${
+      className={`absolute inset-0 bg-linear-to-br from-brand-100/35 via-sun-50/30 to-taupe/30 ${
         animate ? "animate-pulse" : ""
       }`}
     />

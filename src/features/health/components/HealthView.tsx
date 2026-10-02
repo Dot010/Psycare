@@ -1,28 +1,16 @@
 "use client";
 
-import { useLocalStorage } from "@/lib/useLocalStorage";
-import { Plus } from "lucide-react";
+import { Pill, Plus, Stethoscope } from "lucide-react";
 import { useState } from "react";
-import { z } from "zod";
+import { EmptyState } from "@/components/feedback/EmptyState";
+import { ItemMenu } from "@/components/feedback/ItemMenu";
 import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
-import { Field } from "@/components/ui/field";
-import type { Exame, Medicamento, Sintoma } from "@/features/health/types";
-import { mockUser } from "@/mocks/user";
+import { MedicamentoDialog } from "@/features/health/components/MedicamentoDialog";
+import { SintomaDialog } from "@/features/health/components/SintomaDialog";
+import { useHealth } from "@/features/health/hooks/useHealth";
+import type { Medicamento, Sintoma } from "@/features/health/types";
 import { cn } from "@/lib/utils";
-
-const medicamentoSchema = z.object({
-  nome: z.string().trim().min(2, "Informe o nome do remédio"),
-  dosagem: z.string().trim().min(1, "Informe a dosagem"),
-  frequencia: z.string().trim().optional(),
-  horario: z.string().trim().optional(),
-});
-
-const sintomaSchema = z.object({
-  descricao: z.string().trim().min(2, "Descreva o sintoma"),
-  nota: z.string().trim().optional(),
-});
 
 const TABS = [
   { id: "remedios", label: "Meus Remédios" },
@@ -32,155 +20,46 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
-const cardClass = "rounded-2xl border border-slate-200 bg-white p-5 shadow-sm";
-const metaClass = "text-xs font-semibold uppercase tracking-wider text-slate-400";
+const cardClass = "rounded-2xl border border-border bg-card p-5 shadow-sm";
+const metaClass = "text-xs font-semibold uppercase tracking-wider text-muted-foreground";
 
 function SectionHeader({ title, action }: { title: string; action: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <h2 className="text-lg font-bold text-slate-800">{title}</h2>
+      <h2 className="text-lg font-bold text-foreground">{title}</h2>
       {action}
     </div>
   );
 }
 
-function MedicamentoDialog({
-  open,
-  onOpenChange,
-  onSave,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSave: (item: Medicamento) => void;
-}) {
-  const [form, setForm] = useState({ nome: "", dosagem: "", frequencia: "", horario: "" });
-  const [error, setError] = useState("");
-  const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((current) => ({ ...current, [key]: e.target.value }));
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const parsed = medicamentoSchema.safeParse(form);
-    if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Dados inválidos");
-      return;
-    }
-    setError("");
-    onSave({
-      id: crypto.randomUUID(),
-      nome: parsed.data.nome,
-      dosagem: parsed.data.dosagem,
-      frequencia: parsed.data.frequencia || "Uso diário",
-      horario: parsed.data.horario || "Horário livre",
-    });
-    setForm({ nome: "", dosagem: "", frequencia: "", horario: "" });
-    onOpenChange(false);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-describedby={undefined} className="gap-4 rounded-2xl p-6 sm:max-w-md">
-        <DialogTitle className="text-xl font-bold text-slate-800">Novo medicamento</DialogTitle>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label="Nome do remédio" required value={form.nome} onChange={set("nome")} placeholder="Ex: Sertralina" />
-          <Field label="Dosagem" required value={form.dosagem} onChange={set("dosagem")} placeholder="Ex: 50 mg" />
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Frequência" value={form.frequencia} onChange={set("frequencia")} placeholder="Ex: Diária" />
-            <Field label="Horário" value={form.horario} onChange={set("horario")} placeholder="Ex: 21:00" />
-          </div>
-          {error && (
-            <p role="alert" className="text-xs text-red-600">
-              {error}
-            </p>
-          )}
-          <DialogFooter className="-mx-6 -mb-6 rounded-b-2xl px-6 py-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button type="submit">Salvar</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function SintomaDialog({
-  open,
-  onOpenChange,
-  onSave,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSave: (item: Sintoma) => void;
-}) {
-  const [form, setForm] = useState({ descricao: "", nota: "" });
-  const [error, setError] = useState("");
-  const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((current) => ({ ...current, [key]: e.target.value }));
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const parsed = sintomaSchema.safeParse(form);
-    if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Dados inválidos");
-      return;
-    }
-    setError("");
-    onSave({
-      id: crypto.randomUUID(),
-      descricao: parsed.data.descricao,
-      data: "Hoje",
-      nota: parsed.data.nota || "Sem observações",
-    });
-    setForm({ descricao: "", nota: "" });
-    onOpenChange(false);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-describedby={undefined} className="gap-4 rounded-2xl p-6 sm:max-w-md">
-        <DialogTitle className="text-xl font-bold text-slate-800">Registrar sintoma</DialogTitle>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Field
-            label="Sintoma"
-            required
-            value={form.descricao}
-            onChange={set("descricao")}
-            placeholder="Ex: Insônia, dor de cabeça"
-          />
-          <Field label="Intensidade ou nota" value={form.nota} onChange={set("nota")} placeholder="Ex: Moderada" />
-          {error && (
-            <p role="alert" className="text-xs text-red-600">
-              {error}
-            </p>
-          )}
-          <DialogFooter className="-mx-6 -mb-6 rounded-b-2xl px-6 py-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button type="submit">Salvar</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 export default function HealthView() {
+  const { remedios, sintomas, exames, saveRemedio, saveSintoma, deleteRemedio, deleteSintoma } = useHealth();
   const [activeTab, setActiveTab] = useState<TabId>("remedios");
-  const [remedios, setRemedios] = useLocalStorage<Medicamento[]>("psycare:remedios", mockUser.remedios);
-  const [exames] = useState<Exame[]>(mockUser.exames);
-  const [sintomas, setSintomas] = useLocalStorage<Sintoma[]>("psycare:sintomas", mockUser.sintomas);
   const [remedioOpen, setRemedioOpen] = useState(false);
+  const [editingRemedio, setEditingRemedio] = useState<Medicamento | undefined>();
   const [sintomaOpen, setSintomaOpen] = useState(false);
+  const [editingSintoma, setEditingSintoma] = useState<Sintoma | undefined>();
+
+  const openRemedio = (item?: Medicamento) => {
+    setEditingRemedio(item);
+    setRemedioOpen(true);
+  };
+  const openSintoma = (item?: Sintoma) => {
+    setEditingSintoma(item);
+    setSintomaOpen(true);
+  };
+
   return (
     <Page
       title="Gestão de Saúde"
       description="Acompanhe seus medicamentos, exames e registre sintomas do dia a dia."
       width="wide"
     >
-      <div role="tablist" aria-label="Seções de saúde" className="flex gap-2 overflow-x-auto border-b border-slate-200 pb-3">
+      <div
+        role="tablist"
+        aria-label="Seções de saúde"
+        className="flex gap-2 overflow-x-auto border-b border-border pb-3"
+      >
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -191,8 +70,10 @@ export default function HealthView() {
             aria-controls={`panel-${tab.id}`}
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              "whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition-colors",
-              activeTab === tab.id ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200",
+              "whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors",
+              activeTab === tab.id
+                ? "bg-brand-600 text-white"
+                : "bg-sunken text-muted-foreground hover:bg-border",
             )}
           >
             {tab.label}
@@ -200,33 +81,58 @@ export default function HealthView() {
         ))}
       </div>
 
-      <div role="tabpanel" id={`panel-${activeTab}`} aria-labelledby={`tab-${activeTab}`} className="space-y-4">
+      <div
+        role="tabpanel"
+        id={`panel-${activeTab}`}
+        aria-labelledby={`tab-${activeTab}`}
+        className="space-y-4"
+      >
         {activeTab === "remedios" && (
           <>
             <SectionHeader
               title="Medicamentos ativos"
               action={
-                <Button onClick={() => setRemedioOpen(true)}>
+                <Button onClick={() => openRemedio()}>
                   <Plus />
                   Adicionar remédio
                 </Button>
               }
             />
-            <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {remedios.map((item) => (
-                <li key={item.id} className={cn(cardClass, "space-y-2")}>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className={metaClass}>
-                      {item.frequencia} • {item.horario}
-                    </span>
-                    <span className="rounded-lg bg-brand-50 px-2 py-1 text-xs font-bold text-brand-600">
-                      {item.dosagem}
-                    </span>
-                  </div>
-                  <p className="text-lg font-bold text-slate-700">{item.nome}</p>
-                </li>
-              ))}
-            </ul>
+            {remedios.length === 0 ? (
+              <EmptyState
+                title="Nenhum medicamento cadastrado"
+                description="Registre o que você toma, com dose e horário, para ter tudo em um só lugar."
+                action={
+                  <Button onClick={() => openRemedio()}>
+                    <Pill />
+                    Adicionar o primeiro
+                  </Button>
+                }
+              />
+            ) : (
+              <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {remedios.map((item) => (
+                  <li key={item.id} className={cn(cardClass, "space-y-2")}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={metaClass}>
+                        {item.frequencia} • {item.horario}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand-700">
+                          {item.dosagem}
+                        </span>
+                        <ItemMenu
+                          label={`medicamento ${item.nome}`}
+                          onEdit={() => openRemedio(item)}
+                          onDelete={() => deleteRemedio(item.id)}
+                        />
+                      </div>
+                    </div>
+                    <p className="text-lg font-bold text-foreground">{item.nome}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
           </>
         )}
 
@@ -245,8 +151,8 @@ export default function HealthView() {
               {exames.map((exame) => (
                 <li key={exame.id} className={cn(cardClass, "space-y-2")}>
                   <span className={metaClass}>Data: {exame.data}</span>
-                  <p className="text-lg font-bold text-slate-700">{exame.titulo}</p>
-                  <p className="text-xs font-medium text-brand-600">Resultado: {exame.resultado}</p>
+                  <p className="text-lg font-bold text-foreground">{exame.titulo}</p>
+                  <p className="text-xs font-medium text-brand-700">Resultado: {exame.resultado}</p>
                 </li>
               ))}
             </ul>
@@ -258,21 +164,41 @@ export default function HealthView() {
             <SectionHeader
               title="Registro de sintomas"
               action={
-                <Button onClick={() => setSintomaOpen(true)}>
+                <Button onClick={() => openSintoma()}>
                   <Plus />
                   Registrar sintoma
                 </Button>
               }
             />
-            <ul className="space-y-3">
-              {sintomas.map((item) => (
-                <li key={item.id} className={cn(cardClass, "space-y-1")}>
-                  <span className={metaClass}>{item.data}</span>
-                  <p className="text-lg font-bold text-slate-700">{item.descricao}</p>
-                  <p className="text-xs font-medium text-brand-600">Intensidade/nota: {item.nota}</p>
-                </li>
-              ))}
-            </ul>
+            {sintomas.length === 0 ? (
+              <EmptyState
+                title="Nenhum sintoma registrado"
+                description="Anotar o que você sente ajuda a perceber padrões e a conversar melhor na consulta."
+                action={
+                  <Button onClick={() => openSintoma()}>
+                    <Stethoscope />
+                    Registrar o primeiro
+                  </Button>
+                }
+              />
+            ) : (
+              <ul className="space-y-3">
+                {sintomas.map((item) => (
+                  <li key={item.id} className={cn(cardClass, "space-y-1")}>
+                    <div className="flex items-start justify-between gap-2">
+                      <span className={metaClass}>{item.data}</span>
+                      <ItemMenu
+                        label={`sintoma ${item.descricao}`}
+                        onEdit={() => openSintoma(item)}
+                        onDelete={() => deleteSintoma(item.id)}
+                      />
+                    </div>
+                    <p className="text-lg font-bold text-foreground">{item.descricao}</p>
+                    <p className="text-xs font-medium text-brand-700">Intensidade/nota: {item.nota}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
           </>
         )}
       </div>
@@ -280,12 +206,14 @@ export default function HealthView() {
       <MedicamentoDialog
         open={remedioOpen}
         onOpenChange={setRemedioOpen}
-        onSave={(item) => setRemedios((current) => [item, ...current])}
+        item={editingRemedio}
+        onSave={saveRemedio}
       />
       <SintomaDialog
         open={sintomaOpen}
         onOpenChange={setSintomaOpen}
-        onSave={(item) => setSintomas((current) => [item, ...current])}
+        item={editingSintoma}
+        onSave={saveSintoma}
       />
     </Page>
   );

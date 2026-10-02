@@ -1,6 +1,9 @@
 export interface DiaryEntry {
   id: string;
+  /** Dia do registro no formato AAAA-MM-DD (data local). */
   date: string;
+  /** Quando foi editado pela última vez (AAAA-MM-DD), se foi. */
+  editedAt?: string;
   mood: string;
   title: string;
   content: string;
