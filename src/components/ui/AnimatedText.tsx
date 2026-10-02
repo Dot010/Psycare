@@ -46,7 +46,7 @@ export function AnimatedText({ text, className, as = "h2" }: AnimatedTextProps) 
     <div ref={rootRef} className="overflow-hidden">
       <Tag className={cn("leading-tight", className)}>
         {Array.from(text).map((char, index) => (
-          <span key={`${char}-${index}`} data-char className="inline-block will-change-transform">
+          <span key={`${char}-${index}`} data-char className="will-change-transform">
             {char === " " ? "\u00A0" : char}
           </span>
         ))}
