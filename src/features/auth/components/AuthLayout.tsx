@@ -12,13 +12,7 @@ export interface AuthLayoutProps {
   children: React.ReactNode;
 }
 
-export function AuthLayout({
-  title,
-  subtitle,
-  imageSrc,
-  imageAlt,
-  children,
-}: AuthLayoutProps) {
+export function AuthLayout({ title, subtitle, imageSrc, imageAlt, children }: AuthLayoutProps) {
   return (
     <section className="bg-canvas min-h-screen flex items-center justify-center p-4">
       <div className="bg-surface flex rounded-xl shadow-sm border border-black/5 max-w-4xl w-full overflow-hidden min-h-137.5">
@@ -29,18 +23,15 @@ export function AuthLayout({
               text={title}
               className="text-3xl md:text-4xl font-semibold font-heading text-ink mb-2 leading-tight"
             />
-            {subtitle && (
-              <p className="text-slate-600 text-sm">{subtitle}</p>
-            )}
+            {subtitle && <p className="text-muted-foreground text-sm">{subtitle}</p>}
           </div>
 
           {children}
-
         </div>
 
         <div className="hidden md:block md:w-1/2 relative bg-brand-50/40 p-4 overflow-hidden">
           <HeroCanvas />
-          <div className="absolute inset-0 bg-linear-to-br from-brand-200/20 via-transparent to-stone-100/25" />
+          <div className="absolute inset-0 bg-linear-to-br from-brand-200/20 via-transparent to-taupe/20" />
           <Image
             src={imageSrc}
             alt={imageAlt}

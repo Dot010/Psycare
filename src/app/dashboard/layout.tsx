@@ -12,7 +12,7 @@ const Nav = dynamic(() => import("@/components/layout/Nav"), {
 const NavMobile = dynamic(() => import("@/components/layout/NavMobile"), {
   ssr: false,
   loading: () => (
-    <div className="fixed inset-x-0 bottom-0 z-50 h-20 border-t border-slate-200 bg-white/80 md:hidden" />
+    <div className="fixed inset-x-0 bottom-0 z-50 h-20 border-t border-border bg-white/80 md:hidden" />
   ),
 });
 
@@ -22,7 +22,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <Nav />
       <NavMobile />
 
-      <main className="flex-1 overflow-y-auto bg-slate-50 pb-28 md:pb-8">
+      <main className="flex-1 overflow-y-auto bg-sunken pb-28 md:pb-8">
         <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
       </main>
     </div>

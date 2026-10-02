@@ -4,13 +4,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
 import { fieldControlClass } from "@/components/ui/input";
 import type { DiaryEntry } from "@/features/diary/types";
@@ -80,7 +74,7 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
       </DialogTrigger>
 
       <DialogContent aria-describedby={undefined} className="gap-5 rounded-2xl p-6 sm:max-w-lg">
-        <DialogTitle className="text-xl font-bold text-slate-800">Novo registro no diário</DialogTitle>
+        <DialogTitle className="text-xl font-bold text-foreground">Novo registro no diário</DialogTitle>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <Field
@@ -92,7 +86,7 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
           />
 
           <fieldset>
-            <legend className="mb-2 text-xs font-medium text-slate-600">Como você se sente?</legend>
+            <legend className="mb-2 text-xs font-medium text-muted-foreground">Como você se sente?</legend>
             <div className="flex flex-wrap gap-2">
               {MOODS.map((option) => (
                 <button
@@ -104,7 +98,7 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
                     "rounded-lg px-3 py-1.5 text-xs font-medium transition",
                     mood === option
                       ? "bg-primary text-primary-foreground"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200",
+                      : "bg-sunken text-muted-foreground hover:bg-border",
                   )}
                 >
                   {option}
@@ -114,7 +108,7 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
           </fieldset>
 
           <div>
-            <div className="mb-2 flex justify-between text-xs font-medium text-slate-600">
+            <div className="mb-2 flex justify-between text-xs font-medium text-muted-foreground">
               <label htmlFor="anxiety-level">Nível de ansiedade ou carga</label>
               <span className="font-bold text-primary">{anxietyLevel} / 5</span>
             </div>
@@ -130,7 +124,7 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="entry-content" className="block text-xs font-medium text-slate-600">
+            <label htmlFor="entry-content" className="block text-xs font-medium text-muted-foreground">
               Suas anotações
             </label>
             <textarea
@@ -151,11 +145,13 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
               onChange={(e) => setDiscussInSession(e.target.checked)}
               className="size-4 cursor-pointer accent-brand-800"
             />
-            <span className="text-xs font-medium text-slate-600">Marcar para discutir na próxima consulta</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              Marcar para discutir na próxima consulta
+            </span>
           </label>
 
           {error && (
-            <p role="alert" className="text-xs text-red-600">
+            <p role="alert" className="text-xs text-danger-600">
               {error}
             </p>
           )}

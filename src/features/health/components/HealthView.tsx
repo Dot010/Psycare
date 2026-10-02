@@ -31,13 +31,13 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
-const cardClass = "rounded-2xl border border-slate-200 bg-white p-5 shadow-sm";
-const metaClass = "text-xs font-semibold uppercase tracking-wider text-slate-400";
+const cardClass = "rounded-2xl border border-border bg-card p-5 shadow-sm";
+const metaClass = "text-xs font-semibold uppercase tracking-wider text-muted-foreground";
 
 function SectionHeader({ title, action }: { title: string; action: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <h2 className="text-lg font-bold text-slate-800">{title}</h2>
+      <h2 className="text-lg font-bold text-foreground">{title}</h2>
       {action}
     </div>
   );
@@ -79,16 +79,33 @@ function MedicamentoDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent aria-describedby={undefined} className="gap-4 rounded-2xl p-6 sm:max-w-md">
-        <DialogTitle className="text-xl font-bold text-slate-800">Novo medicamento</DialogTitle>
+        <DialogTitle className="text-xl font-bold text-foreground">Novo medicamento</DialogTitle>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label="Nome do remédio" required value={form.nome} onChange={set("nome")} placeholder="Ex: Sertralina" />
-          <Field label="Dosagem" required value={form.dosagem} onChange={set("dosagem")} placeholder="Ex: 50 mg" />
+          <Field
+            label="Nome do remédio"
+            required
+            value={form.nome}
+            onChange={set("nome")}
+            placeholder="Ex: Sertralina"
+          />
+          <Field
+            label="Dosagem"
+            required
+            value={form.dosagem}
+            onChange={set("dosagem")}
+            placeholder="Ex: 50 mg"
+          />
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Frequência" value={form.frequencia} onChange={set("frequencia")} placeholder="Ex: Diária" />
+            <Field
+              label="Frequência"
+              value={form.frequencia}
+              onChange={set("frequencia")}
+              placeholder="Ex: Diária"
+            />
             <Field label="Horário" value={form.horario} onChange={set("horario")} placeholder="Ex: 21:00" />
           </div>
           {error && (
-            <p role="alert" className="text-xs text-red-600">
+            <p role="alert" className="text-xs text-danger-600">
               {error}
             </p>
           )}
@@ -139,7 +156,7 @@ function SintomaDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent aria-describedby={undefined} className="gap-4 rounded-2xl p-6 sm:max-w-md">
-        <DialogTitle className="text-xl font-bold text-slate-800">Registrar sintoma</DialogTitle>
+        <DialogTitle className="text-xl font-bold text-foreground">Registrar sintoma</DialogTitle>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Field
             label="Sintoma"
@@ -148,9 +165,14 @@ function SintomaDialog({
             onChange={set("descricao")}
             placeholder="Ex: Insônia, dor de cabeça"
           />
-          <Field label="Intensidade ou nota" value={form.nota} onChange={set("nota")} placeholder="Ex: Moderada" />
+          <Field
+            label="Intensidade ou nota"
+            value={form.nota}
+            onChange={set("nota")}
+            placeholder="Ex: Moderada"
+          />
           {error && (
-            <p role="alert" className="text-xs text-red-600">
+            <p role="alert" className="text-xs text-danger-600">
               {error}
             </p>
           )}
@@ -180,7 +202,11 @@ export default function HealthView() {
       description="Acompanhe seus medicamentos, exames e registre sintomas do dia a dia."
       width="wide"
     >
-      <div role="tablist" aria-label="Seções de saúde" className="flex gap-2 overflow-x-auto border-b border-slate-200 pb-3">
+      <div
+        role="tablist"
+        aria-label="Seções de saúde"
+        className="flex gap-2 overflow-x-auto border-b border-border pb-3"
+      >
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -192,7 +218,9 @@ export default function HealthView() {
             onClick={() => setActiveTab(tab.id)}
             className={cn(
               "whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition-colors",
-              activeTab === tab.id ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200",
+              activeTab === tab.id
+                ? "bg-brand-600 text-white"
+                : "bg-sunken text-muted-foreground hover:bg-border",
             )}
           >
             {tab.label}
@@ -200,7 +228,12 @@ export default function HealthView() {
         ))}
       </div>
 
-      <div role="tabpanel" id={`panel-${activeTab}`} aria-labelledby={`tab-${activeTab}`} className="space-y-4">
+      <div
+        role="tabpanel"
+        id={`panel-${activeTab}`}
+        aria-labelledby={`tab-${activeTab}`}
+        className="space-y-4"
+      >
         {activeTab === "remedios" && (
           <>
             <SectionHeader
@@ -223,7 +256,7 @@ export default function HealthView() {
                       {item.dosagem}
                     </span>
                   </div>
-                  <p className="text-lg font-bold text-slate-700">{item.nome}</p>
+                  <p className="text-lg font-bold text-foreground">{item.nome}</p>
                 </li>
               ))}
             </ul>
@@ -245,7 +278,7 @@ export default function HealthView() {
               {exames.map((exame) => (
                 <li key={exame.id} className={cn(cardClass, "space-y-2")}>
                   <span className={metaClass}>Data: {exame.data}</span>
-                  <p className="text-lg font-bold text-slate-700">{exame.titulo}</p>
+                  <p className="text-lg font-bold text-foreground">{exame.titulo}</p>
                   <p className="text-xs font-medium text-brand-600">Resultado: {exame.resultado}</p>
                 </li>
               ))}
@@ -268,7 +301,7 @@ export default function HealthView() {
               {sintomas.map((item) => (
                 <li key={item.id} className={cn(cardClass, "space-y-1")}>
                   <span className={metaClass}>{item.data}</span>
-                  <p className="text-lg font-bold text-slate-700">{item.descricao}</p>
+                  <p className="text-lg font-bold text-foreground">{item.descricao}</p>
                   <p className="text-xs font-medium text-brand-600">Intensidade/nota: {item.nota}</p>
                 </li>
               ))}

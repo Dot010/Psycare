@@ -14,14 +14,10 @@ interface BlobCanvasProps {
 export default function BlobCanvas({ pointer, scaleRef, fallback = null }: BlobCanvasProps) {
   return (
     <Suspense fallback={fallback}>
-      <Canvas
-        camera={{ position: [0, 0, 5], fov: 40 }}
-        dpr={[1, 1.5]}
-        gl={{ antialias: true, alpha: true }}
-      >
+      <Canvas camera={{ position: [0, 0, 5], fov: 40 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }}>
         <ambientLight intensity={0.56} />
-        <hemisphereLight args={["#d9f6ea", "#f5efe4", 0.45]} />
-        <directionalLight position={[2, 2, 3]} intensity={0.95} color="#d9f6ea" />
+        <hemisphereLight args={["#e6edd9", "#f5efe4", 0.45]} />
+        <directionalLight position={[2, 2, 3]} intensity={0.95} color="#e6edd9" />
         <directionalLight position={[-2, -1, 2]} intensity={0.45} color="#f5efe4" />
         <FluidBlob pointer={pointer} scaleRef={scaleRef} />
       </Canvas>

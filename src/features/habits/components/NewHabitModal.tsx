@@ -57,7 +57,7 @@ export function NewHabitModal({ onAddHabit }: NewHabitModalProps) {
       </DialogTrigger>
 
       <DialogContent aria-describedby={undefined} className="gap-4 rounded-2xl p-6 sm:max-w-md">
-        <DialogTitle className="text-xl font-bold text-slate-800">Criar novo hábito</DialogTitle>
+        <DialogTitle className="text-xl font-bold text-foreground">Criar novo hábito</DialogTitle>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Field
@@ -68,7 +68,12 @@ export function NewHabitModal({ onAddHabit }: NewHabitModalProps) {
             placeholder="Ex: Meditar, ler, caminhar"
           />
 
-          <SelectField label="Categoria" required value={category} onChange={(e) => setCategory(e.target.value)}>
+          <SelectField
+            label="Categoria"
+            required
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
             {CATEGORIES.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -77,7 +82,7 @@ export function NewHabitModal({ onAddHabit }: NewHabitModalProps) {
           </SelectField>
 
           {error && (
-            <p role="alert" className="text-xs text-red-600">
+            <p role="alert" className="text-xs text-danger-600">
               {error}
             </p>
           )}

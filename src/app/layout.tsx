@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { Inter, Newsreader } from "next/font/google";
+import { Poppins } from "next/font/google";
 import { UserProvider } from "@/components/providers/UserProvider";
 import { DemoBanner } from "@/components/feedback/DemoBanner";
 import { AppProviders } from "@/components/providers/AppProviders";
 import "@/app/globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const newsreader = Newsreader({ subsets: ["latin"], variable: "--font-newsreader" });
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-poppins",
+});
 
 export const metadata: Metadata = {
   title: "Psy Care - Seu Espaço de Cuidado",
@@ -19,11 +22,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   await connection();
 
   return (
-    <html
-      lang="pt-br"
-      className={`${inter.variable} ${newsreader.variable} h-full antialiased`}
-    >
-      <body className={`${inter.className} min-h-full antialiased`}>
+    <html lang="pt-br" className={`${poppins.variable} h-full antialiased`}>
+      <body className={`${poppins.className} min-h-full antialiased`}>
         <DemoBanner />
         <AppProviders>
           <UserProvider>{children}</UserProvider>

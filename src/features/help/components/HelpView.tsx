@@ -17,11 +17,13 @@ const FAQS = [
   },
   {
     question: "Como alterar meu método de pagamento principal?",
-    answer: "Acesse a página de Pagamentos, escolha o cartão ou a chave PIX desejada e clique em “Tornar principal”.",
+    answer:
+      "Acesse a página de Pagamentos, escolha o cartão ou a chave PIX desejada e clique em “Tornar principal”.",
   },
   {
     question: "Posso cancelar minha assinatura a qualquer momento?",
-    answer: "Sim. Você pode cancelar na página de Pagamentos. O acesso continua ativo até o fim do período já pago.",
+    answer:
+      "Sim. Você pode cancelar na página de Pagamentos. O acesso continua ativo até o fim do período já pago.",
   },
 ];
 
@@ -36,8 +38,8 @@ const ticketSchema = z.object({
   message: z.string().trim().min(10, "Descreva melhor o problema"),
 });
 
-const panelClass = "space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm";
-const panelTitleClass = "border-b border-slate-100 pb-3 text-base font-bold text-slate-800";
+const panelClass = "space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm";
+const panelTitleClass = "border-b border-border pb-3 text-base font-bold text-foreground";
 
 export default function HelpView() {
   const [subject, setSubject] = useState("");
@@ -72,10 +74,10 @@ export default function HelpView() {
     >
       <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {CONTACTS.map(({ Icon, title, text }) => (
-          <li key={title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <li key={title} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
             <Icon className="mb-2 size-5 text-brand-600" aria-hidden />
-            <h2 className="text-sm font-bold text-slate-800">{title}</h2>
-            <p className="mt-1 text-xs text-slate-500">{text}</p>
+            <h2 className="text-sm font-bold text-foreground">{title}</h2>
+            <p className="mt-1 text-xs text-muted-foreground">{text}</p>
           </li>
         ))}
       </ul>
@@ -85,12 +87,14 @@ export default function HelpView() {
           <h2 className={panelTitleClass}>Perguntas frequentes</h2>
           <div className="space-y-3">
             {FAQS.map((faq) => (
-              <details key={faq.question} className="group overflow-hidden rounded-xl border border-slate-100">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-2 bg-slate-50/50 p-4 text-xs font-semibold text-slate-800 hover:bg-slate-100/50">
+              <details key={faq.question} className="group overflow-hidden rounded-xl border border-border">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-2 bg-sunken/50 p-4 text-xs font-semibold text-foreground hover:bg-sunken/50">
                   {faq.question}
-                  <ChevronDown className="size-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" />
+                  <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
                 </summary>
-                <p className="border-t border-slate-100 p-4 text-xs leading-relaxed text-slate-600">{faq.answer}</p>
+                <p className="border-t border-border p-4 text-xs leading-relaxed text-muted-foreground">
+                  {faq.answer}
+                </p>
               </details>
             ))}
           </div>
@@ -100,10 +104,15 @@ export default function HelpView() {
           <h2 className={panelTitleClass}>Abrir chamado</h2>
 
           {isSent ? (
-            <div role="status" className="space-y-2 rounded-xl border border-brand-200 bg-brand-50 p-4 text-center">
+            <div
+              role="status"
+              className="space-y-2 rounded-xl border border-brand-200 bg-brand-50 p-4 text-center"
+            >
               <CircleCheck className="mx-auto size-6 text-brand-600" aria-hidden />
               <p className="text-xs font-bold text-brand-800">Chamado enviado</p>
-              <p className="text-[11px] text-brand-700">Recebemos sua mensagem e entraremos em contato em breve.</p>
+              <p className="text-xs text-brand-700">
+                Recebemos sua mensagem e entraremos em contato em breve.
+              </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-3">
@@ -115,7 +124,7 @@ export default function HelpView() {
                 onChange={(e) => setSubject(e.target.value)}
               />
               <div className="space-y-1">
-                <label htmlFor="ticket-message" className="block text-xs font-medium text-slate-600">
+                <label htmlFor="ticket-message" className="block text-xs font-medium text-muted-foreground">
                   Mensagem
                 </label>
                 <textarea
@@ -129,7 +138,7 @@ export default function HelpView() {
                 />
               </div>
               {error && (
-                <p role="alert" className="text-xs text-red-600">
+                <p role="alert" className="text-xs text-danger-600">
                   {error}
                 </p>
               )}

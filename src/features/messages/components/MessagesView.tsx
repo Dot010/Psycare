@@ -14,7 +14,7 @@ const QUICK_REPLIES = [
   { label: "Sintoma novo", text: "Estou sentindo o seguinte sintoma novo: " },
 ];
 
-const panelClass = "rounded-2xl border border-slate-200 bg-white shadow-sm";
+const panelClass = "rounded-2xl border border-border bg-card shadow-sm";
 
 function Avatar({ name, className }: { name: string; className?: string }) {
   const initials = name
@@ -60,12 +60,16 @@ export function MessagesView() {
     <Page title="Minhas Mensagens" description="Converse com a sua equipe médica." width="wide">
       <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-12">
         <section aria-label="Conversas" className={cn(panelClass, "space-y-3 p-4 md:col-span-4")}>
-          <h2 className="px-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Conversas</h2>
+          <h2 className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Conversas
+          </h2>
 
           {chats.length === 0 ? (
-            <div className="rounded-lg border border-slate-200 p-4">
+            <div className="rounded-lg border border-border p-4">
               <p className="text-sm font-medium text-ink">Nenhuma conversa ativa</p>
-              <p className="mt-1 text-xs text-slate-600">Assim que você iniciar um atendimento, ele aparecerá aqui.</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Assim que você iniciar um atendimento, ele aparecerá aqui.
+              </p>
             </div>
           ) : (
             <ul className="space-y-2">
@@ -77,14 +81,18 @@ export function MessagesView() {
                     onClick={() => setActiveChatId(chat.id)}
                     className={cn(
                       "flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors",
-                      chat.id === activeChatId ? "border-brand-200 bg-brand-50" : "border-transparent hover:bg-slate-50",
+                      chat.id === activeChatId
+                        ? "border-brand-200 bg-brand-50"
+                        : "border-transparent hover:bg-sunken",
                     )}
                   >
                     <Avatar name={chat.doctorName} className="size-11" />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold text-ink">{chat.doctorName}</span>
                       <span className="block text-xs font-medium text-brand-800">{chat.specialty}</span>
-                      <span className="mt-0.5 block truncate text-xs text-slate-500">{chat.lastMessage}</span>
+                      <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                        {chat.lastMessage}
+                      </span>
                     </span>
                   </button>
                 </li>
@@ -94,8 +102,11 @@ export function MessagesView() {
         </section>
 
         {activeChat ? (
-          <section aria-label={`Conversa com ${activeChat.doctorName}`} className={cn(panelClass, "flex h-[600px] flex-col p-6 md:col-span-8")}>
-            <header className="flex items-center gap-3 border-b border-slate-100 pb-4">
+          <section
+            aria-label={`Conversa com ${activeChat.doctorName}`}
+            className={cn(panelClass, "flex h-[600px] flex-col p-6 md:col-span-8")}
+          >
+            <header className="flex items-center gap-3 border-b border-border pb-4">
               <Avatar name={activeChat.doctorName} className="size-10" />
               <div>
                 <h2 className="font-semibold text-ink">{activeChat.doctorName}</h2>
@@ -108,7 +119,9 @@ export function MessagesView() {
                 <div className="flex h-full items-center justify-center px-8 text-center">
                   <div>
                     <p className="text-base font-medium text-ink">Conversa iniciada</p>
-                    <p className="mt-1 text-sm text-slate-600">Envie uma mensagem para começar este acompanhamento.</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Envie uma mensagem para começar este acompanhamento.
+                    </p>
                   </div>
                 </div>
               ) : (
@@ -117,11 +130,13 @@ export function MessagesView() {
                     key={message.id}
                     className={cn(
                       "max-w-[75%] rounded-xl p-3 text-sm",
-                      message.sender === "user" ? "ml-auto bg-brand-800 text-white" : "mr-auto bg-slate-100 text-slate-800",
+                      message.sender === "user"
+                        ? "ml-auto bg-brand-800 text-white"
+                        : "mr-auto bg-sunken text-foreground",
                     )}
                   >
                     <p>{message.content}</p>
-                    <span className="mt-1 block text-right text-[10px] opacity-75">{message.timestamp}</span>
+                    <span className="mt-1 block text-right text-xs opacity-75">{message.timestamp}</span>
                   </div>
                 ))
               )}
@@ -142,7 +157,7 @@ export function MessagesView() {
               ))}
             </div>
 
-            <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-slate-100 pt-2">
+            <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-border pt-2">
               <input
                 type="text"
                 value={newMessage}
@@ -158,13 +173,13 @@ export function MessagesView() {
             </form>
 
             {error && (
-              <p role="alert" className="mt-2 text-xs text-red-600">
+              <p role="alert" className="mt-2 text-xs text-danger-600">
                 {error}
               </p>
             )}
           </section>
         ) : (
-          <div className={cn(panelClass, "p-8 text-center text-slate-500 md:col-span-8")}>
+          <div className={cn(panelClass, "p-8 text-center text-muted-foreground md:col-span-8")}>
             <p className="font-medium text-ink">Nenhuma conversa selecionada.</p>
             <p className="mt-1 text-sm">Selecione uma conversa no painel lateral para continuar.</p>
           </div>

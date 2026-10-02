@@ -5,26 +5,41 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-heading: var(--font-newsreader);
-  --font-sans: var(--font-inter);
+  --font-heading: var(--font-poppins);
+  --font-sans: var(--font-poppins);
 
-  /* Marca (verde). Mesmos valores do emerald do Tailwind: trocar a cor do app = editar só aqui. */
-  --color-brand-50: oklch(97.9% 0.021 166.113);
-  --color-brand-100: oklch(95% 0.052 163.051);
-  --color-brand-200: oklch(90.5% 0.093 164.15);
-  --color-brand-300: oklch(84.5% 0.143 164.978);
-  --color-brand-400: oklch(76.5% 0.177 163.223);
-  --color-brand-500: oklch(69.6% 0.17 162.48);
-  --color-brand-600: oklch(59.6% 0.145 163.225);
-  --color-brand-700: oklch(50.8% 0.118 165.612);
-  --color-brand-800: oklch(43.2% 0.095 166.913);
-  --color-brand-900: oklch(37.8% 0.077 168.94);
-  --color-brand-950: oklch(26.2% 0.051 172.552);
+  /* Marca (verde oliva, base #5E7638 = brand-600). Trocar a cor do app = editar só aqui. */
+  --color-brand-50: #f3f7ec;
+  --color-brand-100: #e6edd9;
+  --color-brand-200: #d0dbbb;
+  --color-brand-300: #b3c494;
+  --color-brand-400: #8ea466;
+  --color-brand-500: #738b49;
+  --color-brand-600: #5e7638;
+  --color-brand-700: #41522a;
+  --color-brand-800: #36461f;
+  --color-brand-900: #2b3817;
+  --color-brand-950: #1a2310;
+
+  /* Destaque (amarelo manteiga, base #EAD96B). Texto sobre ele: sempre ink ou sun-700. */
+  --color-sun-50: #fcf8df;
+  --color-sun-100: #f7eeb3;
+  --color-sun-300: #ead96b;
+  --color-sun-500: #c9b53c;
+  --color-sun-700: #6f6210;
+
+  /* Perigo (vermelho tijolo): só para excluir, cancelar e erros. */
+  --color-danger-50: #fbeeec;
+  --color-danger-300: #e39a90;
+  --color-danger-500: #c9473a;
+  --color-danger-600: #b3382c;
 
   /* Superfícies e texto do tema claro */
   --color-canvas: #f7f6f2;
   --color-surface: #fdfcf9;
-  --color-ink: #2f3a32;
+  --color-sunken: #f1eeea;
+  --color-taupe: #c5b9b4;
+  --color-ink: #4d1f1a;
 
   /* Design Tokens Padrão Shadcn */
   --color-ring: var(--ring);
@@ -70,24 +85,24 @@
   --popover: oklch(1 0 0);
   --popover-foreground: var(--color-ink);
 
-  /* Primary: verde da marca (brand-800), o mesmo dos botões principais */
-  --primary: var(--color-brand-800);
-  --primary-foreground: oklch(0.98 0 0);
+  /* Primary: verde da marca */
+  --primary: var(--color-brand-600);
+  --primary-foreground: #ffffff;
 
-  /* Secondary: Amarelo Manteiga (#EAD96B) */
-  --secondary: oklch(0.88 0.14 95);
+  /* Secondary e accent: amarelo manteiga, com texto escuro */
+  --secondary: var(--color-sun-300);
   --secondary-foreground: var(--color-ink);
 
-  /* Muted & Surface: Bege Rosado e Cinza (#C5B9B4 / #6B6B6B) */
-  --muted: oklch(0.80 0.02 45);
-  --muted-foreground: oklch(0.50 0 0);
+  /* Muted: fundos suaves em bege; texto secundário em cinza #6B6B6B (4,6:1 sobre o fundo suave) */
+  --muted: var(--color-sunken);
+  --muted-foreground: #6b6b6b;
 
-  --accent: oklch(0.88 0.14 95);
+  --accent: var(--color-sun-300);
   --accent-foreground: var(--color-ink);
 
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.80 0.02 45 / 50%);
-  --input: oklch(0.80 0.02 45 / 50%);
+  --destructive: var(--color-danger-600);
+  --border: color-mix(in srgb, var(--color-taupe) 55%, transparent);
+  --input: color-mix(in srgb, var(--color-taupe) 80%, transparent);
   --ring: var(--color-brand-600);
 
   --radius: 0.85rem;
@@ -106,11 +121,11 @@
   --primary: oklch(0.55 0.11 130);
   --primary-foreground: oklch(0.98 0 0);
 
-  --secondary: oklch(0.30 0.05 95);
+  --secondary: oklch(0.3 0.05 95);
   --secondary-foreground: oklch(0.95 0.01 90);
 
   --muted: oklch(0.28 0.01 30);
-  --muted-foreground: oklch(0.70 0 0);
+  --muted-foreground: oklch(0.7 0 0);
 
   --accent: oklch(0.28 0.01 30);
   --accent-foreground: oklch(0.95 0.01 90);

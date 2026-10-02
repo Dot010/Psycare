@@ -72,10 +72,12 @@ export default function Nav() {
               <form action={logoutAction}>
                 <button
                   type="submit"
-                  className={cn(itemClass, "text-red-200 hover:bg-destructive/20 hover:text-white")}
+                  className={cn(itemClass, "text-danger-300 hover:bg-destructive/20 hover:text-white")}
                 >
                   <LogOut className={cn("size-6 shrink-0", !open && "mx-auto")} />
-                  <span className={cn("flex-1 text-left text-base font-medium", !open && "hidden")}>Sair</span>
+                  <span className={cn("flex-1 text-left text-base font-medium", !open && "hidden")}>
+                    Sair
+                  </span>
                 </button>
               </form>
             </li>

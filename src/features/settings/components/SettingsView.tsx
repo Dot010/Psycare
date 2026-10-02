@@ -22,8 +22,8 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
-const panelClass = "space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm";
-const panelTitleClass = "text-base font-bold text-slate-800";
+const panelClass = "space-y-6 rounded-2xl border border-border bg-card p-6 shadow-sm";
+const panelTitleClass = "text-base font-bold text-foreground";
 
 function ProfileForm({
   user,
@@ -52,10 +52,16 @@ function ProfileForm({
 
   return (
     <form onSubmit={handleSubmit} className={panelClass}>
-      <h2 className={cn(panelTitleClass, "border-b border-slate-100 pb-3")}>Informações do perfil</h2>
+      <h2 className={cn(panelTitleClass, "border-b border-border pb-3")}>Informações do perfil</h2>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Field label="Nome completo" required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
+        <Field
+          label="Nome completo"
+          required
+          autoComplete="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
         <Field
           label="E-mail"
           type="email"
@@ -67,7 +73,7 @@ function ProfileForm({
       </div>
 
       {error && (
-        <p role="alert" className="text-xs text-red-600">
+        <p role="alert" className="text-xs text-danger-600">
           {error}
         </p>
       )}
@@ -95,13 +101,13 @@ function ToggleRow({
   return (
     <label
       className={cn(
-        "flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-slate-50/50 p-3",
+        "flex items-center justify-between gap-4 rounded-xl border border-border bg-sunken/50 p-3",
         disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
       )}
     >
       <span>
-        <span className="block text-xs font-semibold text-slate-800">{title}</span>
-        <span className="block text-[11px] text-slate-500">{description}</span>
+        <span className="block text-xs font-semibold text-foreground">{title}</span>
+        <span className="block text-xs text-muted-foreground">{description}</span>
       </span>
       <input
         type="checkbox"
@@ -143,7 +149,11 @@ export default function SettingsView() {
       }
       width="narrow"
     >
-      <div role="tablist" aria-label="Seções de configuração" className="flex gap-2 border-b border-slate-200 pb-2">
+      <div
+        role="tablist"
+        aria-label="Seções de configuração"
+        className="flex gap-2 border-b border-border pb-2"
+      >
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -155,7 +165,7 @@ export default function SettingsView() {
             onClick={() => setActiveTab(tab.id)}
             className={cn(
               "rounded-xl px-4 py-2 text-xs font-semibold transition-colors",
-              activeTab === tab.id ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100",
+              activeTab === tab.id ? "bg-ink text-white" : "text-muted-foreground hover:bg-sunken",
             )}
           >
             {tab.label}
@@ -165,12 +175,19 @@ export default function SettingsView() {
 
       <div role="tabpanel" id={`settings-panel-${activeTab}`} aria-labelledby={`settings-tab-${activeTab}`}>
         {activeTab === "general" && (
-          <ProfileForm key={user?.email ?? "loading"} user={user} updateUser={updateUser} onSaved={handleSaved} />
+          <ProfileForm
+            key={user?.email ?? "loading"}
+            user={user}
+            updateUser={updateUser}
+            onSaved={handleSaved}
+          />
         )}
 
         {activeTab === "notifications" && (
           <div className={panelClass}>
-            <h2 className={cn(panelTitleClass, "border-b border-slate-100 pb-3")}>Preferências de comunicação</h2>
+            <h2 className={cn(panelTitleClass, "border-b border-border pb-3")}>
+              Preferências de comunicação
+            </h2>
             <div className="space-y-3">
               <ToggleRow
                 title="Notificações por e-mail"
@@ -190,9 +207,9 @@ export default function SettingsView() {
 
         {activeTab === "security" && (
           <div className={panelClass}>
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <h2 className={panelTitleClass}>Segurança e autenticação</h2>
-              <span className="rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
+              <span className="rounded-md bg-sun-100 px-2 py-0.5 text-xs font-semibold text-ink">
                 Em desenvolvimento
               </span>
             </div>
@@ -204,8 +221,8 @@ export default function SettingsView() {
                 onChange={() => {}}
                 disabled
               />
-              <div className="flex items-center justify-between rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-xs">
-                <span className="text-slate-600">Alterar senha da conta</span>
+              <div className="flex items-center justify-between rounded-xl border border-dashed border-border bg-sunken p-4 text-xs">
+                <span className="text-muted-foreground">Alterar senha da conta</span>
                 <Button variant="outline" size="sm" disabled>
                   Redefinir
                 </Button>

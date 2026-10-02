@@ -17,7 +17,7 @@ export function AppProviders({ children }: AppProvidersProps) {
   return (
     <MotionConfig reducedMotion="user" transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
       <NextTopLoader
-        color="#10b981"
+        color="#5e7638"
         initialPosition={0.08}
         crawlSpeed={220}
         height={3}
@@ -25,7 +25,7 @@ export function AppProviders({ children }: AppProvidersProps) {
         showSpinner={false}
         easing="cubic-bezier(0.22, 1, 0.36, 1)"
         speed={280}
-        shadow="0 0 10px #10b981,0 0 6px #10b981"
+        shadow="0 0 10px #5e7638,0 0 6px #5e7638"
       />
       {children}
     </MotionConfig>

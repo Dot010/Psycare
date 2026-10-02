@@ -12,9 +12,9 @@ import { useAppointments } from "@/features/appointments/hooks/useAppointments";
 import type { Agendamento, AppointmentType } from "@/features/appointments/types";
 
 const STATUS_STYLES: Record<Agendamento["status"], string> = {
-  confirmado: "bg-green-100 text-green-800",
-  pendente: "bg-amber-100 text-amber-800",
-  cancelado: "bg-slate-100 text-slate-600",
+  confirmado: "bg-brand-100 text-brand-800",
+  pendente: "bg-sun-100 text-ink",
+  cancelado: "bg-sunken text-muted-foreground",
 };
 
 export function AppointmentsView() {
@@ -73,7 +73,9 @@ export function AppointmentsView() {
         {appointments.length === 0 ? (
           <div className="rounded-xl border border-black/5 bg-surface p-8 text-center shadow-sm">
             <p className="text-base font-semibold text-ink">Nenhum agendamento ainda</p>
-            <p className="mt-1 text-sm text-slate-600">Comece adicionando sua primeira sessão com um profissional.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Comece adicionando sua primeira sessão com um profissional.
+            </p>
           </div>
         ) : (
           <ul className="space-y-3">
@@ -84,7 +86,7 @@ export function AppointmentsView() {
               >
                 <div>
                   <p className="font-medium text-ink">{item.profissional}</p>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-muted-foreground">
                     {item.data} às {item.hora} · {item.tipo === "online" ? "Online" : "Presencial"}
                   </p>
                 </div>
@@ -113,17 +115,33 @@ export function AppointmentsView() {
             />
 
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Data" type="date" value={data} onChange={(e) => setData(e.target.value)} required />
-              <Field label="Hora" type="time" value={hora} onChange={(e) => setHora(e.target.value)} required />
+              <Field
+                label="Data"
+                type="date"
+                value={data}
+                onChange={(e) => setData(e.target.value)}
+                required
+              />
+              <Field
+                label="Hora"
+                type="time"
+                value={hora}
+                onChange={(e) => setHora(e.target.value)}
+                required
+              />
             </div>
 
-            <SelectField label="Tipo" value={tipo} onChange={(e) => setTipo(e.target.value as AppointmentType)}>
+            <SelectField
+              label="Tipo"
+              value={tipo}
+              onChange={(e) => setTipo(e.target.value as AppointmentType)}
+            >
               <option value="online">Online</option>
               <option value="presencial">Presencial</option>
             </SelectField>
 
             {formError && (
-              <p role="alert" className="text-xs text-red-600">
+              <p role="alert" className="text-xs text-danger-600">
                 {formError}
               </p>
             )}

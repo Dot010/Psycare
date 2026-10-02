@@ -74,7 +74,9 @@ src/
 - **Datas e valores:** `formatDateBR` e `formatCurrencyBRL` em `lib/format.ts`.
 - **Textos:** português do Brasil.
 - **Animação:** `TiltCard` e `MagneticButton` só em destaques e na ação principal, nunca em listas ou formulários.
-- **Cores:** tokens em `src/app/globals.css` (`brand-*`, `canvas`, `surface`, `ink`). Para trocar a cor da marca, edite só lá.
+- **Cores:** tokens em `src/app/globals.css`. Paleta: verde oliva `brand-*` (ações), amarelo `sun-*` (destaque, sempre com texto `ink`), marrom `ink` (texto), bege `taupe` (bordas), cinza `muted-foreground` e vermelho `danger-*` (só excluir e erros). Não use cores do Tailwind (`slate-*`, `red-*`…) direto nas telas.
+- **Fonte:** Poppins (`next/font`), 400 a 700. Texto em 12, 14, 16 e 18 px; títulos maiores.
+- **Botões:** pílula (`Button`). Estados: padrão, foco (verde escuro), desabilitado (cinza). Campos: `Field` tem erro (`error`) e sucesso (`valid`).
 
 ### Trocando os mocks por API
 

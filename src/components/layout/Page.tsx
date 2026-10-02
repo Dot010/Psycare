@@ -24,7 +24,7 @@ export function Page({ title, description, actions, width = "default", className
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold text-ink">{title}</h1>
-          {description && <p className="text-sm text-slate-500">{description}</p>}
+          {description && <p className="text-sm text-muted-foreground">{description}</p>}
         </div>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
       </header>

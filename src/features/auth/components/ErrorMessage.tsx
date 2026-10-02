@@ -9,7 +9,7 @@ export function ErrorMessage({ message }: ErrorMessageProps) {
 
   return (
     <div
-      className="mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-xl text-center border border-red-200"
+      className="mt-4 p-3 bg-danger-50 text-danger-600 text-sm rounded-xl text-center border border-danger-300"
       role="alert"
       aria-live="polite"
     >
