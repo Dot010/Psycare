@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 import { z } from "zod";
-import { AnimatedText } from "@/components/ui/AnimatedText";
-import { MagneticButton } from "@/components/ui/MagneticButton";
-import { TiltCard } from "@/components/ui/TiltCard";
+import { AnimatedText } from "@/components/motion/AnimatedText";
 
 interface FAQItem {
   question: string;
@@ -82,7 +80,7 @@ export default function HelpPage() {
 
       {/* Cards de Atalho */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <TiltCard className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-emerald-300 hover:shadow-md transition group">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-brand-300 hover:shadow-md transition group">
           <a
             href="https://wa.me/"
             target="_blank"
@@ -90,30 +88,30 @@ export default function HelpPage() {
             className="p-5 block"
           >
             <div className="text-2xl mb-2">💬</div>
-            <h3 className="font-bold text-slate-800 text-sm group-hover:text-emerald-600 transition">
+            <h3 className="font-bold text-slate-800 text-sm group-hover:text-brand-600 transition">
               Atendimento via WhatsApp
             </h3>
             <p className="text-xs text-slate-400 mt-1">
               Fale diretamente com um especialista em tempo real.
             </p>
           </a>
-        </TiltCard>
+        </div>
 
-        <TiltCard className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
+        <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
           <div className="text-2xl mb-2">📧</div>
           <h3 className="font-bold text-slate-800 text-sm">E-mail de Suporte</h3>
           <p className="text-xs text-slate-400 mt-1">
             suporte@empresa.com.br (Resposta em até 24h)
           </p>
-        </TiltCard>
+        </div>
 
-        <TiltCard className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
+        <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
           <div className="text-2xl mb-2">📚</div>
           <h3 className="font-bold text-slate-800 text-sm">Base de Conhecimento</h3>
           <p className="text-xs text-slate-400 mt-1">
             Artigos completos e tutoriais em vídeo (Em breve).
           </p>
-        </TiltCard>
+        </div>
       </div>
 
       {/* Grid: FAQ e Formulário */}
@@ -132,7 +130,7 @@ export default function HelpPage() {
                   key={faq.question}
                   className="border border-slate-100 rounded-xl overflow-hidden transition"
                 >
-                  <MagneticButton
+                  <button
                     type="button"
                     onClick={() => toggleFaq(index)}
                     className="w-full text-left p-4 font-semibold text-xs text-slate-800 bg-slate-50/50 hover:bg-slate-100/50 transition flex justify-between items-center gap-2"
@@ -141,7 +139,7 @@ export default function HelpPage() {
                     <span className="text-slate-400 font-bold">
                       {isOpen ? "−" : "+"}
                     </span>
-                  </MagneticButton>
+                  </button>
                   {isOpen && (
                     <div className="p-4 text-xs text-slate-600 bg-white border-t border-slate-100 leading-relaxed">
                       {faq.answer}
@@ -160,12 +158,12 @@ export default function HelpPage() {
           </h2>
 
           {isSent ? (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center space-y-2">
+            <div className="p-4 bg-brand-50 border border-brand-200 rounded-xl text-center space-y-2">
               <span className="text-2xl">🎉</span>
-              <p className="font-bold text-xs text-emerald-800">
+              <p className="font-bold text-xs text-brand-800">
                 Chamado enviado com sucesso!
               </p>
-              <p className="text-[11px] text-emerald-700">
+              <p className="text-[11px] text-brand-700">
                 Sua mensagem foi recebida. Entraremos em contato em breve.
               </p>
             </div>
@@ -181,7 +179,7 @@ export default function HelpPage() {
                   value={ticketSubject}
                   onChange={(e) => setTicketSubject(e.target.value)}
                   required
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500"
                 />
               </div>
 
@@ -195,16 +193,16 @@ export default function HelpPage() {
                   value={ticketMessage}
                   onChange={(e) => setTicketMessage(e.target.value)}
                   required
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 resize-none"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500 resize-none"
                 />
               </div>
 
-              <MagneticButton
+              <button
                 type="submit"
-                className="w-full py-2.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition shadow-sm"
+                className="w-full py-2.5 text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white rounded-xl transition shadow-sm"
               >
                 Enviar Chamado
-              </MagneticButton>
+              </button>
 
               {error && <p className="text-xs text-red-600">{error}</p>}
             </form>

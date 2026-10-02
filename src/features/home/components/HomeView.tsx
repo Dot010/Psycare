@@ -1,8 +1,9 @@
 "use client";
 
 import { mockUser } from "@/data/mockData";
-import { AnimatedText } from "@/components/ui/AnimatedText";
-import { TiltCard } from "@/components/ui/TiltCard";
+import { AnimatedText } from "@/components/motion/AnimatedText";
+import Link from "next/link";
+import { TiltCard } from "@/components/motion/TiltCard";
 
 export default function HomeView() {
   return (
@@ -69,6 +70,19 @@ export default function HomeView() {
           <strong>Quando:</strong> {mockUser.nextSession.date} às {mockUser.nextSession.time}
         </p>
       </TiltCard>
+
+      <Link
+        href="/dashboard/breathing"
+        className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:border-primary/40"
+      >
+        <div>
+          <h2 className="text-lg font-semibold font-heading text-foreground">Um minuto para respirar</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Exercício guiado para desacelerar, com técnicas de 1 a 5 minutos.
+          </p>
+        </div>
+        <span className="shrink-0 text-sm font-semibold text-primary">Começar →</span>
+      </Link>
     </div>
   );
 }

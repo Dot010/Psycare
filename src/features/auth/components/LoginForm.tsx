@@ -68,7 +68,7 @@ export function LoginForm() {
       />
 
       <div className="flex justify-end">
-        <Link href="/forgot-password" className="text-sm text-emerald-800 hover:text-emerald-900 transition-colors">
+        <Link href="/forgot-password" className="text-sm text-brand-800 hover:text-brand-900 transition-colors">
           Esqueci minha senha
         </Link>
       </div>
@@ -76,7 +76,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full mt-6 bg-emerald-800 hover:bg-emerald-900 disabled:bg-slate-300 text-white py-3 rounded-lg font-medium transition-all duration-200"
+        className="w-full mt-6 bg-brand-800 hover:bg-brand-900 disabled:bg-slate-300 text-white py-3 rounded-lg font-medium transition-all duration-200"
       >
         {isLoading ? "Entrando..." : "Entrar"}
       </button>
@@ -85,7 +85,7 @@ export function LoginForm() {
 
       <p className="text-center text-sm text-slate-600 mt-4">
         Não tem conta?{" "}
-        <Link href="/register" className="text-emerald-800 hover:text-emerald-900 font-medium transition-colors">
+        <Link href="/register" className="text-brand-800 hover:text-brand-900 font-medium transition-colors">
           Criar conta
         </Link>
       </p>

@@ -1,12 +1,25 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, Suspense } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useMemo, useRef, type MutableRefObject } from "react";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-function FluidMesh({ pointer }: { pointer: React.MutableRefObject<{ x: number; y: number }> }) {
+export interface FluidBlobProps {
+  /** Posição do cursor (-1..1). Sem ele, o blob não reage ao mouse. */
+  pointer?: MutableRefObject<{ x: number; y: number }>;
+  /**
+   * Quando informado, a escala do blob é controlada de fora (ex.: respiração guiada).
+   * Sem ele, o blob "respira" sozinho, bem de leve.
+   */
+  scaleRef?: MutableRefObject<{ scale: number }>;
+}
+
+const NO_POINTER = { current: { x: 0, y: 0 } };
+
+export function FluidBlob({ pointer = NO_POINTER, scaleRef }: FluidBlobProps) {
   const meshRef = useRef<THREE.Mesh<THREE.IcosahedronGeometry, THREE.ShaderMaterial> | null>(null);
   const materialRef = useRef<THREE.ShaderMaterial | null>(null);
+  const target = useMemo(() => new THREE.Vector2(), []);
 
   const material = useMemo(
     () =>
@@ -66,15 +79,17 @@ function FluidMesh({ pointer }: { pointer: React.MutableRefObject<{ x: number; y
     const t = state.clock.getElapsedTime();
     materialRef.current.uniforms.uTime.value = t;
 
+    target.set(pointer.current.x, pointer.current.y);
     (materialRef.current.uniforms.uMouse.value as THREE.Vector2).lerp(
-      new THREE.Vector2(pointer.current.x, pointer.current.y),
+      target,
       1 - Math.exp(-4 * delta),
     );
 
     meshRef.current.rotation.y += delta * 0.22;
     meshRef.current.rotation.x = Math.sin(t * 0.2) * 0.1;
-    const scale = 1 + Math.sin(t * 0.52) * 0.022;
-    meshRef.current.scale.setScalar(scale);
+    meshRef.current.scale.setScalar(
+      scaleRef ? scaleRef.current.scale : 1 + Math.sin(t * 0.52) * 0.022,
+    );
   });
 
   return (
@@ -82,51 +97,5 @@ function FluidMesh({ pointer }: { pointer: React.MutableRefObject<{ x: number; y
       <primitive object={material} ref={materialRef} attach="material" />
       <icosahedronGeometry args={[1.58, 24]} />
     </mesh>
-  );
-}
-
-function CanvasFallback() {
-  return <div className="absolute inset-0 bg-linear-to-br from-emerald-100/35 via-teal-100/20 to-stone-200/40 animate-pulse" />;
-}
-
-export function HeroCanvas() {
-  const [isMobile, setIsMobile] = useState(false);
-  const pointer = useRef({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 900px)");
-    const update = () => setIsMobile(mq.matches);
-    update();
-
-    const onMouseMove = (event: MouseEvent) => {
-      pointer.current.x = (event.clientX / window.innerWidth - 0.5) * 2;
-      pointer.current.y = (event.clientY / window.innerHeight - 0.5) * -2;
-    };
-
-    window.addEventListener("mousemove", onMouseMove);
-    mq.addEventListener("change", update);
-
-    return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      mq.removeEventListener("change", update);
-    };
-  }, []);
-
-  if (isMobile) {
-    return <CanvasFallback />;
-  }
-
-  return (
-    <div className="absolute inset-0">
-      <Suspense fallback={<CanvasFallback />}>
-        <Canvas camera={{ position: [0, 0, 5], fov: 40 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }}>
-          <ambientLight intensity={0.56} />
-          <hemisphereLight args={["#d9f6ea", "#f5efe4", 0.45]} />
-          <directionalLight position={[2, 2, 3]} intensity={0.95} color="#d9f6ea" />
-          <directionalLight position={[-2, -1, 2]} intensity={0.45} color="#f5efe4" />
-          <FluidMesh pointer={pointer} />
-        </Canvas>
-      </Suspense>
-    </div>
   );
 }

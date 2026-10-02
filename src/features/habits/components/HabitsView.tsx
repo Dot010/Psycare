@@ -4,9 +4,7 @@ import { useState } from "react";
 import { mockUser } from "@/data/mockData";
 import type { Habit } from "@/types/domain";
 import { NewHabitModal } from "@/features/habits/components/NewHabitModal";
-import { AnimatedText } from "@/components/ui/AnimatedText";
-import { MagneticButton } from "@/components/ui/MagneticButton";
-import { TiltCard } from "@/components/ui/TiltCard";
+import { AnimatedText } from "@/components/motion/AnimatedText";
 
 
 const HabitPage = () => {
@@ -45,28 +43,28 @@ const toggleHabit = (id: string) => {
       </div>
         {/* Contadores */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <TiltCard className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
           <p className="text-xs text-slate-500 uppercase font-bold">Concluidos Hoje</p>
           <p className="text-2xl text-slate-800 mt-1 font-black">
             {habits.filter((h) => h.completedToday).length / habits.length}
           </p>
-        </TiltCard>
+        </div>
         {/* Taxa de Sucesso */}
-        <TiltCard className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
           <p className="text-xs text-slate-500 uppercase font-bold">Taxa de Sucesso</p>
-          <p className="text-2xl text-emerald-600 mt-1 font-black">
+          <p className="text-2xl text-brand-600 mt-1 font-black">
             {habits.length > 0
             ? (habits.filter((h) => h.completedToday).length / habits.length) * 100
             : 0} %
           </p>
-        </TiltCard>
+        </div>
 {/* Maior Sequencia */}
-         <TiltCard className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+         <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
           <p className="text-xs text-slate-500 uppercase font-bold">Maior Sequencia</p>
             <p className="text-2xl text-amber-500 mt-1 font-black">
               🔥 {habits.length > 0 ? Math.max(...habits.map((h) => h.streak), 0) : 0} dias
           </p>
-        </TiltCard>
+        </div>
         </div>
 
       <div className="space-y-3">
@@ -75,7 +73,7 @@ const toggleHabit = (id: string) => {
             key={habit.id}
             className={`p-4 border rounded-xl flex justify-between items-center shadow-sm ${
               habit.completedToday
-                ? " bg-emerald-50 border-emerald-200"
+                ? " bg-brand-50 border-brand-200"
                 : "bg-white border-slate-200"
             }`}
           >
@@ -95,17 +93,17 @@ const toggleHabit = (id: string) => {
                 className="font-bold text-amber-500 bg-amber-50 px-2 py-1
                 rounded-md text-sm"
               >🔥{habit.streak}d</span>
-              <MagneticButton onClick={() => toggleHabit(habit.id)}
+              <button onClick={() => toggleHabit(habit.id)}
                 className={`w-8 h-8 rounded-full border-2 transition-colors flex items-center justify-center font-bold 
-                ${habit.completedToday ? "bg-emerald-500 border-emerald-500 text-white" : "bg-white border-slate-200 text-slate-500"}}`}
+                ${habit.completedToday ? "bg-brand-500 border-brand-500 text-white" : "bg-white border-slate-200 text-slate-500"}}`}
               >
                 {habit.completedToday ? "👍" : "👎"}
                 
-              </MagneticButton>
+              </button>
               
-              <MagneticButton onClick={() => handleRemoveHabit(habit.id)} className="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-slate-500 border-slate-200">
+              <button onClick={() => handleRemoveHabit(habit.id)} className="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-slate-500 border-slate-200">
                 🗑️
-              </MagneticButton>
+              </button>
 
             </div>
             

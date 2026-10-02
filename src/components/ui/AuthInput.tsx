@@ -31,7 +31,7 @@ export function AuthInput({
       <input
         id={inputId}
         className={cn(
-          "w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm",
+          "w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all text-sm",
           error && "border-red-500 focus:ring-red-500",
           className
         )}

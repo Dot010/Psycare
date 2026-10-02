@@ -4,8 +4,7 @@ import { useState } from "react";
 import { mockUser } from "@/data/mockData";
 import type { DiaryEntry } from "@/types/domain";
 import { NewEntryModal } from "@/features/diary/components/NewEntryModal";
-import { AnimatedText } from "@/components/ui/AnimatedText";
-import { TiltCard } from "@/components/ui/TiltCard";
+import { AnimatedText } from "@/components/motion/AnimatedText";
 
 const DiaryPage = () => {
   const [entries, setEntries] = useState<DiaryEntry[]>(
@@ -32,7 +31,7 @@ const DiaryPage = () => {
 
       <div className="space-y-4">
         {entries.map((entry) => (
-          <TiltCard
+          <div
             key={entry.id}
             className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-slate-200 transition space-y-3"
           >
@@ -40,7 +39,7 @@ const DiaryPage = () => {
               <span className="text-xs font-medium text-slate-400">
                 {entry.date}
               </span>
-              <span className="text-xs font-semibold px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100">
+              <span className="text-xs font-semibold px-3 py-1 bg-brand-50 text-brand-700 rounded-full border border-brand-100">
                 {entry.mood}
               </span>
             </div>
@@ -52,7 +51,7 @@ const DiaryPage = () => {
             <p className="text-slate-600 text-sm leading-relaxed">
               {entry.content}
             </p>
-          </TiltCard>
+          </div>
         ))}
       </div>
     </div>

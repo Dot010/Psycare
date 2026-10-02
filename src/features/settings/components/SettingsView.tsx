@@ -3,9 +3,7 @@
 import { useState } from "react";
 import { useUser } from "@/context/UserContext";
 import { z } from "zod";
-import { AnimatedText } from "@/components/ui/AnimatedText";
-import { MagneticButton } from "@/components/ui/MagneticButton";
-import { TiltCard } from "@/components/ui/TiltCard";
+import { AnimatedText } from "@/components/motion/AnimatedText";
 
 const profileSchema = z.object({
   name: z.string().trim().min(3, "Nome deve ter ao menos 3 caracteres"),
@@ -59,7 +57,7 @@ function ProfileForm({
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500"
+            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500"
           />
         </div>
 
@@ -72,7 +70,7 @@ function ProfileForm({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500"
+            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500"
           />
         </div>
       </div>
@@ -80,12 +78,12 @@ function ProfileForm({
       {error && <p className="text-xs text-red-600">{error}</p>}
 
       <div className="pt-2 flex justify-end">
-        <MagneticButton
+        <button
           type="submit"
-          className="px-5 py-2.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition shadow-sm"
+          className="px-5 py-2.5 text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white rounded-xl transition shadow-sm"
         >
           Salvar Alterações
-        </MagneticButton>
+        </button>
       </div>
     </form>
   );
@@ -119,7 +117,7 @@ export default function SettingsPage() {
         </div>
 
         {savedSuccess && (
-          <span className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 animate-in fade-in">
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-full bg-brand-50 text-brand-700 border border-brand-200 animate-in fade-in">
             ✓ Alterações salvas!
           </span>
         )}
@@ -127,7 +125,7 @@ export default function SettingsPage() {
 
       {/* Navegação por Abas */}
       <div className="flex gap-2 border-b border-slate-200 pb-2">
-        <MagneticButton
+        <button
           type="button"
           onClick={() => setActiveTab("general")}
           className={`px-4 py-2 text-xs font-semibold rounded-xl transition ${
@@ -137,8 +135,8 @@ export default function SettingsPage() {
           }`}
         >
           👤 Geral & Perfil
-        </MagneticButton>
-        <MagneticButton
+        </button>
+        <button
           type="button"
           onClick={() => setActiveTab("notifications")}
           className={`px-4 py-2 text-xs font-semibold rounded-xl transition ${
@@ -148,8 +146,8 @@ export default function SettingsPage() {
           }`}
         >
           🔔 Notificações
-        </MagneticButton>
-        <MagneticButton
+        </button>
+        <button
           type="button"
           onClick={() => setActiveTab("security")}
           className={`px-4 py-2 text-xs font-semibold rounded-xl transition ${
@@ -159,7 +157,7 @@ export default function SettingsPage() {
           }`}
         >
           🛡️ Segurança
-        </MagneticButton>
+        </button>
       </div>
 
       {/* Conteúdo da Aba Geral */}
@@ -174,7 +172,7 @@ export default function SettingsPage() {
 
       {/* Conteúdo da Aba Notificações */}
       {activeTab === "notifications" && (
-        <TiltCard className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
+        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
           <h2 className="font-bold text-slate-800 text-base border-b border-slate-100 pb-3">
             Preferências de Comunicação
           </h2>
@@ -193,7 +191,7 @@ export default function SettingsPage() {
                 type="checkbox"
                 checked={emailNotifications}
                 onChange={(e) => setEmailNotifications(e.target.checked)}
-                className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                className="w-4 h-4 accent-brand-600 cursor-pointer"
               />
             </div>
 
@@ -210,16 +208,16 @@ export default function SettingsPage() {
                 type="checkbox"
                 checked={smsNotifications}
                 onChange={(e) => setSmsNotifications(e.target.checked)}
-                className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                className="w-4 h-4 accent-brand-600 cursor-pointer"
               />
             </div>
           </div>
-        </TiltCard>
+        </div>
       )}
 
       {/* Conteúdo da Aba Segurança */}
       {activeTab === "security" && (
-        <TiltCard className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
+        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
           <div className="flex justify-between items-center border-b border-slate-100 pb-3">
             <h2 className="font-bold text-slate-800 text-base">
               Segurança e Autenticação
@@ -243,22 +241,22 @@ export default function SettingsPage() {
                 type="checkbox"
                 checked={twoFactorAuth}
                 onChange={(e) => setTwoFactorAuth(e.target.checked)}
-                className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                className="w-4 h-4 accent-brand-600 cursor-pointer"
               />
             </div>
 
             <div className="p-4 bg-slate-50 border border-dashed border-slate-200 rounded-xl flex items-center justify-between text-xs">
               <span className="text-slate-600">Alterar senha da conta</span>
-              <MagneticButton
+              <button
                 type="button"
                 onClick={() => alert("Recurso de troca de senha em breve!")}
                 className="px-3 py-1.5 font-semibold bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition"
               >
                 Redefinir
-              </MagneticButton>
+              </button>
             </div>
           </div>
-        </TiltCard>
+        </div>
       )}
     </div>
   );

@@ -11,7 +11,8 @@ import {
   BsCreditCard, 
   BsBoxArrowRight,
   BsGear,
-  BsQuestionCircle
+  BsQuestionCircle,
+  BsWind
 } from 'react-icons/bs';
 import { FaHome } from "react-icons/fa";
 import { MdPsychology } from 'react-icons/md';
@@ -25,6 +26,7 @@ const Nav = () => {
     { title: "Início", icon: <FaHome />, path: "/dashboard/home" },
     { title: "Meu Diário", icon: <BsJournalText />, path: "/dashboard/diary" },
     { title: "Meus Hábitos", icon: <BsCheck2Square />, path: "/dashboard/habits" },
+    { title: "Respirar", icon: <BsWind />, path: "/dashboard/breathing" },
     { title: "Agendar Consulta", icon: <BsCalendarCheck />, path: "/dashboard/appointments", gap: true },
     { title: "Gestão de Saúde", icon: <BsCapsule />, path: "/dashboard/health" }, 
     { title: "Mensagens", icon: <BsChatDots />, path: "/dashboard/messages" },

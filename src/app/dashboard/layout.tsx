@@ -6,7 +6,7 @@ import { Suspense } from "react";
 const Nav = dynamic(() => import("@/components/layout/Nav"), {
   ssr: false,
   loading: () => (
-    <aside className="hidden md:block h-screen w-20 shrink-0 bg-emerald-600/95 animate-pulse" />
+    <aside className="hidden md:block h-screen w-20 shrink-0 bg-brand-600/95 animate-pulse" />
   ),
 });
 

@@ -73,7 +73,7 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <button className="px-5 py-2.5 bg-emerald-600 text-white font-semibold text-sm rounded-xl hover:bg-emerald-700 transition shadow-sm self-start sm:self-auto cursor-pointer">
+                <button className="px-5 py-2.5 bg-brand-600 text-white font-semibold text-sm rounded-xl hover:bg-brand-700 transition shadow-sm self-start sm:self-auto cursor-pointer">
                     + Novo Registro
                 </button>
             </DialogTrigger>
@@ -97,7 +97,7 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)} 
                             placeholder="Ex: Reflexão sobre a semana de estudos"
-                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition"
+                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition"
                         />
                     </div>
 
@@ -113,7 +113,7 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
                                     key={mood}
                                     onClick={() => setSelectedMood(mood)}
                                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${selectedMood === mood
-                                            ? "bg-emerald-600 text-white shadow-sm"
+                                            ? "bg-brand-600 text-white shadow-sm"
                                             : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                                         }`}
                                 >
@@ -127,7 +127,7 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
                     <div>
                         <div className="flex justify-between text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wider">
                             <span>Nível de Ansiedade / Carga</span>
-                            <span className="text-emerald-600 font-bold">
+                            <span className="text-brand-600 font-bold">
                                 {anxietyLevel} / 5
                             </span>
                         </div>
@@ -137,7 +137,7 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
                             max="5"
                             value={anxietyLevel}
                             onChange={(e) => setAnxietyLevel(Number(e.target.value))}
-                            className="w-full accent-emerald-600 cursor-pointer h-2 bg-slate-100 rounded-lg appearance-none"
+                            className="w-full accent-brand-600 cursor-pointer h-2 bg-slate-100 rounded-lg appearance-none"
                         />
                     </div>
 
@@ -152,7 +152,7 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="Escreva livremente sobre seus pensamentos e o que disparou essa emoção..."
-                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none transition"
+                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 resize-none transition"
                         />
                     </div>
 
@@ -160,7 +160,7 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
                     <label className="flex items-center gap-2 cursor-pointer pt-1">
                         <input
                             type="checkbox"
-                            className="rounded accent-emerald-600 w-4 h-4 cursor-pointer"
+                            className="rounded accent-brand-600 w-4 h-4 cursor-pointer"
                         />
                         <span className="text-xs text-slate-600 font-medium">
                             Marcar para discutir na próxima consulta
@@ -180,7 +180,7 @@ export function NewEntryModal({ onAddEntry }: NewEntryModalProps) {
                         </button>
                         <button
                             type="submit"
-                            className="px-5 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition shadow-sm cursor-pointer"
+                            className="px-5 py-2 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 transition shadow-sm cursor-pointer"
                         >
                             Salvar Registro
                         </button>

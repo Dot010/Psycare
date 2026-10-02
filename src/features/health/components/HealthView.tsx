@@ -4,9 +4,8 @@ import { useState } from "react";
 import { mockUser } from "@/data/mockData";
 import type { Exame, Medicamento, Sintoma } from "@/types/domain";
 import { z } from "zod";
-import { AnimatedText } from "@/components/ui/AnimatedText";
-import { MagneticButton } from "@/components/ui/MagneticButton";
-import { TiltCard } from "@/components/ui/TiltCard";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { AnimatedText } from "@/components/motion/AnimatedText";
 
 const remedioSchema = z.object({
   novoNomeRemedio: z.string().trim().min(2, "Informe o nome do remédio"),
@@ -114,7 +113,7 @@ export default function HealthPage() {
           onClick={() => setActiveTab("remedios")}
           className={`px-4 py-2 text-sm font-semibold rounded-xl transition whitespace-nowrap ${
             activeTab === "remedios"
-              ? "bg-emerald-600 text-white shadow-sm"
+              ? "bg-brand-600 text-white shadow-sm"
               : "bg-slate-100 text-slate-600 hover:bg-slate-200"
           }`}
         >
@@ -124,7 +123,7 @@ export default function HealthPage() {
           onClick={() => setActiveTab("exames")}
           className={`px-4 py-2 text-sm font-semibold rounded-xl transition whitespace-nowrap ${
             activeTab === "exames"
-              ? "bg-emerald-600 text-white shadow-sm"
+              ? "bg-brand-600 text-white shadow-sm"
               : "bg-slate-100 text-slate-600 hover:bg-slate-200"
           }`}
         >
@@ -134,7 +133,7 @@ export default function HealthPage() {
           onClick={() => setActiveTab("sintomas")}
           className={`px-4 py-2 text-sm font-semibold rounded-xl transition whitespace-nowrap ${
             activeTab === "sintomas"
-              ? "bg-emerald-600 text-white shadow-sm"
+              ? "bg-brand-600 text-white shadow-sm"
               : "bg-slate-100 text-slate-600 hover:bg-slate-200"
           }`}
         >
@@ -148,17 +147,17 @@ export default function HealthPage() {
             <h2 className="text-lg font-bold text-slate-800">
               Medicamentos Ativos
             </h2>
-            <MagneticButton
+            <button
               onClick={() => setIsRemedioModalOpen(true)}
-              className="bg-emerald-600 text-white px-4 py-2 text-sm font-semibold rounded-xl hover:bg-emerald-700 transition"
+              className="bg-brand-600 text-white px-4 py-2 text-sm font-semibold rounded-xl hover:bg-brand-700 transition"
             >
               + Adicionar Remédio
-            </MagneticButton>
+            </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {remedios.map((item) => (
-              <TiltCard
+              <div
                 key={item.id}
                 className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-2"
               >
@@ -166,12 +165,12 @@ export default function HealthPage() {
                   <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                     {item.frequencia} • {item.horario}
                   </span>
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
+                  <span className="text-xs font-bold text-brand-600 bg-brand-50 px-2 py-1 rounded-lg">
                     {item.dosagem}
                   </span>
                 </div>
                 <p className="text-lg font-bold text-slate-700">{item.nome}</p>
-              </TiltCard>
+              </div>
             ))}
           </div>
         </div>
@@ -183,13 +182,13 @@ export default function HealthPage() {
             <h2 className="text-lg font-bold text-slate-800">
               Histórico de Exames
             </h2>
-            <MagneticButton className="bg-emerald-600 text-white px-4 py-2 text-sm font-semibold rounded-xl hover:bg-emerald-700 transition">
+            <button className="bg-brand-600 text-white px-4 py-2 text-sm font-semibold rounded-xl hover:bg-brand-700 transition">
               + Enviar Exame
-            </MagneticButton>
+            </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {exames.map((exame) => (
-              <TiltCard
+              <div
                 key={exame.id}
                 className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-2"
               >
@@ -199,10 +198,10 @@ export default function HealthPage() {
                 <p className="text-lg font-bold text-slate-700">
                   {exame.titulo}
                 </p>
-                <p className="text-xs text-emerald-600 font-medium">
+                <p className="text-xs text-brand-600 font-medium">
                   Resultado: {exame.resultado}
                 </p>
-              </TiltCard>
+              </div>
             ))}
           </div>
         </div>
@@ -214,17 +213,17 @@ export default function HealthPage() {
             <h2 className="text-lg font-bold text-slate-800">
               Registo de Sintomas
             </h2>
-            <MagneticButton
+            <button
               onClick={() => setIsSintomaModalOpen(true)}
-              className="bg-emerald-600 text-white px-4 py-2 text-sm font-semibold rounded-xl hover:bg-emerald-700 transition"
+              className="bg-brand-600 text-white px-4 py-2 text-sm font-semibold rounded-xl hover:bg-brand-700 transition"
             >
               + Registar Sintoma
-            </MagneticButton>
+            </button>
           </div>
 
           <div className="space-y-3">
             {sintomas.map((item) => (
-              <TiltCard
+              <div
                 key={item.id}
                 className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-1"
               >
@@ -234,21 +233,18 @@ export default function HealthPage() {
                 <p className="text-lg font-bold text-slate-700">
                   {item.descricao}
                 </p>
-                <p className="text-xs text-emerald-600 font-medium">
+                <p className="text-xs text-brand-600 font-medium">
                   Intensidade/Nota: {item.nota}
                 </p>
-              </TiltCard>
+              </div>
             ))}
           </div>
         </div>
       )}
 
-      {isRemedioModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl space-y-4">
-            <h3 className="text-lg font-bold text-slate-800">
-              Novo Medicamento
-            </h3>
+      <Dialog open={isRemedioModalOpen} onOpenChange={setIsRemedioModalOpen}>
+        <DialogContent aria-describedby={undefined} className="gap-4 rounded-2xl p-6 sm:max-w-md">
+          <DialogTitle className="text-lg leading-tight font-bold text-slate-800">Novo Medicamento</DialogTitle>
             <form onSubmit={handleAddRemedio} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
@@ -259,7 +255,7 @@ export default function HealthPage() {
                   value={novoNomeRemedio}
                   onChange={(e) => setNovoNomeRemedio(e.target.value)}
                   placeholder="Ex: Rivotril"
-                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   required
                 />
               </div>
@@ -272,7 +268,7 @@ export default function HealthPage() {
                   value={novaDosagem}
                   onChange={(e) => setNovaDosagem(e.target.value)}
                   placeholder="Ex: 2mg"
-                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   required
                 />
               </div>
@@ -286,7 +282,7 @@ export default function HealthPage() {
                     value={novaFrequencia}
                     onChange={(e) => setNovaFrequencia(e.target.value)}
                     placeholder="Ex: Diária"
-                    className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
                 <div>
@@ -298,7 +294,7 @@ export default function HealthPage() {
                     value={novoHorario}
                     onChange={(e) => setNovoHorario(e.target.value)}
                     placeholder="Ex: 21:00"
-                    className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
               </div>
@@ -313,22 +309,18 @@ export default function HealthPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700"
+                  className="px-4 py-2 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700"
                 >
                   Salvar
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
 
-      {isSintomaModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl space-y-4">
-            <h3 className="text-lg font-bold text-slate-800">
-              Registar Sintoma
-            </h3>
+      <Dialog open={isSintomaModalOpen} onOpenChange={setIsSintomaModalOpen}>
+        <DialogContent aria-describedby={undefined} className="gap-4 rounded-2xl p-6 sm:max-w-md">
+          <DialogTitle className="text-lg leading-tight font-bold text-slate-800">Registar Sintoma</DialogTitle>
             <form onSubmit={handleAddSintoma} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
@@ -339,7 +331,7 @@ export default function HealthPage() {
                   value={novaDescricaoSintoma}
                   onChange={(e) => setNovaDescricaoSintoma(e.target.value)}
                   placeholder="Ex: Insónia / Dor de cabeça"
-                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   required
                 />
               </div>
@@ -352,7 +344,7 @@ export default function HealthPage() {
                   value={novaNota}
                   onChange={(e) => setNovaNota(e.target.value)}
                   placeholder="Ex: Moderada"
-                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
               <div className="flex justify-end gap-2 pt-2">
@@ -366,15 +358,14 @@ export default function HealthPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700"
+                  className="px-4 py-2 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700"
                 >
                   Salvar
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

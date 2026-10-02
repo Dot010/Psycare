@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import SocialButtons from "@/features/auth/components/SocialButtons";
-import { AnimatedText } from "@/components/ui/AnimatedText";
-import { HeroCanvas } from "@/features/landing/components/HeroCanvas";
+import { AnimatedText } from "@/components/motion/AnimatedText";
+import { HeroCanvas } from "@/components/three/HeroCanvas";
 
 export interface AuthLayoutProps {
   title: string;
@@ -21,15 +21,15 @@ export function AuthLayout({
   children,
 }: AuthLayoutProps) {
   return (
-    <section className="bg-[#f7f6f2] min-h-screen flex items-center justify-center p-4">
-      <div className="bg-[#fdfcf9] flex rounded-xl shadow-sm border border-black/5 max-w-4xl w-full overflow-hidden min-h-137.5">
+    <section className="bg-canvas min-h-screen flex items-center justify-center p-4">
+      <div className="bg-surface flex rounded-xl shadow-sm border border-black/5 max-w-4xl w-full overflow-hidden min-h-137.5">
         {/* Left side - Form */}
         <div className="md:w-1/2 w-full p-8 md:p-12 flex flex-col justify-center">
           <div className="mb-2">
             <AnimatedText
               as="h1"
               text={title}
-              className="text-3xl md:text-4xl font-semibold font-heading text-[#2f3a32] mb-2 leading-tight"
+              className="text-3xl md:text-4xl font-semibold font-heading text-ink mb-2 leading-tight"
             />
             {subtitle && (
               <p className="text-slate-600 text-sm">{subtitle}</p>
@@ -42,9 +42,9 @@ export function AuthLayout({
         </div>
 
         {/* Right side - Image */}
-        <div className="hidden md:block md:w-1/2 relative bg-emerald-50/40 p-4 overflow-hidden">
+        <div className="hidden md:block md:w-1/2 relative bg-brand-50/40 p-4 overflow-hidden">
           <HeroCanvas />
-          <div className="absolute inset-0 bg-linear-to-br from-emerald-200/20 via-transparent to-stone-100/25" />
+          <div className="absolute inset-0 bg-linear-to-br from-brand-200/20 via-transparent to-stone-100/25" />
           <Image
             src={imageSrc}
             alt={imageAlt}

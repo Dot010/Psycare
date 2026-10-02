@@ -58,7 +58,7 @@ export function NewHabitModal({ onAddHabit }: NewHabitModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
+        <Button className="bg-brand-600 hover:bg-brand-700 text-white gap-2">
           <Plus className="h-4 w-4" /> Novo Hábito
         </Button>
       </DialogTrigger>
@@ -94,7 +94,7 @@ export function NewHabitModal({ onAddHabit }: NewHabitModalProps) {
               value={category}
               onChange={(e) => setCategory(e.target.value)}
                           className="w-full h-10 px-3 rounded-md border border-slate-200 bg-white text-sm focus:outline-none
-              focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
             >
               <option value="Saude">Saúde</option>
               <option value="Estudo">Estudo</option>
@@ -111,7 +111,7 @@ export function NewHabitModal({ onAddHabit }: NewHabitModalProps) {
             >
           Cancelar
                       </Button>
-                      <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                      <Button type="submit" className="bg-brand-600 hover:bg-brand-700 text-white">
               Salvar Hábito
             </Button>
           </DialogFooter>

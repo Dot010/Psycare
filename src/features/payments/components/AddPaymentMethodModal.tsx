@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { PaymentMethod } from "@/types/domain";
 import { z } from "zod";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface AddPaymentMethodModalProps {
   isOpen: boolean;
@@ -61,20 +62,6 @@ export default function AddPaymentMethodModal({
     resetForm();
     onClose();
   }, [isSubmitting, resetForm, onClose]);
-
-  // Tecla ESC para fechar
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        handleClose();
-      }
-    };
-
-    if (isOpen) {
-      window.addEventListener("keydown", handleKeyDown);
-    }
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, handleClose]);
 
   // Máscaras de Cartão
   const handleCardLast4Change = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,30 +163,10 @@ export default function AddPaymentMethodModal({
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      onClick={(e) => {
-        if (e.target === e.currentTarget) handleClose();
-      }}
-      className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
-    >
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-200">
-        {/* Cabeçalho */}
-        <div className="flex justify-between items-center border-b border-slate-100 pb-4">
-          <h3 className="font-bold text-slate-800 text-lg">
-            Novo Método de Pagamento
-          </h3>
-          <button
-            type="button"
-            disabled={isSubmitting}
-            onClick={handleClose}
-            className="text-slate-400 hover:text-slate-600 font-bold p-1 transition disabled:opacity-50"
-          >
-            ✕
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
+      <DialogContent aria-describedby={undefined} className="gap-6 rounded-3xl p-6 sm:max-w-md">
+        <DialogTitle className="border-b border-slate-100 pb-4 text-lg font-bold text-slate-800">Novo Método de Pagamento</DialogTitle>
 
         {/* Seleção de Tipo */}
         <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
@@ -246,7 +213,7 @@ export default function AddPaymentMethodModal({
                   value={cardBrand}
                   disabled={isSubmitting}
                   onChange={(e) => setCardBrand(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 disabled:bg-slate-50"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500 disabled:bg-slate-50"
                 >
                   <option value="Visa">Visa</option>
                   <option value="Mastercard">Mastercard</option>
@@ -268,7 +235,7 @@ export default function AddPaymentMethodModal({
                   disabled={isSubmitting}
                   onChange={handleCardLast4Change}
                   required
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 disabled:bg-slate-50"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500 disabled:bg-slate-50"
                 />
               </div>
 
@@ -284,7 +251,7 @@ export default function AddPaymentMethodModal({
                   disabled={isSubmitting}
                   onChange={handleCardExpiryChange}
                   required
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 disabled:bg-slate-50"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500 disabled:bg-slate-50"
                 />
               </div>
             </>
@@ -300,7 +267,7 @@ export default function AddPaymentMethodModal({
                   onChange={(e) =>
                     handlePixKeyTypeChange(e.target.value as PixKeyType)
                   }
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 disabled:bg-slate-50"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500 disabled:bg-slate-50"
                 >
                   <option value="cpf">CPF</option>
                   <option value="email">E-mail</option>
@@ -328,12 +295,12 @@ export default function AddPaymentMethodModal({
                   disabled={isSubmitting}
                   onChange={handlePixKeyChange}
                   required
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 disabled:bg-slate-50 font-mono"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500 disabled:bg-slate-50 font-mono"
                 />
               </div>
 
               {/* Card informativo sobre cobrança PIX */}
-              <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-start gap-2 text-xs text-emerald-800">
+              <div className="p-3 bg-brand-50 border border-brand-100 rounded-xl flex items-start gap-2 text-xs text-brand-800">
                 <span className="text-base">ℹ️</span>
                 <p>
                   No dia da renovação, um código <strong>PIX Copia e Cola</strong> e o <strong>QR Code</strong> serão enviados para sua chave/e-mail para pagamento instantâneo.
@@ -357,7 +324,7 @@ export default function AddPaymentMethodModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 py-2.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 py-2.5 text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white rounded-xl transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>
@@ -370,7 +337,7 @@ export default function AddPaymentMethodModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

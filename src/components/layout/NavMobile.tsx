@@ -8,7 +8,8 @@ import {
   BsChatDots, BsCapsule, BsCreditCard,
   BsGrid3X3GapFill,
   BsQuestionCircle,
-  BsGear
+  BsGear,
+  BsWind
 } from "react-icons/bs";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -25,6 +26,7 @@ const NavMobile = () => {
   ];
 
   const MoreMenus = [
+    { title: "Respirar", icon: <BsWind />, path: "/dashboard/breathing" },
     { title: "Saúde", icon: <BsCapsule />, path: "/dashboard/health" },
     { title: "Chat", icon: <BsChatDots />, path: "/dashboard/messages" },
     { title: "Meus Pagamentos", icon: <BsCreditCard />, path: "/dashboard/payments" },
@@ -53,7 +55,7 @@ const NavMobile = () => {
           <button 
             key={index}
             onClick={() => handleNavigate(item.path)}
-            className='flex flex-col items-center gap-1 text-slate-400 active:text-emerald-600 transition-all'
+            className='flex flex-col items-center gap-1 text-slate-400 active:text-brand-600 transition-all'
           >
             <span className='text-xl'>{item.icon}</span>
             <span className='text-[10px] font-bold uppercase tracking-tight'>{item.title}</span>
@@ -62,9 +64,9 @@ const NavMobile = () => {
 
         <button 
           onClick={() => setMenuOpen(!menuOpen)}
-          className={`flex flex-col items-center gap-1 transition-all ${menuOpen ? 'text-emerald-600' : 'text-slate-400'}`}
+          className={`flex flex-col items-center gap-1 transition-all ${menuOpen ? 'text-brand-600' : 'text-slate-400'}`}
         >
-          <div className={`p-2 rounded-xl transition-all ${menuOpen ? 'bg-emerald-50' : ''}`}>
+          <div className={`p-2 rounded-xl transition-all ${menuOpen ? 'bg-brand-50' : ''}`}>
             <BsGrid3X3GapFill className="text-xl" />
           </div>
           <span className="text-[10px] font-bold uppercase tracking-tight">Mais</span>
@@ -105,7 +107,7 @@ const NavMobile = () => {
                     className="flex flex-col items-center gap-2 group"
                   >
                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl transition-all shadow-sm
-                      ${item.logout ? 'bg-red-50 text-red-500' : 'bg-slate-50 text-slate-600 active:bg-emerald-600 active:text-white'}`}>
+                      ${item.logout ? 'bg-red-50 text-red-500' : 'bg-slate-50 text-slate-600 active:bg-brand-600 active:text-white'}`}>
                       {item.icon}
                     </div>
                     <span className={`text-[11px] font-bold ${item.logout ? 'text-red-400' : 'text-slate-500'}`}>

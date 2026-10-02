@@ -4,9 +4,9 @@ import { useState } from "react";
 import { mockUser } from "@/data/mockData";
 import type { Invoice, PaymentMethod, Subscription } from "@/types/domain";
 import AddPaymentMethodModal from "@/features/payments/components/AddPaymentMethodModal";
-import { AnimatedText } from "@/components/ui/AnimatedText";
-import { MagneticButton } from "@/components/ui/MagneticButton";
-import { TiltCard } from "@/components/ui/TiltCard";
+import { AnimatedText } from "@/components/motion/AnimatedText";
+import { MagneticButton } from "@/components/motion/MagneticButton";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 export default function Payments() {
   const [invoices] = useState<Invoice[]>(mockUser.invoices);
@@ -94,14 +94,14 @@ export default function Payments() {
           <span
             className={`inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full border ${
               subscription.status === "active"
-                ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                ? "bg-brand-500/20 text-brand-300 border-brand-500/30"
                 : "bg-red-500/20 text-red-300 border-red-500/30"
             }`}
           >
             <span
               className={`w-2 h-2 rounded-full ${
                 subscription.status === "active"
-                  ? "bg-emerald-400 animate-pulse"
+                  ? "bg-brand-400 animate-pulse"
                   : "bg-red-400"
               }`}
             />
@@ -125,31 +125,31 @@ export default function Payments() {
           <p className="text-xs text-slate-400 uppercase tracking-wider">
             Valor do plano
           </p>
-          <p className="text-3xl font-extrabold text-emerald-400">
+          <p className="text-3xl font-extrabold text-brand-400">
             R$ {subscription.price.toFixed(2).replace(".", ",")}
             <span className="text-xs text-slate-400 font-normal"> /mês</span>
           </p>
 
-          <MagneticButton
+          <button
             type="button"
             onClick={handleToggleCancelSubscription}
             className={`mt-3 text-xs font-semibold px-4 py-2 rounded-xl transition ${
               subscription.status === "active"
                 ? "bg-red-500/10 text-red-400 hover:bg-red-500/20"
-                : "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+                : "bg-brand-500/10 text-brand-400 hover:bg-brand-500/20"
             }`}
           >
             {subscription.status === "active"
               ? "Cancelar Assinatura"
               : "Reativar Assinatura"}
-          </MagneticButton>
+          </button>
         </div>
       </div>
 
       {/* . Grid  */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
         {/* Métodos de Pagamento */}
-        <TiltCard className="md:col-span-5 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+        <div className="md:col-span-5 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
           <div className="flex justify-between items-center border-b border-slate-100 pb-3">
             <h2 className="font-bold text-slate-800 text-base">
               Métodos de Pagamento
@@ -157,7 +157,7 @@ export default function Payments() {
             <MagneticButton
               type="button"
               onClick={() => setIsAddModalOpen(true)}
-              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition"
+              className="text-xs font-semibold text-brand-600 hover:text-brand-700 transition"
             >
               + Adicionar
             </MagneticButton>
@@ -174,7 +174,7 @@ export default function Payments() {
                   key={method.id}
                   className={`p-4 rounded-xl border transition flex items-center justify-between ${
                     method.isDefault
-                      ? "border-emerald-500 bg-emerald-50/40"
+                      ? "border-brand-500 bg-brand-50/40"
                       : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
@@ -207,36 +207,36 @@ export default function Payments() {
 
                   <div className="flex items-center gap-2">
                     {method.isDefault ? (
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
+                      <span className="text-[10px] font-bold text-brand-700 bg-brand-100 px-2 py-0.5 rounded-md">
                         Principal
                       </span>
                     ) : (
-                      <MagneticButton
+                      <button
                         type="button"
                         onClick={() => handleDefaultPaymentMethod(method.id)}
-                        className="text-xs text-slate-400 hover:text-emerald-600 transition"
+                        className="text-xs text-slate-400 hover:text-brand-600 transition"
                       >
                         Tornar principal
-                      </MagneticButton>
+                      </button>
                     )}
 
-                    <MagneticButton
+                    <button
                       type="button"
                       onClick={() => handleDeletePaymentMethod(method.id)}
                       title="Remover método"
                       className="text-xs text-slate-300 hover:text-red-500 transition ml-1 p-1"
                     >
                       ✕
-                    </MagneticButton>
+                    </button>
                   </div>
                 </div>
               ))
             )}
           </div>
-        </TiltCard>
+        </div>
 
         {/* Histórico de Faturas */}
-        <TiltCard className="md:col-span-7 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+        <div className="md:col-span-7 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
           <h2 className="font-bold text-slate-800 text-base border-b border-slate-100 pb-3">
             Histórico de Faturas
           </h2>
@@ -265,7 +265,7 @@ export default function Payments() {
                       <span
                         className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md ${
                           isPaid
-                            ? "text-emerald-700 bg-emerald-50"
+                            ? "text-brand-700 bg-brand-50"
                             : "text-amber-700 bg-amber-50"
                         }`}
                       >
@@ -274,31 +274,31 @@ export default function Payments() {
                     </div>
 
                     {!isPaid ? (
-                      <MagneticButton
+                      <button
                         type="button"
                         onClick={() => setSelectedPixInvoice(invoice)}
-                        className="px-3 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition flex items-center gap-1 shadow-sm"
+                        className="px-3 py-1.5 text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white rounded-xl transition flex items-center gap-1 shadow-sm"
                       >
                         <span>❖</span> Pagar
-                      </MagneticButton>
+                      </button>
                     ) : (
-                      <MagneticButton
+                      <button
                         type="button"
                         onClick={() =>
                           alert(`Baixando recibo da fatura ${invoice.id}...`)
                         }
                         title="Baixar recibo"
-                        className="p-2 text-slate-400 hover:text-emerald-600 transition"
+                        className="p-2 text-slate-400 hover:text-brand-600 transition"
                       >
                         📄
-                      </MagneticButton>
+                      </button>
                     )}
                   </div>
                 </div>
               );
             })}
           </div>
-        </TiltCard>
+        </div>
       </div>
 
       {/* Modal para Adicionar Método de Pagamento */}
@@ -311,25 +311,9 @@ export default function Payments() {
 
       {/*  Modal de Pagamento via QR Code PIX */}
       {selectedPixInvoice && (
-        <div
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setSelectedPixInvoice(null);
-          }}
-          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
-        >
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200 text-center">
-            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-slate-800 text-base">
-                Pagamento via PIX
-              </h3>
-              <MagneticButton
-                type="button"
-                onClick={() => setSelectedPixInvoice(null)}
-                className="text-slate-400 hover:text-slate-600 font-bold p-1"
-              >
-                ✕
-              </MagneticButton>
-            </div>
+        <Dialog open onOpenChange={(open) => { if (!open) setSelectedPixInvoice(null); }}>
+          <DialogContent aria-describedby={undefined} className="gap-5 rounded-3xl p-6 text-center sm:max-w-sm">
+            <DialogTitle className="border-b border-slate-100 pb-3 text-base font-bold text-slate-800">Pagamento via PIX</DialogTitle>
 
             <p className="text-xs text-slate-500">
               Escaneie o QR Code abaixo com o aplicativo do seu banco para pagar{" "}
@@ -359,20 +343,20 @@ export default function Payments() {
                 {mockPixCode}
               </div>
 
-              <MagneticButton
+              <button
                 type="button"
                 onClick={handleCopyPixCode}
                 className={`w-full py-2.5 text-xs font-semibold rounded-xl transition shadow-sm flex items-center justify-center gap-2 ${
                   copiedCode
-                    ? "bg-emerald-800 text-white"
-                    : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                    ? "bg-brand-800 text-white"
+                    : "bg-brand-600 hover:bg-brand-700 text-white"
                 }`}
               >
                 {copiedCode ? "✓ Código Copiado!" : "Copiar Código PIX"}
-              </MagneticButton>
+              </button>
             </div>
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

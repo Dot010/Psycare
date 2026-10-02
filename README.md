@@ -26,6 +26,7 @@ A plataforma oferece um painel completo para acompanhamento de rotinas, registro
   - **Home:** Visão geral da rotina, próximos compromissos e resumo diário.
   - **Diário Emocional:** Registro e acompanhamento de humor e reflexões.
   - **Hábitos:** Monitoramento e criação de metas diárias.
+  - **Respiração Guiada:** Exercícios de 1 a 5 minutos (técnicas 4-6, caixa e 4-7-8) com um blob 3D que guia o ritmo.
   - **Saúde & Métricas:** Acompanhamento de evolução e bem-estar.
   - **Consultas & Mensagens:** Gestão de agendamentos e histórico de conversas.
   - **Pagamentos:** Controle financeiro e faturas.
@@ -87,15 +88,17 @@ A plataforma oferece um painel completo para acompanhamento de rotinas, registro
 
 ---
 
-## 🎞️ Motion Principles e UX de Carregamento
+## 🎞️ Movimento e UX de Carregamento
 
 - Skeletons globais com `loading.tsx` no App Router.
-- Lazy loading do shell do dashboard (navegação desktop/mobile).
-- Transição suave de entrada e saída por rota com `PageTransition`.
+- Lazy loading do shell do dashboard (navegação desktop/mobile) e do three.js (`next/dynamic`, só baixa quando o canvas aparece).
 - Barra de progresso global de navegação com `nextjs-toploader`.
-- Respeito a `prefers-reduced-motion` para acessibilidade.
+- **Acessibilidade:** `prefers-reduced-motion` é respeitado em CSS global, no Framer Motion (`MotionConfig reducedMotion="user"`), no GSAP e no 3D (vira um fundo estático). Efeitos de hover (`TiltCard`, `MagneticButton`) só ligam em dispositivos com mouse.
+- Animações em `src/components/motion/`; use `TiltCard`/`MagneticButton` com moderação (destaques e ação principal), não em listas e formulários.
+- Cores centralizadas em `src/app/globals.css` (`brand-*`, `canvas`, `surface`, `ink`): para trocar a cor da marca, edite só lá.
 
 ---
+
 
 ## 🔐 Segurança
 

@@ -102,7 +102,7 @@ export function RegisterForm() {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full mt-6 bg-emerald-800 hover:bg-emerald-900 disabled:bg-slate-300 text-white py-3 rounded-lg font-medium transition-all duration-200"
+        className="w-full mt-6 bg-brand-800 hover:bg-brand-900 disabled:bg-slate-300 text-white py-3 rounded-lg font-medium transition-all duration-200"
       >
         {isLoading ? "Criando conta..." : "Criar conta"}
       </button>
@@ -111,7 +111,7 @@ export function RegisterForm() {
 
       <p className="text-center text-sm text-slate-600 mt-4">
         Já tem conta?{" "}
-        <Link href="/login" className="text-emerald-800 hover:text-emerald-900 font-medium transition-colors">
+        <Link href="/login" className="text-brand-800 hover:text-brand-900 font-medium transition-colors">
           Faça login
         </Link>
       </p>
