@@ -29,14 +29,15 @@ Requer Node 22.12 ou superior.
 
 ## Comandos
 
-| Comando | O que faz |
-| --- | --- |
-| `npm run dev` | servidor de desenvolvimento |
-| `npm run build` / `npm start` | build e execução de produção |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` | ESLint |
-| `npm test` | Vitest |
-| `npm run check` | typecheck + lint + testes (o mesmo que o CI roda) |
+| Comando                       | O que faz                                         |
+| ----------------------------- | ------------------------------------------------- |
+| `npm run dev`                 | servidor de desenvolvimento                       |
+| `npm run build` / `npm start` | build e execução de produção                      |
+| `npm run typecheck`           | `tsc --noEmit`                                    |
+| `npm run lint`                | ESLint                                            |
+| `npm test`                    | Vitest                                            |
+| `npm run check`               | typecheck + lint + testes (o mesmo que o CI roda) |
+| `npm run format`              | formata o projeto com Prettier                    |
 
 ## Estrutura do projeto
 
@@ -60,7 +61,7 @@ src/
 ├── lib/                 Utilitários sem UI: sessão, formatação, CSP, observabilidade
 ├── mocks/               Dados fictícios usados enquanto não há backend
 ├── proxy.ts             Proteção das rotas e CSP por requisição
-└── instrumentation.ts   Inicialização do Sentry
+└── instrumentation.ts   Sentry no servidor
 ```
 
 Áreas em `features/`: `appointments`, `auth`, `breathing`, `diary`, `habits`, `health`, `help`, `home`, `messages`, `payments`, `settings`.
@@ -79,6 +80,10 @@ src/
 
 Cada View lê dados de `mocks/user.ts` (direto ou via hook, como `useMessages` e `useAppointments`). Para ligar um backend, troque essa leitura por uma chamada (Server Action ou fetch) dentro da própria feature; as telas não precisam mudar de lugar.
 
+## Commits
+
+O hook de pré-commit (Husky) formata os arquivos alterados com Prettier (`.prettierrc.json`) e roda o typecheck. O hook é instalado por `npm install`.
+
 ## Dados de demonstração
 
 - `mocks/user.ts` guarda o perfil, hábitos, diário, consultas, faturas etc. As alterações feitas na interface ficam só em memória e somem ao recarregar. O perfil editado em Configurações fica no `localStorage`.
@@ -92,7 +97,7 @@ Cada View lê dados de `mocks/user.ts` (direto ou via hook, como `useMessages` e
 - **CSP com nonce por requisição:** montada em `lib/security/csp.ts` e aplicada no `proxy.ts`. Por isso as páginas são renderizadas a cada requisição. Sem `unsafe-eval` em produção; `style-src` mantém `unsafe-inline` por causa das bibliotecas de UI.
 - **Headers** (HSTS, X-Frame-Options etc.) em `next.config.ts`.
 - **Pagamentos:** o modal coleta só os 4 últimos dígitos do cartão. Pagamento real deve usar checkout hospedado do gateway.
-- **Monitoramento:** Sentry opcional (`NEXT_PUBLIC_SENTRY_DSN`), sem session replay.
+- **Monitoramento:** só Sentry, opcional (`NEXT_PUBLIC_SENTRY_DSN`). Inicializado no navegador (`lib/observability/client.ts`) e no servidor (`instrumentation.ts`), sem session replay.
 - **Dependências:** Dependabot semanal e `npm audit` no CI.
 
 Antes de aceitar dados reais são necessários backend, autenticação gerenciada, política de privacidade e base legal conforme a LGPD (dados de saúde são sensíveis).
