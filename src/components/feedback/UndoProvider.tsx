@@ -54,7 +54,7 @@ export function UndoProvider({ children }: { children: ReactNode }) {
         className="pointer-events-none fixed inset-x-0 bottom-24 z-[60] flex justify-center px-4 md:bottom-6"
       >
         {current && (
-          <div className="pointer-events-auto flex items-center gap-3 rounded-full bg-ink py-2 pr-2 pl-5 text-sm text-white shadow-lg">
+          <div className="pointer-events-auto flex items-center gap-3 rounded-full bg-strong py-2 pr-2 pl-5 text-sm text-white shadow-lg">
             <span>{current.message}</span>
             <Button
               size="sm"

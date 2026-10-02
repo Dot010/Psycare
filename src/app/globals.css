@@ -9,9 +9,9 @@
   --font-sans: var(--font-poppins);
 
   /* Marca (verde oliva, base #5E7638 = brand-600). Trocar a cor do app = editar só aqui. */
-  --color-brand-50: #f3f7ec;
-  --color-brand-100: #e6edd9;
-  --color-brand-200: #d0dbbb;
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
   --color-brand-300: #b3c494;
   --color-brand-400: #8ea466;
   --color-brand-500: #738b49;
@@ -22,24 +22,29 @@
   --color-brand-950: #1a2310;
 
   /* Destaque (amarelo manteiga, base #EAD96B). Texto sobre ele: sempre ink ou sun-700. */
-  --color-sun-50: #fcf8df;
-  --color-sun-100: #f7eeb3;
+  --color-sun-50: var(--sun-50);
+  --color-sun-100: var(--sun-100);
   --color-sun-300: #ead96b;
   --color-sun-500: #c9b53c;
-  --color-sun-700: #6f6210;
+  --color-sun-700: var(--sun-700);
 
   /* Perigo (vermelho tijolo): só para excluir, cancelar e erros. */
-  --color-danger-50: #fbeeec;
+  --color-danger-50: var(--danger-50);
   --color-danger-300: #e39a90;
   --color-danger-500: #c9473a;
-  --color-danger-600: #b3382c;
+  --color-danger-600: var(--danger-600);
 
-  /* Superfícies e texto do tema claro */
-  --color-canvas: #f7f6f2;
-  --color-surface: #fdfcf9;
-  --color-sunken: #f1eeea;
-  --color-taupe: #c5b9b4;
-  --color-ink: #4d1f1a;
+  /* Superfícies e texto: mudam no tema escuro (valores em :root e .dark abaixo). */
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-taupe: var(--taupe);
+  --color-ink: var(--ink);
+
+  /* Texto verde legível nos dois temas, e fundo escuro fixo para botões e faixas com texto branco. */
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-accent: var(--brand-accent);
+  --color-strong: var(--strong);
 
   /* Design Tokens Padrão Shadcn */
   --color-ring: var(--ring);
@@ -75,6 +80,25 @@
   --motion-duration-slow: 420ms;
   --motion-ease-emphasis: cubic-bezier(0.22, 1, 0.36, 1);
 
+  /* Paleta do tema claro */
+  --canvas: #f7f6f2;
+  --surface: #fdfcf9;
+  --sunken: #f1eeea;
+  --taupe: #c5b9b4;
+  --ink: #4d1f1a;
+  --strong: #4d1f1a;
+  --on-sun: #4d1f1a;
+  --brand-50: #f3f7ec;
+  --brand-100: #e6edd9;
+  --brand-200: #d0dbbb;
+  --brand-ink: #36461f;
+  --brand-accent: #5e7638;
+  --sun-50: #fcf8df;
+  --sun-100: #f7eeb3;
+  --sun-700: #6f6210;
+  --danger-50: #fbeeec;
+  --danger-600: #b3382c;
+
   /* Tema Light - Alinhado com o Design System */
   --background: var(--color-canvas);
   --foreground: var(--color-ink);
@@ -91,16 +115,16 @@
 
   /* Secondary e accent: amarelo manteiga, com texto escuro */
   --secondary: var(--color-sun-300);
-  --secondary-foreground: var(--color-ink);
+  --secondary-foreground: var(--on-sun);
 
   /* Muted: fundos suaves em bege; texto secundário em cinza #6B6B6B (4,6:1 sobre o fundo suave) */
   --muted: var(--color-sunken);
   --muted-foreground: #6b6b6b;
 
   --accent: var(--color-sun-300);
-  --accent-foreground: var(--color-ink);
+  --accent-foreground: var(--on-sun);
 
-  --destructive: var(--color-danger-600);
+  --destructive: #b3382c;
   --border: color-mix(in srgb, var(--color-taupe) 55%, transparent);
   --input: color-mix(in srgb, var(--color-taupe) 80%, transparent);
   --ring: var(--color-brand-600);
@@ -109,31 +133,46 @@
 }
 
 .dark {
-  --background: oklch(0.18 0.01 30);
-  --foreground: oklch(0.95 0.01 90);
+  color-scheme: dark;
 
-  --card: oklch(0.22 0.01 30);
-  --card-foreground: oklch(0.95 0.01 90);
+  /* Tema escuro: marrom-grafite quente, não preto puro. Texto 12:1 sobre o fundo; cinza secundário 7:1. */
+  --canvas: #171512;
+  --surface: #211e1a;
+  --sunken: #2b2723;
+  --taupe: #6e625c;
+  --ink: #f2ece4;
+  --strong: #5a2a23;
+  --brand-50: #232b19;
+  --brand-100: #2c3720;
+  --brand-200: #3b4a2a;
+  --brand-ink: #c9d9ab;
+  --brand-accent: #a3ba78;
+  --sun-50: #2e2a12;
+  --sun-100: #3d3715;
+  --sun-700: #ead96b;
+  --danger-50: #3a1f1b;
+  --danger-600: #f0a095;
 
-  --popover: oklch(0.22 0.01 30);
-  --popover-foreground: oklch(0.95 0.01 90);
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-ink);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-ink);
 
-  --primary: oklch(0.55 0.11 130);
-  --primary-foreground: oklch(0.98 0 0);
+  --primary: var(--color-brand-600);
+  --primary-foreground: #ffffff;
+  --secondary: var(--color-sun-300);
+  --secondary-foreground: var(--on-sun);
+  --muted: var(--color-sunken);
+  --muted-foreground: #b5aca4;
+  --accent: var(--color-sun-300);
+  --accent-foreground: var(--on-sun);
 
-  --secondary: oklch(0.3 0.05 95);
-  --secondary-foreground: oklch(0.95 0.01 90);
-
-  --muted: oklch(0.28 0.01 30);
-  --muted-foreground: oklch(0.7 0 0);
-
-  --accent: oklch(0.28 0.01 30);
-  --accent-foreground: oklch(0.95 0.01 90);
-
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.55 0.11 130);
+  --destructive: #b3382c;
+  --border: color-mix(in srgb, var(--color-taupe) 55%, transparent);
+  --input: color-mix(in srgb, var(--color-taupe) 80%, transparent);
+  --ring: var(--color-brand-400);
 }
 
 @layer base {
@@ -154,6 +193,13 @@
   h6 {
     @apply font-heading tracking-tight;
   }
+}
+
+/* Troca de tema com revelação em círculo (View Transitions): sem fusão padrão entre as duas telas. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
 
 @layer utilities {
