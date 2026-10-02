@@ -120,7 +120,7 @@ function EntryForm({
       <div>
         <div className="mb-2 flex justify-between text-xs font-medium text-muted-foreground">
           <label htmlFor="anxiety-level">Nível de ansiedade ou carga</label>
-          <span className="font-bold text-primary">{anxietyLevel} / 5</span>
+          <span className="font-bold text-brand-accent">{anxietyLevel} / 5</span>
         </div>
         <input
           id="anxiety-level"

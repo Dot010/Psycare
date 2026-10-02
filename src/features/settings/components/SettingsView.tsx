@@ -140,7 +140,7 @@ export default function SettingsView() {
         saved && (
           <span
             role="status"
-            className="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700"
+            className="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-ink"
           >
             <Check className="size-3.5" />
             Alterações salvas
@@ -165,7 +165,7 @@ export default function SettingsView() {
             onClick={() => setActiveTab(tab.id)}
             className={cn(
               "rounded-xl px-4 py-2 text-xs font-semibold transition-colors",
-              activeTab === tab.id ? "bg-ink text-white" : "text-muted-foreground hover:bg-sunken",
+              activeTab === tab.id ? "bg-strong text-white" : "text-muted-foreground hover:bg-sunken",
             )}
           >
             {tab.label}

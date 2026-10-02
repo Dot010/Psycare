@@ -46,7 +46,7 @@ export function PixDialog({ invoice, onClose }: PixDialogProps) {
         )}
 
         <div className="flex flex-col items-center rounded-2xl border border-border bg-sunken p-6">
-          <div className="flex size-40 items-center justify-center rounded-xl bg-ink text-white/70">
+          <div className="flex size-40 items-center justify-center rounded-xl bg-strong text-white/70">
             <QrCode className="size-20" aria-hidden />
             <span className="sr-only">QR Code de demonstração</span>
           </div>

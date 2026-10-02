@@ -75,7 +75,7 @@ export default function HelpView() {
       <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {CONTACTS.map(({ Icon, title, text }) => (
           <li key={title} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <Icon className="mb-2 size-5 text-brand-600" aria-hidden />
+            <Icon className="mb-2 size-5 text-brand-accent" aria-hidden />
             <h2 className="text-sm font-bold text-foreground">{title}</h2>
             <p className="mt-1 text-xs text-muted-foreground">{text}</p>
           </li>
@@ -108,9 +108,9 @@ export default function HelpView() {
               role="status"
               className="space-y-2 rounded-xl border border-brand-200 bg-brand-50 p-4 text-center"
             >
-              <CircleCheck className="mx-auto size-6 text-brand-600" aria-hidden />
-              <p className="text-xs font-bold text-brand-800">Chamado enviado</p>
-              <p className="text-xs text-brand-700">
+              <CircleCheck className="mx-auto size-6 text-brand-accent" aria-hidden />
+              <p className="text-xs font-bold text-brand-ink">Chamado enviado</p>
+              <p className="text-xs text-brand-ink">
                 Recebemos sua mensagem e entraremos em contato em breve.
               </p>
             </div>

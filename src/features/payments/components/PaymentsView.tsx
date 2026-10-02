@@ -64,7 +64,7 @@ export default function PaymentsView() {
     >
       <section
         aria-label="Assinatura"
-        className="flex flex-col items-start justify-between gap-6 rounded-2xl bg-ink p-6 text-white shadow-sm md:flex-row md:items-center md:p-8"
+        className="flex flex-col items-start justify-between gap-6 rounded-2xl bg-strong p-6 text-white shadow-sm md:flex-row md:items-center md:p-8"
       >
         <div className="space-y-2">
           <span
@@ -109,7 +109,7 @@ export default function PaymentsView() {
         <section className={cn(panelClass, "space-y-4 md:col-span-5")}>
           <div className="flex items-center justify-between border-b border-border pb-3">
             <h2 className="text-base font-bold text-foreground">Métodos de pagamento</h2>
-            <Button variant="ghost" size="sm" onClick={() => setAddOpen(true)} className="text-brand-600">
+            <Button variant="ghost" size="sm" onClick={() => setAddOpen(true)} className="text-brand-accent">
               <Plus />
               Adicionar
             </Button>
@@ -161,14 +161,14 @@ export default function PaymentsView() {
 
                   <div className="flex shrink-0 items-center gap-2">
                     {method.isDefault ? (
-                      <span className="rounded-md bg-brand-100 px-2 py-0.5 text-xs font-bold text-brand-700">
+                      <span className="rounded-md bg-brand-100 px-2 py-0.5 text-xs font-bold text-brand-ink">
                         Principal
                       </span>
                     ) : (
                       <button
                         type="button"
                         onClick={() => makeDefault(method.id)}
-                        className="text-xs text-muted-foreground transition-colors hover:text-brand-600"
+                        className="text-xs text-muted-foreground transition-colors hover:text-brand-accent"
                       >
                         Tornar principal
                       </button>
@@ -211,7 +211,7 @@ export default function PaymentsView() {
                       <span
                         className={cn(
                           "inline-block rounded-md px-2 py-0.5 text-xs font-semibold",
-                          isPaid ? "bg-brand-50 text-brand-700" : "bg-sun-50 text-sun-700",
+                          isPaid ? "bg-brand-50 text-brand-ink" : "bg-sun-50 text-sun-700",
                         )}
                       >
                         {isPaid ? "Pago" : "Pendente"}

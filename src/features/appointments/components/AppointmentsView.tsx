@@ -18,7 +18,7 @@ import { formatDateBR } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLES: Record<Agendamento["status"], string> = {
-  confirmado: "bg-brand-100 text-brand-800",
+  confirmado: "bg-brand-100 text-brand-ink",
   pendente: "bg-sun-100 text-ink",
   cancelado: "bg-sunken text-muted-foreground",
 };
