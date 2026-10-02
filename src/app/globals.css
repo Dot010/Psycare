@@ -8,6 +8,24 @@
   --font-heading: var(--font-newsreader);
   --font-sans: var(--font-inter);
 
+  /* Marca (verde). Mesmos valores do emerald do Tailwind: trocar a cor do app = editar só aqui. */
+  --color-brand-50: oklch(97.9% 0.021 166.113);
+  --color-brand-100: oklch(95% 0.052 163.051);
+  --color-brand-200: oklch(90.5% 0.093 164.15);
+  --color-brand-300: oklch(84.5% 0.143 164.978);
+  --color-brand-400: oklch(76.5% 0.177 163.223);
+  --color-brand-500: oklch(69.6% 0.17 162.48);
+  --color-brand-600: oklch(59.6% 0.145 163.225);
+  --color-brand-700: oklch(50.8% 0.118 165.612);
+  --color-brand-800: oklch(43.2% 0.095 166.913);
+  --color-brand-900: oklch(37.8% 0.077 168.94);
+  --color-brand-950: oklch(26.2% 0.051 172.552);
+
+  /* Superfícies e texto do tema claro */
+  --color-canvas: #f7f6f2;
+  --color-surface: #fdfcf9;
+  --color-ink: #2f3a32;
+
   /* Design Tokens Padrão Shadcn */
   --color-ring: var(--ring);
   --color-input: var(--input);
@@ -43,34 +61,34 @@
   --motion-ease-emphasis: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* Tema Light - Alinhado com o Design System */
-  --background: oklch(0.98 0.005 90);
-  --foreground: oklch(0.28 0.08 30); /* Marrom Escuro (#4D1F1A) */
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink);
 
-  --card: oklch(0.99 0.004 95);
-  --card-foreground: oklch(0.28 0.08 30);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-ink);
 
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.28 0.08 30);
+  --popover-foreground: var(--color-ink);
 
-  /* Primary: Verde Oliva (#5E763B) */
-  --primary: oklch(0.50 0.11 130);
+  /* Primary: verde da marca (brand-800), o mesmo dos botões principais */
+  --primary: var(--color-brand-800);
   --primary-foreground: oklch(0.98 0 0);
 
   /* Secondary: Amarelo Manteiga (#EAD96B) */
   --secondary: oklch(0.88 0.14 95);
-  --secondary-foreground: oklch(0.28 0.08 30);
+  --secondary-foreground: var(--color-ink);
 
   /* Muted & Surface: Bege Rosado e Cinza (#C5B9B4 / #6B6B6B) */
   --muted: oklch(0.80 0.02 45);
   --muted-foreground: oklch(0.50 0 0);
 
   --accent: oklch(0.88 0.14 95);
-  --accent-foreground: oklch(0.28 0.08 30);
+  --accent-foreground: var(--color-ink);
 
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.80 0.02 45 / 50%);
   --input: oklch(0.80 0.02 45 / 50%);
-  --ring: oklch(0.50 0.11 130);
+  --ring: var(--color-brand-600);
 
   --radius: 0.85rem;
 }
@@ -126,5 +144,16 @@
 @layer utilities {
   .animate-enter {
     animation: enter var(--motion-duration-slow) var(--motion-ease-emphasis) both;
+  }
+}
+/* Respeita a preferência do sistema por menos movimento (WCAG 2.3.3). Spinners continuam girando. */
+@media (prefers-reduced-motion: reduce) {
+  *:not(.animate-spin),
+  *:not(.animate-spin)::before,
+  *:not(.animate-spin)::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

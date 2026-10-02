@@ -1,198 +1,175 @@
 "use client";
 
-import Image from "next/image";
+import { Send } from "lucide-react";
 import { useState } from "react";
+import { Page } from "@/components/layout/Page";
+import { Button } from "@/components/ui/button";
+import { fieldControlClass } from "@/components/ui/input";
 import { useMessages } from "@/features/messages/hooks/useMessages";
-import { AnimatedText } from "@/components/ui/AnimatedText";
-import { MagneticButton } from "@/components/ui/MagneticButton";
-import { TiltCard } from "@/components/ui/TiltCard";
+import { cn } from "@/lib/utils";
+
+const QUICK_REPLIES = [
+  { label: "Dúvida remédio", text: "Tenho uma dúvida sobre a medicação: " },
+  { label: "Enviar exame", text: "Gostaria de enviar o resultado de um exame: " },
+  { label: "Sintoma novo", text: "Estou sentindo o seguinte sintoma novo: " },
+];
+
+const panelClass = "rounded-2xl border border-slate-200 bg-white shadow-sm";
+
+function Avatar({ name, className }: { name: string; className?: string }) {
+  const initials = name
+    .replace(/^(Dr|Dra)\.?\s+/i, "")
+    .split(" ")
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "flex shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-800",
+        className,
+      )}
+    >
+      {initials}
+    </span>
+  );
+}
 
 export function MessagesView() {
   const { chats, activeChat, activeChatId, setActiveChatId, sendMessage } = useMessages();
-  const [newMessage, setNewMessage] = useState<string>("");
+  const [newMessage, setNewMessage] = useState("");
   const [error, setError] = useState("");
 
-  const handleSendMessage = (chatId: string) => {
-    if (!newMessage.trim()) return;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeChat || !newMessage.trim()) return;
 
-    const result = sendMessage({
-      chatId,
-      content: newMessage,
-    });
-
+    const result = sendMessage({ chatId: activeChat.id, content: newMessage });
     if (!result.success) {
       setError(result.error);
       return;
     }
-
     setError("");
     setNewMessage("");
   };
 
-  const handleQuickAction = (text: string) => {
-    setNewMessage(text);
-  };
-
   return (
-    // Fundo transparente para permitir a visibilidade do BackgroundCharacter
-    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6 bg-transparent min-h-full">
-      <div>
-        <AnimatedText as="h1" text="Minhas Mensagens" className="text-2xl font-semibold text-[#2f3a32]" />
-        <p className="text-slate-600 text-sm mt-1">Converse em tempo real com a sua equipa médica.</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-        {/* Painel Lateral de Conversas */}
-        <TiltCard className="md:col-span-4 bg-[#fdfcf9]/85 backdrop-blur-sm p-4 rounded-xl border border-black/5 shadow-sm space-y-3">
-          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2">Conversas</h2>
+    <Page title="Minhas Mensagens" description="Converse com a sua equipe médica." width="wide">
+      <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-12">
+        <section aria-label="Conversas" className={cn(panelClass, "space-y-3 p-4 md:col-span-4")}>
+          <h2 className="px-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Conversas</h2>
 
           {chats.length === 0 ? (
-            <div className="rounded-lg border border-neutral-200/60 p-4 bg-white/80">
-              <p className="text-sm font-medium text-[#2f3a32]">Nenhuma conversa ativa</p>
-              <p className="text-xs text-slate-600 mt-1">Assim que você iniciar um atendimento, ele aparecerá aqui.</p>
+            <div className="rounded-lg border border-slate-200 p-4">
+              <p className="text-sm font-medium text-ink">Nenhuma conversa ativa</p>
+              <p className="mt-1 text-xs text-slate-600">Assim que você iniciar um atendimento, ele aparecerá aqui.</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {chats.map((chat) => {
-                const isSelected = chat.id === activeChatId;
-                return (
-                  <MagneticButton
-                    key={chat.id}
+            <ul className="space-y-2">
+              {chats.map((chat) => (
+                <li key={chat.id}>
+                  <button
+                    type="button"
+                    aria-current={chat.id === activeChatId}
                     onClick={() => setActiveChatId(chat.id)}
-                    className={`w-full text-left p-3 rounded-lg flex items-center gap-3 transition ${
-                      isSelected
-                        ? "bg-emerald-50/90 border border-emerald-200 shadow-sm"
-                        : "hover:bg-slate-50/80 border border-transparent"
-                    }`}
+                    className={cn(
+                      "flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors",
+                      chat.id === activeChatId ? "border-brand-200 bg-brand-50" : "border-transparent hover:bg-slate-50",
+                    )}
                   >
-                    <div className="relative shrink-0">
-                      <Image
-                        src={chat.avatarUrl || "/avatar-placeholder.png"}
-                        alt={chat.doctorName}
-                        width={44}
-                        height={44}
-                        className="w-11 h-11 rounded-full object-cover border border-slate-200"
-                        unoptimized={!chat.avatarUrl?.startsWith("/")} // Evita erros de otimização em links externos
-                      />
-                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-700 border-2 border-white rounded-full" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-[#2f3a32] text-sm truncate">{chat.doctorName}</h3>
-                      <p className="text-xs text-emerald-800 font-medium">{chat.specialty}</p>
-                      <p className="text-xs text-slate-500 truncate mt-0.5">{chat.lastMessage}</p>
-                    </div>
-                  </MagneticButton>
-                );
-              })}
-            </div>
+                    <Avatar name={chat.doctorName} className="size-11" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-ink">{chat.doctorName}</span>
+                      <span className="block text-xs font-medium text-brand-800">{chat.specialty}</span>
+                      <span className="mt-0.5 block truncate text-xs text-slate-500">{chat.lastMessage}</span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           )}
-        </TiltCard>
+        </section>
 
-        {/* Área de Chat Ativo */}
         {activeChat ? (
-          <TiltCard className="md:col-span-8 bg-[#fdfcf9]/85 backdrop-blur-sm p-6 rounded-xl border border-black/5 shadow-sm flex flex-col h-[600px]">
-            {/* Cabeçalho do Chat */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="relative shrink-0">
-                  <Image
-                    src={activeChat.avatarUrl || "/avatar-placeholder.png"}
-                    alt={activeChat.doctorName}
-                    width={40}
-                    height={40}
-                    className="w-10 h-10 rounded-full object-cover border"
-                    unoptimized={!activeChat.avatarUrl?.startsWith("/")}
-                  />
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-700 border-2 border-white rounded-full" />
-                </div>
-                <div>
-                  <h2 className="font-semibold text-[#2f3a32]">{activeChat.doctorName}</h2>
-                  <p className="text-xs text-emerald-800 font-medium">Online • {activeChat.specialty}</p>
-                </div>
+          <section aria-label={`Conversa com ${activeChat.doctorName}`} className={cn(panelClass, "flex h-[600px] flex-col p-6 md:col-span-8")}>
+            <header className="flex items-center gap-3 border-b border-slate-100 pb-4">
+              <Avatar name={activeChat.doctorName} className="size-10" />
+              <div>
+                <h2 className="font-semibold text-ink">{activeChat.doctorName}</h2>
+                <p className="text-xs font-medium text-brand-800">{activeChat.specialty}</p>
               </div>
-            </div>
+            </header>
 
-            {/* Lista de Mensagens */}
-            <div className="flex-1 overflow-y-auto space-y-3 p-2 my-2">
+            <div className="my-2 flex-1 space-y-3 overflow-y-auto p-2">
               {activeChat.messages.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-center px-8">
+                <div className="flex h-full items-center justify-center px-8 text-center">
                   <div>
-                    <p className="text-base font-medium text-[#2f3a32]">Conversa iniciada</p>
-                    <p className="text-sm text-slate-600 mt-1">Envie uma mensagem para começar este acompanhamento.</p>
+                    <p className="text-base font-medium text-ink">Conversa iniciada</p>
+                    <p className="mt-1 text-sm text-slate-600">Envie uma mensagem para começar este acompanhamento.</p>
                   </div>
                 </div>
               ) : (
                 activeChat.messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`p-3 rounded-xl max-w-[75%] text-sm ${
-                      message.sender === "user"
-                        ? "bg-emerald-800 text-white ml-auto"
-                        : "bg-slate-100 text-slate-800 mr-auto"
-                    }`}
+                    className={cn(
+                      "max-w-[75%] rounded-xl p-3 text-sm",
+                      message.sender === "user" ? "ml-auto bg-brand-800 text-white" : "mr-auto bg-slate-100 text-slate-800",
+                    )}
                   >
                     <p>{message.content}</p>
-                    <span className="text-[10px] block mt-1 text-right opacity-75">{message.timestamp}</span>
+                    <span className="mt-1 block text-right text-[10px] opacity-75">{message.timestamp}</span>
                   </div>
                 ))
               )}
             </div>
 
-            {/* Ações Rápidas */}
-            <div className="flex gap-2 overflow-x-auto pt-2 pb-1 text-xs no-scrollbar">
-              <MagneticButton
-                type="button"
-                onClick={() => handleQuickAction("Tenho uma dúvida sobre a medicação: ")}
-                className="px-3 py-1.5 bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-800 rounded-full transition border border-slate-200 whitespace-nowrap"
-              >
-                Dúvida remédio
-              </MagneticButton>
-              <MagneticButton
-                type="button"
-                onClick={() => handleQuickAction("Gostaria de enviar o resultado de um exame: ")}
-                className="px-3 py-1.5 bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-800 rounded-full transition border border-slate-200 whitespace-nowrap"
-              >
-                Enviar exame
-              </MagneticButton>
-              <MagneticButton
-                type="button"
-                onClick={() => handleQuickAction("Estou a sentir o seguinte sintoma novo: ")}
-                className="px-3 py-1.5 bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-800 rounded-full transition border border-slate-200 whitespace-nowrap"
-              >
-                Sintoma novo
-              </MagneticButton>
+            <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1 pt-2">
+              {QUICK_REPLIES.map((reply) => (
+                <Button
+                  key={reply.label}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setNewMessage(reply.text)}
+                  className="h-8 rounded-full px-3 text-xs"
+                >
+                  {reply.label}
+                </Button>
+              ))}
             </div>
 
-            {/* Formulário de Envio */}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSendMessage(activeChat.id);
-              }}
-              className="flex items-center gap-2 pt-2 border-t border-slate-100"
-            >
+            <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-slate-100 pt-2">
               <input
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Escreva a sua mensagem..."
-                className="flex-1 border border-neutral-200/70 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-800/20 bg-white/90"
+                aria-label="Mensagem"
+                placeholder="Escreva sua mensagem..."
+                className={cn(fieldControlClass, "h-10 flex-1")}
               />
-
-              <MagneticButton type="submit" className="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition shadow-sm">
+              <Button type="submit" disabled={!newMessage.trim()}>
+                <Send />
                 Enviar
-              </MagneticButton>
+              </Button>
             </form>
 
-            {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
-          </TiltCard>
+            {error && (
+              <p role="alert" className="mt-2 text-xs text-red-600">
+                {error}
+              </p>
+            )}
+          </section>
         ) : (
-          <TiltCard className="md:col-span-8 bg-[#fdfcf9]/85 backdrop-blur-sm p-8 rounded-xl border border-black/5 text-center text-slate-500 shadow-sm">
-            <p className="font-medium text-[#2f3a32]">Nenhuma conversa selecionada.</p>
-            <p className="text-sm mt-1">Selecione uma conversa no painel lateral para continuar.</p>
-          </TiltCard>
+          <div className={cn(panelClass, "p-8 text-center text-slate-500 md:col-span-8")}>
+            <p className="font-medium text-ink">Nenhuma conversa selecionada.</p>
+            <p className="mt-1 text-sm">Selecione uma conversa no painel lateral para continuar.</p>
+          </div>
         )}
       </div>
-    </div>
+    </Page>
   );
 }

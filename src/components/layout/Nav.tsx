@@ -1,103 +1,87 @@
 "use client";
 
-import { useState } from 'react';
-import { 
-  BsArrowLeftShort, 
-  BsJournalText, 
-  BsCalendarCheck, 
-  BsCheck2Square, 
-  BsCapsule, 
-  BsChatDots, 
-  BsCreditCard, 
-  BsBoxArrowRight,
-  BsGear,
-  BsQuestionCircle
-} from 'react-icons/bs';
-import { FaHome } from "react-icons/fa";
-import { MdPsychology } from 'react-icons/md';
-import Link from 'next/link';
-import { logoutAction } from "@/lib/auth-utils/actions";
+import { Brain, ChevronLeft, LogOut } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { NAV_ITEMS } from "@/components/layout/nav-items";
+import { logoutAction } from "@/features/auth/actions";
+import { cn } from "@/lib/utils";
 
-const Nav = () => {
+const itemClass =
+  "flex w-full items-center gap-x-4 rounded-xl p-3 text-primary-foreground/90 transition-colors hover:bg-white/15 hover:text-primary-foreground";
+
+export default function Nav() {
   const [open, setOpen] = useState(true);
-
-  const Menus = [
-    { title: "Início", icon: <FaHome />, path: "/dashboard/home" },
-    { title: "Meu Diário", icon: <BsJournalText />, path: "/dashboard/diary" },
-    { title: "Meus Hábitos", icon: <BsCheck2Square />, path: "/dashboard/habits" },
-    { title: "Agendar Consulta", icon: <BsCalendarCheck />, path: "/dashboard/appointments", gap: true },
-    { title: "Gestão de Saúde", icon: <BsCapsule />, path: "/dashboard/health" }, 
-    { title: "Mensagens", icon: <BsChatDots />, path: "/dashboard/messages" },
-    { title: "Meus Pagamentos", icon: <BsCreditCard />, path: "/dashboard/payments", gap: true },
-    { title: "Ajuda", icon: <BsQuestionCircle />, path: "/dashboard/help" },
-    { title: "Configurações", icon: <BsGear />, path: "/dashboard/settings" },
-    { title: "Sair", icon: <BsBoxArrowRight />, logout: true, path: "/login" },
-  ];
+  const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex h-screen sticky top-0 z-40">
-      {/* Sidebar Container */}
-      <div className={`bg-primary text-primary-foreground h-screen p-5 pt-8 ${open ? "w-72" : "w-20"} duration-300 relative shadow-xl transition-all`}>
-        
-        {/* Botão Toggle Acessível */}
+    <aside className="sticky top-0 z-40 hidden h-screen md:flex">
+      <div
+        className={cn(
+          "relative h-screen bg-primary p-5 pt-8 text-primary-foreground shadow-xl transition-all duration-300",
+          open ? "w-72" : "w-20",
+        )}
+      >
         <button
           type="button"
           aria-label={open ? "Recolher menu" : "Expandir menu"}
           onClick={() => setOpen(!open)}
-          className={`bg-card text-primary text-3xl rounded-full absolute -right-3 top-9 border-2 border-primary cursor-pointer transition-all duration-500 hover:scale-105 flex items-center justify-center p-0.5 ${!open && "rotate-180"}`}
+          className={cn(
+            "absolute -right-3 top-9 flex items-center justify-center rounded-full border-2 border-primary bg-card p-0.5 text-primary transition-transform duration-500 hover:scale-105",
+            !open && "rotate-180",
+          )}
         >
-          <BsArrowLeftShort />
+          <ChevronLeft className="size-6" />
         </button>
 
-        {/* Logo */}
-        <div className={`flex items-center transition-all duration-300 ${!open ? "justify-center" : "ml-1"}`}>
-          <div className={`bg-card p-2 rounded-xl duration-500 shadow-md ${!open && "rotate-360"}`}>
-            <MdPsychology className="text-primary text-3xl block" />
+        <div className={cn("flex items-center", open ? "ml-1" : "justify-center")}>
+          <div className="rounded-xl bg-card p-2 shadow-md">
+            <Brain className="size-7 text-primary" />
           </div>
-          
-          <h1 className={`text-primary-foreground origin-left font-bold text-2xl ml-4 duration-300 ${!open ? "scale-0 w-0 overflow-hidden" : "scale-100"}`}>
+          <span
+            className={cn(
+              "ml-4 origin-left text-2xl font-bold transition-all duration-300",
+              !open && "w-0 scale-0 overflow-hidden",
+            )}
+          >
             Psy Care
-          </h1>
+          </span>
         </div>
 
-        {/* Lista de Menus */}
-        <ul className="pt-10 space-y-2">
-          {Menus.map((menu, index) => (
-            <div key={index} className={menu.gap ? "mt-8" : "mt-2"}>
-              <li
-                className={`flex items-center gap-x-4 cursor-pointer p-3 rounded-xl transition-all duration-200
-                  ${menu.logout 
-                    ? "text-red-200 hover:bg-destructive/20 hover:text-white" 
-                    : "text-primary-foreground/90 hover:bg-white/15 hover:text-primary-foreground"}`}
-              >
-                {menu.logout ? (
-                  <form action={logoutAction} className="w-full">
-                    <button type="submit" className="flex items-center gap-x-4 w-full text-left">
-                      <span className={`text-2xl block duration-300 ${!open && "mx-auto"}`}>
-                        {menu.icon}
-                      </span>
-                      <span className={`text-base font-medium flex-1 duration-200 ${!open && "hidden"}`}>
-                        {menu.title}
-                      </span>
-                    </button>
-                  </form>
-                ) : (
-                  <Link href={menu.path || "#"} className="flex items-center gap-x-4 w-full">
-                    <span className={`text-2xl block duration-300 ${!open && "mx-auto"}`}>
-                      {menu.icon}
-                    </span>
-                    <span className={`text-base font-medium flex-1 duration-200 ${!open && "hidden"}`}>
-                      {menu.title}
-                    </span>
+        <nav aria-label="Principal" className="pt-10">
+          <ul>
+            {NAV_ITEMS.map(({ title, href, icon: Icon, startsGroup }) => {
+              const isActive = pathname === href;
+              return (
+                <li key={href} className={startsGroup ? "mt-8" : "mt-2"}>
+                  <Link
+                    href={href}
+                    aria-current={isActive ? "page" : undefined}
+                    title={open ? undefined : title}
+                    className={cn(itemClass, isActive && "bg-white/20 text-primary-foreground")}
+                  >
+                    <Icon className={cn("size-6 shrink-0", !open && "mx-auto")} />
+                    <span className={cn("flex-1 text-base font-medium", !open && "hidden")}>{title}</span>
                   </Link>
-                )}
-              </li>
-            </div>
-          ))}
-        </ul>
+                </li>
+              );
+            })}
+
+            <li className="mt-8">
+              <form action={logoutAction}>
+                <button
+                  type="submit"
+                  className={cn(itemClass, "text-red-200 hover:bg-destructive/20 hover:text-white")}
+                >
+                  <LogOut className={cn("size-6 shrink-0", !open && "mx-auto")} />
+                  <span className={cn("flex-1 text-left text-base font-medium", !open && "hidden")}>Sair</span>
+                </button>
+              </form>
+            </li>
+          </ul>
+        </nav>
       </div>
     </aside>
   );
-};
-
-export default Nav;
+}

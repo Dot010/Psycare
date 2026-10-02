@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Inter, Newsreader } from "next/font/google";
-import { UserProvider } from "@/context/UserContext";
-import { DemoBanner } from "@/components/DemoBanner";
+import { UserProvider } from "@/components/providers/UserProvider";
+import { DemoBanner } from "@/components/feedback/DemoBanner";
 import { AppProviders } from "@/components/providers/AppProviders";
 import "@/app/globals.css";
 

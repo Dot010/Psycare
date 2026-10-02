@@ -1,380 +1,292 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { useState } from "react";
-import { mockUser } from "@/data/mockData";
-import type { Exame, Medicamento, Sintoma } from "@/types/domain";
 import { z } from "zod";
-import { AnimatedText } from "@/components/ui/AnimatedText";
-import { MagneticButton } from "@/components/ui/MagneticButton";
-import { TiltCard } from "@/components/ui/TiltCard";
+import { Page } from "@/components/layout/Page";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
+import { Field } from "@/components/ui/field";
+import type { Exame, Medicamento, Sintoma } from "@/features/health/types";
+import { mockUser } from "@/mocks/user";
+import { cn } from "@/lib/utils";
 
-const remedioSchema = z.object({
-  novoNomeRemedio: z.string().trim().min(2, "Informe o nome do remédio"),
-  novaDosagem: z.string().trim().min(1, "Informe a dosagem"),
-  novaFrequencia: z.string().trim().optional(),
-  novoHorario: z.string().trim().optional(),
+const medicamentoSchema = z.object({
+  nome: z.string().trim().min(2, "Informe o nome do remédio"),
+  dosagem: z.string().trim().min(1, "Informe a dosagem"),
+  frequencia: z.string().trim().optional(),
+  horario: z.string().trim().optional(),
 });
 
 const sintomaSchema = z.object({
-  novaDescricaoSintoma: z.string().trim().min(2, "Descreva o sintoma"),
-  novaNota: z.string().trim().optional(),
+  descricao: z.string().trim().min(2, "Descreva o sintoma"),
+  nota: z.string().trim().optional(),
 });
 
-export default function HealthPage() {
-  const [activeTab, setActiveTab] = useState<
-    "remedios" | "exames" | "sintomas"
-  >("remedios");
+const TABS = [
+  { id: "remedios", label: "Meus Remédios" },
+  { id: "exames", label: "Meus Exames" },
+  { id: "sintomas", label: "Meus Sintomas" },
+] as const;
 
-  const [remedios, setRemedios] = useState<Medicamento[]>(mockUser.remedios);
-  const [exames] = useState<Exame[]>(mockUser.exames);
-  const [sintomas, setSintomas] = useState<Sintoma[]>(mockUser.sintomas);
+type TabId = (typeof TABS)[number]["id"];
 
-  const [isRemedioModalOpen, setIsRemedioModalOpen] = useState(false);
-  const [novoNomeRemedio, setNovoNomeRemedio] = useState("");
-  const [novaDosagem, setNovaDosagem] = useState("");
-  const [novaFrequencia, setNovaFrequencia] = useState("");
-  const [novoHorario, setNovoHorario] = useState("");
+const cardClass = "rounded-2xl border border-slate-200 bg-white p-5 shadow-sm";
+const metaClass = "text-xs font-semibold uppercase tracking-wider text-slate-400";
 
-  const [isSintomaModalOpen, setIsSintomaModalOpen] = useState(false);
-  const [novaDescricaoSintoma, setNovaDescricaoSintoma] = useState("");
-  const [novaNota, setNovaNota] = useState("");
-  const [remedioError, setRemedioError] = useState("");
-  const [sintomaError, setSintomaError] = useState("");
+function SectionHeader({ title, action }: { title: string; action: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <h2 className="text-lg font-bold text-slate-800">{title}</h2>
+      {action}
+    </div>
+  );
+}
 
-  const handleAddRemedio = (e: React.FormEvent) => {
+function MedicamentoDialog({
+  open,
+  onOpenChange,
+  onSave,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (item: Medicamento) => void;
+}) {
+  const [form, setForm] = useState({ nome: "", dosagem: "", frequencia: "", horario: "" });
+  const [error, setError] = useState("");
+  const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm((current) => ({ ...current, [key]: e.target.value }));
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const parsed = remedioSchema.safeParse({
-      novoNomeRemedio,
-      novaDosagem,
-      novaFrequencia,
-      novoHorario,
-    });
-
+    const parsed = medicamentoSchema.safeParse(form);
     if (!parsed.success) {
-      setRemedioError(parsed.error.issues[0]?.message || "Dados inválidos");
+      setError(parsed.error.issues[0]?.message ?? "Dados inválidos");
       return;
     }
-
-    setRemedioError("");
-
-    const novo: Medicamento = {
-      id: Date.now().toString(),
-      nome: parsed.data.novoNomeRemedio,
-      dosagem: parsed.data.novaDosagem,
-      frequencia: parsed.data.novaFrequencia || "Uso diário",
-      horario: parsed.data.novoHorario || "Horário livre",
-    };
-
-    setRemedios([novo, ...remedios]);
-    setNovoNomeRemedio("");
-    setNovaDosagem("");
-    setNovaFrequencia("");
-    setNovoHorario("");
-    setIsRemedioModalOpen(false);
-  };
-
-  const handleAddSintoma = (e: React.FormEvent) => {
-    e.preventDefault();
-    const parsed = sintomaSchema.safeParse({
-      novaDescricaoSintoma,
-      novaNota,
+    setError("");
+    onSave({
+      id: crypto.randomUUID(),
+      nome: parsed.data.nome,
+      dosagem: parsed.data.dosagem,
+      frequencia: parsed.data.frequencia || "Uso diário",
+      horario: parsed.data.horario || "Horário livre",
     });
-
-    if (!parsed.success) {
-      setSintomaError(parsed.error.issues[0]?.message || "Dados inválidos");
-      return;
-    }
-
-    setSintomaError("");
-
-    const novo: Sintoma = {
-      id: Date.now().toString(),
-      descricao: parsed.data.novaDescricaoSintoma,
-      data: "Hoje",
-      nota: parsed.data.novaNota || "Sem observações",
-    };
-
-    setSintomas([novo, ...sintomas]);
-    setNovaDescricaoSintoma("");
-    setNovaNota("");
-    setIsSintomaModalOpen(false);
+    setForm({ nome: "", dosagem: "", frequencia: "", horario: "" });
+    onOpenChange(false);
   };
 
   return (
-    <div className="p-8 space-y-8 max-w-6xl mx-auto">
-      <div>
-        <AnimatedText as="h1" text="Gestão de Saúde" className="text-2xl font-bold text-slate-800" />
-        <p className="text-slate-500 text-sm mt-1">
-          Acompanhe seus medicamentos, exames e registe sintomas do dia a dia.
-        </p>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent aria-describedby={undefined} className="gap-4 rounded-2xl p-6 sm:max-w-md">
+        <DialogTitle className="text-xl font-bold text-slate-800">Novo medicamento</DialogTitle>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Field label="Nome do remédio" required value={form.nome} onChange={set("nome")} placeholder="Ex: Sertralina" />
+          <Field label="Dosagem" required value={form.dosagem} onChange={set("dosagem")} placeholder="Ex: 50 mg" />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Frequência" value={form.frequencia} onChange={set("frequencia")} placeholder="Ex: Diária" />
+            <Field label="Horário" value={form.horario} onChange={set("horario")} placeholder="Ex: 21:00" />
+          </div>
+          {error && (
+            <p role="alert" className="text-xs text-red-600">
+              {error}
+            </p>
+          )}
+          <DialogFooter className="-mx-6 -mb-6 rounded-b-2xl px-6 py-4">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit">Salvar</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function SintomaDialog({
+  open,
+  onOpenChange,
+  onSave,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (item: Sintoma) => void;
+}) {
+  const [form, setForm] = useState({ descricao: "", nota: "" });
+  const [error, setError] = useState("");
+  const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm((current) => ({ ...current, [key]: e.target.value }));
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const parsed = sintomaSchema.safeParse(form);
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? "Dados inválidos");
+      return;
+    }
+    setError("");
+    onSave({
+      id: crypto.randomUUID(),
+      descricao: parsed.data.descricao,
+      data: "Hoje",
+      nota: parsed.data.nota || "Sem observações",
+    });
+    setForm({ descricao: "", nota: "" });
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent aria-describedby={undefined} className="gap-4 rounded-2xl p-6 sm:max-w-md">
+        <DialogTitle className="text-xl font-bold text-slate-800">Registrar sintoma</DialogTitle>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Field
+            label="Sintoma"
+            required
+            value={form.descricao}
+            onChange={set("descricao")}
+            placeholder="Ex: Insônia, dor de cabeça"
+          />
+          <Field label="Intensidade ou nota" value={form.nota} onChange={set("nota")} placeholder="Ex: Moderada" />
+          {error && (
+            <p role="alert" className="text-xs text-red-600">
+              {error}
+            </p>
+          )}
+          <DialogFooter className="-mx-6 -mb-6 rounded-b-2xl px-6 py-4">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit">Salvar</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export default function HealthView() {
+  const [activeTab, setActiveTab] = useState<TabId>("remedios");
+  const [remedios, setRemedios] = useState<Medicamento[]>(mockUser.remedios);
+  const [exames] = useState<Exame[]>(mockUser.exames);
+  const [sintomas, setSintomas] = useState<Sintoma[]>(mockUser.sintomas);
+  const [remedioOpen, setRemedioOpen] = useState(false);
+  const [sintomaOpen, setSintomaOpen] = useState(false);
+
+  return (
+    <Page
+      title="Gestão de Saúde"
+      description="Acompanhe seus medicamentos, exames e registre sintomas do dia a dia."
+      width="wide"
+    >
+      <div role="tablist" aria-label="Seções de saúde" className="flex gap-2 overflow-x-auto border-b border-slate-200 pb-3">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            id={`tab-${tab.id}`}
+            aria-selected={activeTab === tab.id}
+            aria-controls={`panel-${tab.id}`}
+            onClick={() => setActiveTab(tab.id)}
+            className={cn(
+              "whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition-colors",
+              activeTab === tab.id ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200",
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      <div className="flex gap-2 border-b border-slate-200 pb-3 overflow-x-auto">
-        <button
-          onClick={() => setActiveTab("remedios")}
-          className={`px-4 py-2 text-sm font-semibold rounded-xl transition whitespace-nowrap ${
-            activeTab === "remedios"
-              ? "bg-emerald-600 text-white shadow-sm"
-              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-          }`}
-        >
-          Meus Remédios
-        </button>
-        <button
-          onClick={() => setActiveTab("exames")}
-          className={`px-4 py-2 text-sm font-semibold rounded-xl transition whitespace-nowrap ${
-            activeTab === "exames"
-              ? "bg-emerald-600 text-white shadow-sm"
-              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-          }`}
-        >
-          Meus Exames
-        </button>
-        <button
-          onClick={() => setActiveTab("sintomas")}
-          className={`px-4 py-2 text-sm font-semibold rounded-xl transition whitespace-nowrap ${
-            activeTab === "sintomas"
-              ? "bg-emerald-600 text-white shadow-sm"
-              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-          }`}
-        >
-          Meus Sintomas
-        </button>
+      <div role="tabpanel" id={`panel-${activeTab}`} aria-labelledby={`tab-${activeTab}`} className="space-y-4">
+        {activeTab === "remedios" && (
+          <>
+            <SectionHeader
+              title="Medicamentos ativos"
+              action={
+                <Button onClick={() => setRemedioOpen(true)}>
+                  <Plus />
+                  Adicionar remédio
+                </Button>
+              }
+            />
+            <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {remedios.map((item) => (
+                <li key={item.id} className={cn(cardClass, "space-y-2")}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={metaClass}>
+                      {item.frequencia} • {item.horario}
+                    </span>
+                    <span className="rounded-lg bg-brand-50 px-2 py-1 text-xs font-bold text-brand-600">
+                      {item.dosagem}
+                    </span>
+                  </div>
+                  <p className="text-lg font-bold text-slate-700">{item.nome}</p>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {activeTab === "exames" && (
+          <>
+            <SectionHeader
+              title="Histórico de exames"
+              action={
+                <Button disabled title="Em breve">
+                  <Plus />
+                  Enviar exame
+                </Button>
+              }
+            />
+            <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {exames.map((exame) => (
+                <li key={exame.id} className={cn(cardClass, "space-y-2")}>
+                  <span className={metaClass}>Data: {exame.data}</span>
+                  <p className="text-lg font-bold text-slate-700">{exame.titulo}</p>
+                  <p className="text-xs font-medium text-brand-600">Resultado: {exame.resultado}</p>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {activeTab === "sintomas" && (
+          <>
+            <SectionHeader
+              title="Registro de sintomas"
+              action={
+                <Button onClick={() => setSintomaOpen(true)}>
+                  <Plus />
+                  Registrar sintoma
+                </Button>
+              }
+            />
+            <ul className="space-y-3">
+              {sintomas.map((item) => (
+                <li key={item.id} className={cn(cardClass, "space-y-1")}>
+                  <span className={metaClass}>{item.data}</span>
+                  <p className="text-lg font-bold text-slate-700">{item.descricao}</p>
+                  <p className="text-xs font-medium text-brand-600">Intensidade/nota: {item.nota}</p>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </div>
 
-      {activeTab === "remedios" && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-bold text-slate-800">
-              Medicamentos Ativos
-            </h2>
-            <MagneticButton
-              onClick={() => setIsRemedioModalOpen(true)}
-              className="bg-emerald-600 text-white px-4 py-2 text-sm font-semibold rounded-xl hover:bg-emerald-700 transition"
-            >
-              + Adicionar Remédio
-            </MagneticButton>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {remedios.map((item) => (
-              <TiltCard
-                key={item.id}
-                className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-2"
-              >
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    {item.frequencia} • {item.horario}
-                  </span>
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
-                    {item.dosagem}
-                  </span>
-                </div>
-                <p className="text-lg font-bold text-slate-700">{item.nome}</p>
-              </TiltCard>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {activeTab === "exames" && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-bold text-slate-800">
-              Histórico de Exames
-            </h2>
-            <MagneticButton className="bg-emerald-600 text-white px-4 py-2 text-sm font-semibold rounded-xl hover:bg-emerald-700 transition">
-              + Enviar Exame
-            </MagneticButton>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {exames.map((exame) => (
-              <TiltCard
-                key={exame.id}
-                className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-2"
-              >
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Data: {exame.data}
-                </span>
-                <p className="text-lg font-bold text-slate-700">
-                  {exame.titulo}
-                </p>
-                <p className="text-xs text-emerald-600 font-medium">
-                  Resultado: {exame.resultado}
-                </p>
-              </TiltCard>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {activeTab === "sintomas" && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-bold text-slate-800">
-              Registo de Sintomas
-            </h2>
-            <MagneticButton
-              onClick={() => setIsSintomaModalOpen(true)}
-              className="bg-emerald-600 text-white px-4 py-2 text-sm font-semibold rounded-xl hover:bg-emerald-700 transition"
-            >
-              + Registar Sintoma
-            </MagneticButton>
-          </div>
-
-          <div className="space-y-3">
-            {sintomas.map((item) => (
-              <TiltCard
-                key={item.id}
-                className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-1"
-              >
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  {item.data}
-                </span>
-                <p className="text-lg font-bold text-slate-700">
-                  {item.descricao}
-                </p>
-                <p className="text-xs text-emerald-600 font-medium">
-                  Intensidade/Nota: {item.nota}
-                </p>
-              </TiltCard>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {isRemedioModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl space-y-4">
-            <h3 className="text-lg font-bold text-slate-800">
-              Novo Medicamento
-            </h3>
-            <form onSubmit={handleAddRemedio} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
-                  Nome do Remédio
-                </label>
-                <input
-                  type="text"
-                  value={novoNomeRemedio}
-                  onChange={(e) => setNovoNomeRemedio(e.target.value)}
-                  placeholder="Ex: Rivotril"
-                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
-                  Dosagem
-                </label>
-                <input
-                  type="text"
-                  value={novaDosagem}
-                  onChange={(e) => setNovaDosagem(e.target.value)}
-                  placeholder="Ex: 2mg"
-                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
-                    Frequência
-                  </label>
-                  <input
-                    type="text"
-                    value={novaFrequencia}
-                    onChange={(e) => setNovaFrequencia(e.target.value)}
-                    placeholder="Ex: Diária"
-                    className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
-                    Horário
-                  </label>
-                  <input
-                    type="text"
-                    value={novoHorario}
-                    onChange={(e) => setNovoHorario(e.target.value)}
-                    placeholder="Ex: 21:00"
-                    className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                {remedioError && <p className="text-xs text-red-600 mr-auto self-center">{remedioError}</p>}
-                <button
-                  type="button"
-                  onClick={() => setIsRemedioModalOpen(false)}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-50"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700"
-                >
-                  Salvar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {isSintomaModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl space-y-4">
-            <h3 className="text-lg font-bold text-slate-800">
-              Registar Sintoma
-            </h3>
-            <form onSubmit={handleAddSintoma} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
-                  Sintoma Sentido
-                </label>
-                <input
-                  type="text"
-                  value={novaDescricaoSintoma}
-                  onChange={(e) => setNovaDescricaoSintoma(e.target.value)}
-                  placeholder="Ex: Insónia / Dor de cabeça"
-                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
-                  Intensidade / Nota
-                </label>
-                <input
-                  type="text"
-                  value={novaNota}
-                  onChange={(e) => setNovaNota(e.target.value)}
-                  placeholder="Ex: Moderada"
-                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                {sintomaError && <p className="text-xs text-red-600 mr-auto self-center">{sintomaError}</p>}
-                <button
-                  type="button"
-                  onClick={() => setIsSintomaModalOpen(false)}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-50"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700"
-                >
-                  Salvar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
+      <MedicamentoDialog
+        open={remedioOpen}
+        onOpenChange={setRemedioOpen}
+        onSave={(item) => setRemedios((current) => [item, ...current])}
+      />
+      <SintomaDialog
+        open={sintomaOpen}
+        onOpenChange={setSintomaOpen}
+        onSave={(item) => setSintomas((current) => [item, ...current])}
+      />
+    </Page>
   );
 }

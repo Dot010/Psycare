@@ -1,12 +1,21 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { mockUser } from "@/data/mockData";
+import { MagneticButton } from "@/components/motion/MagneticButton";
+import { Page } from "@/components/layout/Page";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
+import { Field, SelectField } from "@/components/ui/field";
+import { NextSessionCard } from "@/features/appointments/components/NextSessionCard";
 import { useAppointments } from "@/features/appointments/hooks/useAppointments";
-import type { AppointmentType } from "@/features/appointments/types";
-import { AnimatedText } from "@/components/ui/AnimatedText";
-import { MagneticButton } from "@/components/ui/MagneticButton";
-import { TiltCard } from "@/components/ui/TiltCard";
+import type { Agendamento, AppointmentType } from "@/features/appointments/types";
+
+const STATUS_STYLES: Record<Agendamento["status"], string> = {
+  confirmado: "bg-green-100 text-green-800",
+  pendente: "bg-amber-100 text-amber-800",
+  cancelado: "bg-slate-100 text-slate-600",
+};
 
 export function AppointmentsView() {
   const { appointments, addAppointment } = useAppointments();
@@ -20,13 +29,7 @@ export function AppointmentsView() {
   const handleCreateAppointment = (e: FormEvent) => {
     e.preventDefault();
 
-    const result = addAppointment({
-      profissional,
-      data,
-      hora,
-      tipo,
-    });
-
+    const result = addAppointment({ profissional, data, hora, tipo });
     if (!result.success) {
       setFormError(result.error);
       return;
@@ -34,137 +37,106 @@ export function AppointmentsView() {
 
     setFormError("");
     setProfissional("");
-    setTipo("online");
-    setIsModalOpen(false);
     setData("");
     setHora("");
+    setTipo("online");
+    setIsModalOpen(false);
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto bg-[#f7f6f2] min-h-full">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <AnimatedText as="h1" text="Meus Agendamentos" className="text-2xl font-semibold text-[#2f3a32]" />
+    <Page
+      width="narrow"
+      title="Meus Agendamentos"
+      description="Suas próximas sessões e o histórico de atendimentos."
+      actions={
         <MagneticButton
+          type="button"
           onClick={() => setIsModalOpen(true)}
-          className="bg-emerald-800 text-white px-4 py-2 rounded-lg hover:bg-emerald-900 transition"
+          className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
         >
-          + Novo Agendamento
+          <Plus className="size-4" />
+          Novo agendamento
         </MagneticButton>
-      </div>
+      }
+    >
+      <NextSessionCard
+        action={
+          <Button disabled title="Disponível em breve">
+            Entrar na sala
+          </Button>
+        }
+      />
 
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-          <div className="bg-[#fdfcf9] p-6 rounded-xl max-w-md w-full shadow-sm border border-black/5">
-            <h2 className="text-xl font-semibold mb-4 text-[#2f3a32]">Agendar Nova Sessão</h2>
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold text-ink">Histórico</h2>
 
-            <form onSubmit={handleCreateAppointment} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Profissional</label>
-                <input
-                  type="text"
-                  value={profissional}
-                  onChange={(e) => setProfissional(e.target.value)}
-                  placeholder="Ex: Dra. Ana Silva"
-                  className="w-full border border-neutral-200/70 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-800/20"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Data</label>
-                  <input
-                    type="date"
-                    value={data}
-                    onChange={(e) => setData(e.target.value)}
-                    className="w-full border border-neutral-200/70 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-800/20"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Hora</label>
-                  <input
-                    type="time"
-                    value={hora}
-                    onChange={(e) => setHora(e.target.value)}
-                    className="w-full border border-neutral-200/70 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-800/20"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Tipo</label>
-                <select
-                  value={tipo}
-                  onChange={(e) => setTipo(e.target.value as AppointmentType)}
-                  className="w-full border border-neutral-200/70 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-800/20"
-                >
-                  <option value="online">Online</option>
-                  <option value="presencial">Presencial</option>
-                </select>
-              </div>
-
-              {formError && <p className="text-xs text-red-600">{formError}</p>}
-
-              <div className="flex justify-end gap-2 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-neutral-200/70 rounded-lg text-sm text-slate-600 hover:bg-neutral-100 transition"
-                >
-                  Cancelar
-                </button>
-                <button type="submit" className="px-4 py-2 bg-emerald-800 text-white rounded-lg text-sm hover:bg-emerald-900 transition">
-                  Salvar
-                </button>
-              </div>
-            </form>
+        {appointments.length === 0 ? (
+          <div className="rounded-xl border border-black/5 bg-surface p-8 text-center shadow-sm">
+            <p className="text-base font-semibold text-ink">Nenhum agendamento ainda</p>
+            <p className="mt-1 text-sm text-slate-600">Comece adicionando sua primeira sessão com um profissional.</p>
           </div>
-        </div>
-      )}
-
-      <TiltCard className="bg-emerald-50 border border-emerald-100 p-6 rounded-xl mb-8 shadow-sm">
-        <h3 className="text-lg font-semibold text-emerald-900 mb-3">Próxima Sessão</h3>
-        <div className="space-y-2 text-slate-700 mb-4">
-          <p><strong>Profissional:</strong> {mockUser.nextSession.doctor}</p>
-          <p><strong>Data:</strong> {mockUser.nextSession.date} às {mockUser.nextSession.time}</p>
-        </div>
-        <MagneticButton className="bg-emerald-800 text-white px-4 py-2 rounded-lg hover:bg-emerald-900 transition text-sm font-medium">
-          Entrar na Sala
-        </MagneticButton>
-      </TiltCard>
-
-      <h2 className="text-xl font-semibold text-[#2f3a32] mb-4">Histórico</h2>
-
-      {appointments.length === 0 ? (
-        <div className="bg-[#fdfcf9] border border-black/5 rounded-xl p-8 text-center shadow-sm">
-          <p className="text-base font-semibold text-[#2f3a32]">Nenhum agendamento ainda</p>
-          <p className="text-sm text-slate-600 mt-1">Comece adicionando sua primeira sessão com um profissional.</p>
-        </div>
-      ) : (
-        <ul className="space-y-3">
-          {appointments.map((item) => (
-            <li key={item.id}>
-              <TiltCard className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-[#fdfcf9] border border-black/5 rounded-xl shadow-sm gap-2">
+        ) : (
+          <ul className="space-y-3">
+            {appointments.map((item) => (
+              <li
+                key={item.id}
+                className="flex flex-col justify-between gap-2 rounded-xl border border-black/5 bg-surface p-4 shadow-sm sm:flex-row sm:items-center"
+              >
                 <div>
-                  <p className="font-medium text-[#2f3a32]">{item.profissional}</p>
-                  <p className="text-sm text-slate-500">{item.data} às {item.hora} ({item.tipo})</p>
+                  <p className="font-medium text-ink">{item.profissional}</p>
+                  <p className="text-sm text-slate-500">
+                    {item.data} às {item.hora} · {item.tipo === "online" ? "Online" : "Presencial"}
+                  </p>
                 </div>
-                <div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      item.status === "confirmado" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
-                    }`}
-                  >
-                    {item.status}
-                  </span>
-                </div>
-              </TiltCard>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+                <span
+                  className={`self-start rounded-full px-3 py-1 text-xs font-semibold capitalize sm:self-auto ${STATUS_STYLES[item.status]}`}
+                >
+                  {item.status}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent aria-describedby={undefined} className="gap-4 rounded-2xl p-6 sm:max-w-md">
+          <DialogTitle className="text-xl font-semibold text-ink">Agendar nova sessão</DialogTitle>
+
+          <form onSubmit={handleCreateAppointment} className="space-y-4">
+            <Field
+              label="Profissional"
+              value={profissional}
+              onChange={(e) => setProfissional(e.target.value)}
+              placeholder="Ex: Dra. Ana Silva"
+              required
+            />
+
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Data" type="date" value={data} onChange={(e) => setData(e.target.value)} required />
+              <Field label="Hora" type="time" value={hora} onChange={(e) => setHora(e.target.value)} required />
+            </div>
+
+            <SelectField label="Tipo" value={tipo} onChange={(e) => setTipo(e.target.value as AppointmentType)}>
+              <option value="online">Online</option>
+              <option value="presencial">Presencial</option>
+            </SelectField>
+
+            {formError && (
+              <p role="alert" className="text-xs text-red-600">
+                {formError}
+              </p>
+            )}
+
+            <DialogFooter className="-mx-6 -mb-6 mt-2 rounded-b-2xl px-6 py-4">
+              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit">Salvar</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </Page>
   );
 }

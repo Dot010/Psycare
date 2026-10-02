@@ -2,49 +2,29 @@
 
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
+import { PageSkeleton } from "@/components/feedback/PageSkeleton";
 
 const Nav = dynamic(() => import("@/components/layout/Nav"), {
   ssr: false,
-  loading: () => (
-    <aside className="hidden md:block h-screen w-20 shrink-0 bg-emerald-600/95 animate-pulse" />
-  ),
+  loading: () => <aside className="hidden h-screen w-20 shrink-0 animate-pulse bg-primary/95 md:block" />,
 });
 
 const NavMobile = dynamic(() => import("@/components/layout/NavMobile"), {
   ssr: false,
   loading: () => (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 h-20 bg-white/80 border-t border-slate-200 z-50" />
+    <div className="fixed inset-x-0 bottom-0 z-50 h-20 border-t border-slate-200 bg-white/80 md:hidden" />
   ),
 });
 
-interface DashboardLayoutProps {
-  children: React.ReactNode;
-}
-
-const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col md:flex-row h-screen overflow-hidden">
+    <div className="flex h-screen flex-col overflow-hidden md:flex-row">
       <Nav />
       <NavMobile />
 
-      <main className="flex-1 bg-slate-50 overflow-y-auto pb-28 md:pb-8">
-        <Suspense
-          fallback={
-            <div className="space-y-4 p-4 md:p-8 animate-pulse">
-              <div className="h-32 w-full rounded-xl bg-slate-200/70" />
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="h-48 rounded-xl bg-slate-200/70" />
-                <div className="h-48 rounded-xl bg-slate-200/70" />
-                <div className="h-48 rounded-xl bg-slate-200/70" />
-              </div>
-            </div>
-          }
-        >
-          {children}
-        </Suspense>
+      <main className="flex-1 overflow-y-auto bg-slate-50 pb-28 md:pb-8">
+        <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
       </main>
     </div>
   );
-};
-
-export default DashboardLayout;
+}

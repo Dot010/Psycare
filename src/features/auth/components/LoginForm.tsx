@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { AuthInput } from "@/components/ui/AuthInput";
-import { ErrorMessage } from "@/components/ui/ErrorMessage";
-import { loginAction } from "@/lib/auth-utils/actions";
-import { loginSchema } from "@/lib/auth-utils/schema";
+import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
+import { ErrorMessage } from "@/features/auth/components/ErrorMessage";
+import { loginAction } from "@/features/auth/actions";
+import { loginSchema } from "@/features/auth/schema";
 
 export function LoginForm() {
   const router = useRouter();
@@ -47,8 +48,9 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="mt-8 space-y-4 w-full">
-      <AuthInput
+      <Field
         type="email"
+        autoComplete="email"
         placeholder="seu@email.com"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
@@ -57,8 +59,9 @@ export function LoginForm() {
         disabled={isLoading}
       />
 
-      <AuthInput
+      <Field
         type="password"
+        autoComplete="current-password"
         placeholder="••••••••"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
@@ -67,25 +70,15 @@ export function LoginForm() {
         disabled={isLoading}
       />
 
-      <div className="flex justify-end">
-        <Link href="/forgot-password" className="text-sm text-emerald-800 hover:text-emerald-900 transition-colors">
-          Esqueci minha senha
-        </Link>
-      </div>
-
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="w-full mt-6 bg-emerald-800 hover:bg-emerald-900 disabled:bg-slate-300 text-white py-3 rounded-lg font-medium transition-all duration-200"
-      >
+      <Button type="submit" disabled={isLoading} className="mt-6 w-full">
         {isLoading ? "Entrando..." : "Entrar"}
-      </button>
+      </Button>
 
       <ErrorMessage message={error} />
 
       <p className="text-center text-sm text-slate-600 mt-4">
         Não tem conta?{" "}
-        <Link href="/register" className="text-emerald-800 hover:text-emerald-900 font-medium transition-colors">
+        <Link href="/register" className="text-brand-800 hover:text-brand-900 font-medium transition-colors">
           Criar conta
         </Link>
       </p>

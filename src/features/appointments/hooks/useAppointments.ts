@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { mockUser } from "@/data/mockData";
-import type { Agendamento } from "@/types/domain";
+import { formatDateBR } from "@/lib/format";
+import { mockUser } from "@/mocks/user";
+import type { Agendamento } from "@/features/appointments/types";
 import { createAppointmentSchema, type CreateAppointmentInput } from "@/features/appointments/types";
 
 export function useAppointments() {
@@ -15,9 +16,9 @@ export function useAppointments() {
     }
 
     const novoAgendamento: Agendamento = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       profissional: parsed.data.profissional,
-      data: parsed.data.data,
+      data: formatDateBR(parsed.data.data),
       hora: parsed.data.hora,
       status: "pendente",
       tipo: parsed.data.tipo,

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { COOKIE_NAME, verifySession } from "@/lib/auth-utils/session";
+import { COOKIE_NAME, verifySession } from "@/lib/session";
 import { buildCsp } from "@/lib/security/csp";
 
 export async function proxy(request: NextRequest) {
