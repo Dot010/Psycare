@@ -13,19 +13,6 @@ if (leakedEnvVar) {
   throw new Error(`Variável sensível exposta em client bundle: ${leakedEnvVar}`);
 }
 
-const cspHeader = `
-    default-src 'self';
-    script-src 'self' 'unsafe-eval' 'unsafe-inline';
-    style-src 'self' 'unsafe-inline';
-    img-src 'self' blob: data: https:;
-    font-src 'self';
-    object-src 'none';
-    base-uri 'self';
-    form-action 'self';
-    frame-ancestors 'none';
-    upgrade-insecure-requests;
-`;
-
 const securityHeaders = [
   {
     key: "X-DNS-Prefetch-Control",
@@ -50,10 +37,6 @@ const securityHeaders = [
   {
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=()",
-  },
-  {
-    key: "Content-Security-Policy",
-    value: cspHeader.replace(/\s{2,}/g, " ").trim(),
   },
 ];
 

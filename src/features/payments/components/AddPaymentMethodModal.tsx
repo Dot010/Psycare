@@ -15,7 +15,8 @@ type PixKeyType = "cpf" | "email" | "phone" | "random";
 
 const creditCardSchema = z.object({
   cardBrand: z.string().min(2),
-  cardNumber: z.string().regex(/^\d{4}\s\d{4}\s\d{4}\s\d{4}$/, "Número do cartão inválido"),
+  // Nunca coletamos o número completo: só os 4 últimos dígitos (o resto é tarefa do gateway).
+  cardLast4: z.string().regex(/^\d{4}$/, "Informe apenas os 4 últimos dígitos"),
   cardExpiry: z.string().regex(/^(0[1-9]|1[0-2])\/[0-9]{2}$/, "Validade inválida"),
 });
 
@@ -34,7 +35,7 @@ export default function AddPaymentMethodModal({
   const [paymentType, setPaymentType] = useState<"credit_card" | "pix">("credit_card");
 
   // Campos do Cartão
-  const [cardNumber, setCardNumber] = useState("");
+  const [cardLast4, setCardLast4] = useState("");
   const [cardBrand, setCardBrand] = useState("Visa");
   const [cardExpiry, setCardExpiry] = useState("");
 
@@ -45,7 +46,7 @@ export default function AddPaymentMethodModal({
 
   // Reset de formulário
   const resetForm = useCallback(() => {
-    setCardNumber("");
+    setCardLast4("");
     setCardExpiry("");
     setPixKey("");
     setPixKeyType("cpf");
@@ -76,10 +77,8 @@ export default function AddPaymentMethodModal({
   }, [isOpen, handleClose]);
 
   // Máscaras de Cartão
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, "").substring(0, 16);
-    const formatted = value.replace(/(\d{4})(?=\d)/g, "$1 ");
-    setCardNumber(formatted);
+  const handleCardLast4Change = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCardLast4(e.target.value.replace(/\D/g, "").substring(0, 4));
   };
 
   const handleCardExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,7 +124,7 @@ export default function AddPaymentMethodModal({
     if (paymentType === "credit_card") {
       const cardValidation = creditCardSchema.safeParse({
         cardBrand,
-        cardNumber,
+        cardLast4,
         cardExpiry,
       });
 
@@ -155,14 +154,11 @@ export default function AddPaymentMethodModal({
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     if (paymentType === "credit_card") {
-      const rawNumber = cardNumber.replace(/\s/g, "");
-      const last4 = rawNumber.slice(-4) || "0000";
-
       onAddPaymentMethod({
         id: crypto.randomUUID(),
         type: "credit_card",
         brand: cardBrand,
-        last4,
+        last4: cardLast4,
         expiry: cardExpiry || "12/28",
         isDefault: isFirstMethod,
       });
@@ -235,6 +231,11 @@ export default function AddPaymentMethodModal({
 
         {/* Formulário */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          <p className="rounded-xl bg-amber-50 p-3 text-xs text-amber-900">
+            Demonstração: não informe dados reais. O número completo do cartão nunca é solicitado
+            aqui; o pagamento real será feito em um checkout seguro do gateway.
+          </p>
+
           {paymentType === "credit_card" ? (
             <>
               <div>
@@ -255,15 +256,17 @@ export default function AddPaymentMethodModal({
 
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1">
-                  Número do Cartão
+                  Últimos 4 dígitos do cartão
                 </label>
                 <input
                   type="text"
-                  placeholder="0000 0000 0000 0000"
-                  value={cardNumber}
-                  maxLength={19}
+                  inputMode="numeric"
+                  autoComplete="off"
+                  placeholder="0000"
+                  value={cardLast4}
+                  maxLength={4}
                   disabled={isSubmitting}
-                  onChange={handleCardNumberChange}
+                  onChange={handleCardLast4Change}
                   required
                   className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 disabled:bg-slate-50"
                 />

@@ -4,7 +4,7 @@
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?style=flat-square&logo=vercel)](https://psycare-seven.vercel.app)
 
 🌐 **Aceda à aplicação em produção:** [psycare-seven.vercel.app](https://psycare-seven.vercel.app)
@@ -62,9 +62,9 @@ A plataforma oferece um painel completo para acompanhamento de rotinas, registro
 
 1. **Clone o repositório:**
    ```bash
-   git clone [https://github.com/Dot010/Psycare.git](https://github.com/Dot010/Psycare.git)
+   git clone https://github.com/Dot010/Psycare.git
    cd Psycare
-  ```
+   ```
 
 2. **Instale as dependências:**
   ```bash
@@ -74,6 +74,10 @@ A plataforma oferece um painel completo para acompanhamento de rotinas, registro
 3. **Configure variáveis de ambiente:**
   ```bash
   cp .env.example .env.local
+  ```
+  Gere o segredo de sessão e cole em `SESSION_SECRET` no `.env.local`:
+  ```bash
+  node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
   ```
 
 4. **Rode em desenvolvimento:**
@@ -93,57 +97,31 @@ A plataforma oferece um painel completo para acompanhamento de rotinas, registro
 
 ---
 
-## 📈 Observabilidade
+## 🔐 Segurança
 
-Integrações prontas com inicialização opcional por ambiente:
+> ⚠️ **Projeto em fase de demonstração.** Ainda não há backend: login e registro são **simulados** e aceitam qualquer credencial. Eles só funcionam com `DEMO_MODE=true`; sem isso, a autenticação é recusada. Não insira dados pessoais, de saúde ou de pagamento reais.
 
-- Sentry (`@sentry/nextjs`)
-- Datadog RUM (`@datadog/browser-rum`)
-- New Relic Browser (`@newrelic/browser-agent`)
-- OpenTelemetry server-side (`@vercel/otel`)
+- **Sessão:** cookie `httpOnly` com JWT assinado (HS256, `jose`) e expiração de 24h, validado no `proxy.ts`. Exige `SESSION_SECRET` (mínimo 32 caracteres).
+- **CSP com nonce por requisição**, montada em `src/lib/security/csp.ts` e aplicada no `proxy.ts` (sem `unsafe-eval` em produção; `style-src` mantém `unsafe-inline` por causa de bibliotecas de UI). Por isso as páginas são renderizadas por requisição.
+- **Headers de segurança** (HSTS, X-Frame-Options etc.) em `next.config.ts`.
+- **Pagamentos:** o modal nunca coleta o número completo do cartão, só os 4 últimos dígitos. Pagamento real deve usar checkout hospedado do gateway.
+- **Monitoramento:** apenas Sentry (opcional, via `NEXT_PUBLIC_SENTRY_DSN`), sem session replay e sem dados pessoais.
+- **Dependências:** Dependabot semanal e `npm audit` no CI.
 
-### Variáveis opcionais
-
-Defina apenas as plataformas que deseja ativar:
-
-- `NEXT_PUBLIC_SENTRY_DSN`
-- `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE`
-- `NEXT_PUBLIC_DD_APPLICATION_ID`
-- `NEXT_PUBLIC_DD_CLIENT_TOKEN`
-- `NEXT_PUBLIC_DD_SITE`
-- `NEXT_PUBLIC_DD_SERVICE`
-- `NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY`
-- `NEXT_PUBLIC_NEW_RELIC_APP_ID`
-- `OTEL_SERVICE_NAME`
+Antes de aceitar dados reais: backend e autenticação gerenciada (ex.: Supabase Auth com Row Level Security), política de privacidade e base legal conforme a LGPD (dados de saúde são dados sensíveis).
 
 ---
 
 ## ✅ Qualidade e Testes
 
-### Qualidade e lint
-
-- Arch contract: `dependency-cruiser`
-- Biome: `@biomejs/biome`
-- Commitlint: `@commitlint/cli` + `@commitlint/config-conventional`
-- Knip: detecção de código/arquivos não usados
-- Stryker: mutation testing
-
-### Testes
-
-- Unitário e integração: Vitest + Testing Library
-- End-to-end: Playwright
-- Cobertura: Codecov (`codecov.yml` + workflow CI)
-
-### Scripts úteis
+- Lint: ESLint (`eslint-config-next`)
+- Tipos: `tsc --noEmit`
+- Testes: Vitest + Testing Library (`src/**/*.test.ts`)
+- CI (GitHub Actions): typecheck, lint, testes, build e auditoria de dependências
 
 ```bash
-npm run lint:eslint
-npm run lint:biome
-npm run quality:arch
-npm run quality:knip
-npm run test
-npm run test:coverage
-npm run test:e2e
-npm run mutate
-npm run check
+npm run typecheck
+npm run lint
+npm test
+npm run check   # typecheck + lint + testes
 ```
