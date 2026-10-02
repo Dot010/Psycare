@@ -50,7 +50,7 @@ export default function HabitsView() {
         </div>
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <dt className={statLabel}>Taxa de sucesso</dt>
-          <dd className="mt-1 text-2xl font-black text-brand-600">{successRate}%</dd>
+          <dd className="mt-1 text-2xl font-black text-brand-accent">{successRate}%</dd>
         </div>
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <dt className={statLabel}>Maior sequência</dt>
@@ -114,7 +114,7 @@ export default function HabitsView() {
                       "flex size-9 items-center justify-center rounded-full border-2 transition-colors",
                       done
                         ? "border-brand-600 bg-brand-600 text-white"
-                        : "border-input bg-card text-transparent hover:border-brand-600 hover:text-brand-600",
+                        : "border-input bg-card text-transparent hover:border-brand-600 hover:text-brand-accent",
                     )}
                   >
                     {done ? <AnimatedCheck className="size-4" /> : <Check className="size-4" />}

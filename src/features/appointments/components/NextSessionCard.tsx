@@ -18,7 +18,7 @@ export function NextSessionCard({ action }: NextSessionCardProps) {
 
   return (
     <section className="rounded-2xl border border-primary/20 bg-primary/5 p-6 shadow-sm">
-      <h2 className="font-heading text-lg font-semibold text-primary">Próxima sessão</h2>
+      <h2 className="font-heading text-lg font-semibold text-brand-accent">Próxima sessão</h2>
       {next ? (
         <dl className="mt-3 space-y-1 text-foreground/90">
           <div className="flex gap-1.5">

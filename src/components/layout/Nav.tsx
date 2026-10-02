@@ -4,6 +4,7 @@ import { Brain, ChevronLeft, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { ThemeToggle } from "@/components/feedback/ThemeToggle";
 import { NAV_ITEMS } from "@/components/layout/nav-items";
 import { logoutAction } from "@/features/auth/actions";
 import { cn } from "@/lib/utils";
@@ -28,7 +29,7 @@ export default function Nav() {
           aria-label={open ? "Recolher menu" : "Expandir menu"}
           onClick={() => setOpen(!open)}
           className={cn(
-            "absolute -right-3 top-9 flex items-center justify-center rounded-full border-2 border-primary bg-card p-0.5 text-primary transition-transform duration-500 hover:scale-105",
+            "absolute -right-3 top-9 flex items-center justify-center rounded-full border-2 border-primary bg-card p-0.5 text-brand-accent transition-transform duration-500 hover:scale-105",
             !open && "rotate-180",
           )}
         >
@@ -37,7 +38,7 @@ export default function Nav() {
 
         <div className={cn("flex items-center", open ? "ml-1" : "justify-center")}>
           <div className="rounded-xl bg-card p-2 shadow-md">
-            <Brain className="size-7 text-primary" />
+            <Brain className="size-7 text-brand-accent" />
           </div>
           <span
             className={cn(
@@ -68,7 +69,14 @@ export default function Nav() {
               );
             })}
 
-            <li className="mt-8">
+            {open && (
+              <li className="mt-8 flex items-center gap-4 p-3">
+                <ThemeToggle />
+                <span className="text-sm font-medium text-primary-foreground/90">Modo escuro</span>
+              </li>
+            )}
+
+            <li className="mt-2">
               <form action={logoutAction}>
                 <button
                   type="submit"

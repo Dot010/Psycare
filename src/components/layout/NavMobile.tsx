@@ -5,6 +5,7 @@ import { LayoutGrid, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { ThemeToggle } from "@/components/feedback/ThemeToggle";
 import { NAV_ITEMS } from "@/components/layout/nav-items";
 import { logoutAction } from "@/features/auth/actions";
 import { cn } from "@/lib/utils";
@@ -29,7 +30,7 @@ export default function NavMobile() {
             aria-current={pathname === href ? "page" : undefined}
             className={cn(
               "flex flex-col items-center gap-1 transition-colors",
-              pathname === href ? "text-brand-600" : "text-muted-foreground active:text-brand-600",
+              pathname === href ? "text-brand-accent" : "text-muted-foreground active:text-brand-accent",
             )}
           >
             <Icon className="size-5" />
@@ -43,7 +44,7 @@ export default function NavMobile() {
           onClick={() => setMenuOpen(!menuOpen)}
           className={cn(
             "flex flex-col items-center gap-1 transition-colors",
-            menuOpen ? "text-brand-600" : "text-muted-foreground",
+            menuOpen ? "text-brand-accent" : "text-muted-foreground",
           )}
         >
           <LayoutGrid className="size-5" />
@@ -59,7 +60,7 @@ export default function NavMobile() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMenuOpen(false)}
-              className="fixed inset-0 z-40 bg-ink/60"
+              className="fixed inset-0 z-40 bg-strong/60"
             />
 
             <motion.div
@@ -70,6 +71,11 @@ export default function NavMobile() {
               className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-card p-8 pb-28 shadow-2xl"
             >
               <div className="mx-auto mb-8 h-1.5 w-12 rounded-full bg-border" />
+
+              <div className="mb-8 flex items-center justify-between rounded-2xl bg-sunken px-4 py-3">
+                <span className="text-sm font-semibold text-foreground">Modo escuro</span>
+                <ThemeToggle />
+              </div>
 
               <div className="grid grid-cols-4 gap-y-8">
                 {moreItems.map(({ title, shortTitle, href, icon: Icon }) => (

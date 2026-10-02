@@ -226,7 +226,7 @@ export default function AddPaymentMethodModal({
                 value={pixKey}
                 onChange={(e) => setPixKey(maskPixKey(pixKeyType, e.target.value))}
               />
-              <p className="flex items-start gap-2 rounded-xl border border-brand-100 bg-brand-50 p-3 text-xs text-brand-800">
+              <p className="flex items-start gap-2 rounded-xl border border-brand-100 bg-brand-50 p-3 text-xs text-brand-ink">
                 <Info className="mt-0.5 size-4 shrink-0" />
                 <span>
                   No dia da renovação, um código <strong>PIX Copia e Cola</strong> e o{" "}

@@ -112,7 +112,7 @@ export default function BreathingView() {
               {SESSION_MINUTES.map((m) => (
                 <label
                   key={m}
-                  className="cursor-pointer rounded-xl border border-border bg-card py-2 text-center text-sm font-semibold text-muted-foreground transition has-checked:border-brand-600 has-checked:bg-brand-50 has-checked:text-brand-800 has-disabled:cursor-not-allowed has-disabled:opacity-60 has-focus-visible:ring-2 has-focus-visible:ring-brand-600/40"
+                  className="cursor-pointer rounded-xl border border-border bg-card py-2 text-center text-sm font-semibold text-muted-foreground transition has-checked:border-brand-600 has-checked:bg-brand-50 has-checked:text-brand-ink has-disabled:cursor-not-allowed has-disabled:opacity-60 has-focus-visible:ring-2 has-focus-visible:ring-brand-600/40"
                 >
                   <input
                     type="radio"
@@ -165,7 +165,7 @@ export default function BreathingView() {
                 Como você se sente agora?{" "}
                 <Link
                   href="/dashboard/diary"
-                  className="font-semibold text-brand-800 underline underline-offset-2"
+                  className="font-semibold text-brand-ink underline underline-offset-2"
                 >
                   Registrar no diário
                 </Link>

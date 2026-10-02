@@ -118,7 +118,7 @@ export default function HealthView() {
                         {item.frequencia} • {item.horario}
                       </span>
                       <div className="flex items-center gap-1">
-                        <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand-700">
+                        <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand-ink">
                           {item.dosagem}
                         </span>
                         <ItemMenu
@@ -152,7 +152,7 @@ export default function HealthView() {
                 <li key={exame.id} className={cn(cardClass, "space-y-2")}>
                   <span className={metaClass}>Data: {exame.data}</span>
                   <p className="text-lg font-bold text-foreground">{exame.titulo}</p>
-                  <p className="text-xs font-medium text-brand-700">Resultado: {exame.resultado}</p>
+                  <p className="text-xs font-medium text-brand-ink">Resultado: {exame.resultado}</p>
                 </li>
               ))}
             </ul>
@@ -194,7 +194,7 @@ export default function HealthView() {
                       />
                     </div>
                     <p className="text-lg font-bold text-foreground">{item.descricao}</p>
-                    <p className="text-xs font-medium text-brand-700">Intensidade/nota: {item.nota}</p>
+                    <p className="text-xs font-medium text-brand-ink">Intensidade/nota: {item.nota}</p>
                   </li>
                 ))}
               </ul>

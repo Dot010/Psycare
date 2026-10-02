@@ -12,7 +12,7 @@ export function CrisisButton() {
       <DialogTrigger asChild>
         <button
           type="button"
-          className="fixed right-4 bottom-24 z-40 flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white shadow-lg transition-colors hover:bg-brand-900 focus-visible:ring-3 focus-visible:ring-sun-300 focus-visible:outline-none md:right-6 md:bottom-6"
+          className="fixed right-4 bottom-24 z-40 flex items-center gap-2 rounded-full bg-strong px-4 py-2.5 text-xs font-semibold text-white shadow-lg transition-colors hover:bg-brand-900 focus-visible:ring-3 focus-visible:ring-sun-300 focus-visible:outline-none md:right-6 md:bottom-6"
         >
           <LifeBuoy className="size-4" aria-hidden />
           Preciso de ajuda
@@ -30,7 +30,7 @@ export function CrisisButton() {
             href="tel:188"
             className="flex items-center gap-3 rounded-xl border border-border bg-sunken p-4 transition-colors hover:border-brand-600"
           >
-            <Phone className="size-5 text-brand-600" aria-hidden />
+            <Phone className="size-5 text-brand-accent" aria-hidden />
             <span>
               <span className="block font-semibold text-foreground">CVV: 188</span>
               <span className="block text-xs text-muted-foreground">

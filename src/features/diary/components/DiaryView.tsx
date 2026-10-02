@@ -43,7 +43,7 @@ function EntryCard({
       </div>
 
       <div className="flex flex-wrap items-center gap-2 text-xs">
-        <span className="rounded-full border border-brand-100 bg-brand-50 px-3 py-1 font-semibold text-brand-700">
+        <span className="rounded-full border border-brand-100 bg-brand-50 px-3 py-1 font-semibold text-brand-ink">
           {entry.mood}
         </span>
         {entry.anxietyLevel !== undefined && (
@@ -69,7 +69,7 @@ function EntryCard({
           type="button"
           aria-expanded={expanded}
           onClick={() => setExpanded((value) => !value)}
-          className="text-xs font-semibold text-brand-700 hover:underline"
+          className="text-xs font-semibold text-brand-ink hover:underline"
         >
           {expanded ? "Mostrar menos" : "Ler mais"}
         </button>

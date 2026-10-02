@@ -54,7 +54,7 @@ export default function HomeView() {
       <header className="absolute inset-x-0 top-0 z-[1] flex flex-col gap-2 p-4 md:p-8">
         <h1 className="text-2xl font-bold text-ink">Olá, {mockUser.name}</h1>
         <p className="flex w-fit items-center gap-2 rounded-full bg-card/80 px-3 py-1.5 text-xs font-medium text-foreground backdrop-blur">
-          <Droplets className="size-3.5 text-brand-600" aria-hidden />
+          <Droplets className="size-3.5 text-brand-accent" aria-hidden />
           <span>
             <CountUp value={garden.total} /> {garden.total === 1 ? "gota" : "gotas"} no jardim
             {garden.toNext !== null && ` · faltam ${garden.toNext} para uma nova planta`}
@@ -82,7 +82,7 @@ export default function HomeView() {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="flex h-11 items-center justify-center gap-2 rounded-full border border-input bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:border-brand-600 hover:text-brand-700 focus-visible:ring-3 focus-visible:ring-brand-600/40 focus-visible:outline-none"
+                    className="flex h-11 items-center justify-center gap-2 rounded-full border border-input bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:border-brand-600 hover:text-brand-ink focus-visible:ring-3 focus-visible:ring-brand-600/40 focus-visible:outline-none"
                   >
                     <Icon className="size-4" aria-hidden />
                     {label}
@@ -96,7 +96,7 @@ export default function HomeView() {
             <dl className="grid grid-cols-3 gap-3">
               {stats.map((stat) => (
                 <div key={stat.label} className="flex flex-col-reverse rounded-2xl bg-sunken p-4">
-                  <dd className="text-3xl font-bold text-primary">
+                  <dd className="text-3xl font-bold text-brand-accent">
                     <CountUp value={stat.value} />
                   </dd>
                   <dt className="mb-0 text-xs font-medium text-muted-foreground">{stat.label}</dt>
@@ -114,7 +114,7 @@ export default function HomeView() {
                 <h2 className="text-base font-bold text-foreground">Um minuto para respirar</h2>
                 <p className="mt-1 text-xs text-muted-foreground">Exercício guiado de 1 a 5 minutos.</p>
               </div>
-              <ArrowRight className="size-4 shrink-0 text-primary" aria-hidden />
+              <ArrowRight className="size-4 shrink-0 text-brand-accent" aria-hidden />
             </Link>
           </Stagger>
         </ActionSheet>

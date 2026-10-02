@@ -29,7 +29,7 @@ function Avatar({ name, className }: { name: string; className?: string }) {
     <span
       aria-hidden
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-800",
+        "flex shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-ink",
         className,
       )}
     >
@@ -89,7 +89,7 @@ export function MessagesView() {
                     <Avatar name={chat.doctorName} className="size-11" />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold text-ink">{chat.doctorName}</span>
-                      <span className="block text-xs font-medium text-brand-800">{chat.specialty}</span>
+                      <span className="block text-xs font-medium text-brand-ink">{chat.specialty}</span>
                       <span className="mt-0.5 block truncate text-xs text-muted-foreground">
                         {chat.lastMessage}
                       </span>
@@ -110,7 +110,7 @@ export function MessagesView() {
               <Avatar name={activeChat.doctorName} className="size-10" />
               <div>
                 <h2 className="font-semibold text-ink">{activeChat.doctorName}</h2>
-                <p className="text-xs font-medium text-brand-800">{activeChat.specialty}</p>
+                <p className="text-xs font-medium text-brand-ink">{activeChat.specialty}</p>
               </div>
             </header>
 
