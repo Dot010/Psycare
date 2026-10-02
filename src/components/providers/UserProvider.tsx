@@ -31,7 +31,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const savedUser = localStorage.getItem("@psycare:user");
       if (savedUser) {
         // Hidratação a partir do localStorage (só existe no cliente); sai quando o perfil vier da sessão.
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+
         setUser(JSON.parse(savedUser));
       }
     } catch (error) {
@@ -49,11 +49,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  return (
-    <UserContext.Provider value={{ user, updateUser, isLoading }}>
-      {children}
-    </UserContext.Provider>
-  );
+  return <UserContext.Provider value={{ user, updateUser, isLoading }}>{children}</UserContext.Provider>;
 }
 
 export function useUser() {
