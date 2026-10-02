@@ -9,6 +9,13 @@ const PLANTS: { kind: PlantKind; appearsAt: number; fullAt: number }[] = [
   { kind: "lavender", appearsAt: 24, fullAt: 44 },
 ];
 
+export const PLANT_NAMES: Record<PlantKind, string> = {
+  sunflower: "Girassol",
+  daisy: "Margarida",
+  tulip: "Tulipa",
+  lavender: "Lavanda",
+};
+
 export const MAX_DROPS_KEPT = 400;
 
 /** Uma gota por ação por dia: o mesmo hábito, ou o diário, o check-in e a respiração, uma vez ao dia. */
@@ -26,7 +33,7 @@ export function addDrop(drops: WaterDrop[], drop: WaterDrop): WaterDrop[] {
 export function gardenPlants(total: number): PlantState[] {
   return PLANTS.filter((plant) => total >= plant.appearsAt).map((plant) => ({
     kind: plant.kind,
-    growth: Math.min(1, Math.max(0.3, (total - plant.appearsAt) / (plant.fullAt - plant.appearsAt))),
+    growth: Math.min(1, Math.max(0.55, (total - plant.appearsAt) / (plant.fullAt - plant.appearsAt))),
   }));
 }
 

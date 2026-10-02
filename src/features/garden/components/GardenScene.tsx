@@ -3,8 +3,9 @@
 import dynamic from "next/dynamic";
 import { useSyncExternalStore } from "react";
 import { GardenFallback } from "@/features/garden/components/GardenFallback";
-import type { PlantState } from "@/features/garden/types";
-import { usePrefersReducedMotion } from "@/lib/motion";
+import type { PlantKind, PlantState } from "@/features/garden/types";
+import { useMediaQuery, usePrefersReducedMotion } from "@/lib/motion";
+import { useTheme } from "@/lib/theme";
 
 const GardenCanvas = dynamic(() => import("@/features/garden/components/GardenCanvas"), {
   ssr: false,
@@ -25,9 +26,18 @@ function hasWebGL(): boolean {
   return webglSupport;
 }
 
-/** O jardim em 3D; sem WebGL, mostra o desenho em SVG. */
-export function GardenScene({ plants }: { plants: PlantState[] }) {
+interface GardenSceneProps {
+  plants: PlantState[];
+  /** 0 a 1: quanto a gaveta cobre da tela (a câmera sobe a cena). */
+  lift: number;
+  onSelect?: (kind: PlantKind) => void;
+}
+
+/** O jardim em 3D (dia ou noite, conforme o tema); sem WebGL, mostra o desenho em SVG. */
+export function GardenScene({ plants, lift, onSelect }: GardenSceneProps) {
   const reduced = usePrefersReducedMotion();
+  const compact = useMediaQuery("(max-width: 767px)");
+  const night = useTheme() === "dark";
   const webgl = useSyncExternalStore(
     () => () => {},
     hasWebGL,
@@ -35,5 +45,14 @@ export function GardenScene({ plants }: { plants: PlantState[] }) {
   );
 
   if (!webgl) return <GardenFallback />;
-  return <GardenCanvas plants={plants} animate={!reduced} />;
+  return (
+    <GardenCanvas
+      plants={plants}
+      animate={!reduced}
+      night={night}
+      quality={compact ? "low" : "high"}
+      lift={lift}
+      onSelect={onSelect}
+    />
+  );
 }

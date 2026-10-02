@@ -5,6 +5,8 @@ import { readStored, writeStored } from "@/lib/storage";
 
 export const WATER_KEY = "psycare:garden-water:v1";
 export const CHECKINS_KEY = "psycare:checkins:v1";
+/** Evento do navegador disparado quando o jardim ganha uma gota (cena 3D e som escutam). */
+export const WATER_EVENT = "psycare:water";
 export const NO_DROPS: WaterDrop[] = [];
 export const NO_CHECKINS: CheckIn[] = [];
 
@@ -16,5 +18,7 @@ export function grantWater(source: WaterSource, ref?: string): void {
   const date = toISODate(new Date());
   const current = readStored<WaterDrop[]>(WATER_KEY, NO_DROPS);
   const next = addDrop(current, { id: dropId(source, date, ref), source, date });
-  if (next !== current) writeStored(WATER_KEY, next);
+  if (next === current) return;
+  writeStored(WATER_KEY, next);
+  window.dispatchEvent(new CustomEvent(WATER_EVENT, { detail: { source } }));
 }

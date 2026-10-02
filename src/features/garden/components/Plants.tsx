@@ -1,31 +1,44 @@
 "use client";
 
-import { useMemo, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import { Suspense, useLayoutEffect, useMemo, useRef, type MutableRefObject } from "react";
+import { useFrame, useLoader } from "@react-three/fiber";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import type { Group } from "three";
 import type { PlantKind } from "@/features/garden/types";
 
 const STEM = "#5E7638";
 const LEAF = "#7a8f55";
 
+/**
+ * Modelos 3D prontos (.glb) por planta. Coloque o arquivo em `public/models/` e informe o caminho aqui,
+ * por exemplo `sunflower: "/models/sunflower.glb"`. Sem caminho, a planta é desenhada por código.
+ */
+export const PLANT_MODELS: Partial<Record<PlantKind, string>> = {};
+
+export type BumpRef = MutableRefObject<Record<string, number>>;
+
 interface PlantProps {
   growth: number;
+  /** Pulso de 0 a 1 quando a planta recebe água. */
+  bump?: () => number;
   /** Fase do balanço, para as plantas não se mexerem juntas. */
   phase: number;
   sway: boolean;
 }
 
 /** Faz a planta balançar de leve e crescer suavemente até o tamanho pedido. */
-function useGrow(growth: number, phase: number, sway: boolean) {
+function useGrow(growth: number, phase: number, sway: boolean, bump?: () => number) {
   const group = useRef<Group>(null);
   const current = useRef(0.01);
 
   useFrame(({ clock }, delta) => {
     const node = group.current;
     if (!node) return;
-    current.current += (growth - current.current) * Math.min(1, delta * 2.5);
+    // Sem animação (reduzir movimento), a planta já aparece do tamanho certo.
+    current.current = sway ? current.current + (growth - current.current) * Math.min(1, delta * 2.5) : growth;
     const s = current.current;
-    node.scale.set(0.35 + s * 0.65, 0.15 + s * 0.85, 0.35 + s * 0.65);
+    const pulse = 1 + (bump?.() ?? 0) * 0.1;
+    node.scale.set((0.35 + s * 0.65) * pulse, (0.15 + s * 0.85) * pulse, (0.35 + s * 0.65) * pulse);
     if (sway) node.rotation.z = Math.sin(clock.elapsedTime * 0.8 + phase) * 0.035;
   });
 
@@ -87,8 +100,8 @@ function Stem({ height, radius = 0.045 }: { height: number; radius?: number }) {
   );
 }
 
-function Sunflower({ growth, phase, sway }: PlantProps) {
-  const group = useGrow(growth, phase, sway);
+function Sunflower({ growth, phase, sway, bump }: PlantProps) {
+  const group = useGrow(growth, phase, sway, bump);
   return (
     <group ref={group}>
       <Stem height={2.2} radius={0.06} />
@@ -106,8 +119,8 @@ function Sunflower({ growth, phase, sway }: PlantProps) {
   );
 }
 
-function Daisy({ growth, phase, sway }: PlantProps) {
-  const group = useGrow(growth, phase, sway);
+function Daisy({ growth, phase, sway, bump }: PlantProps) {
+  const group = useGrow(growth, phase, sway, bump);
   return (
     <group ref={group}>
       <Stem height={1.1} radius={0.03} />
@@ -123,8 +136,8 @@ function Daisy({ growth, phase, sway }: PlantProps) {
   );
 }
 
-function Tulip({ growth, phase, sway }: PlantProps) {
-  const group = useGrow(growth, phase, sway);
+function Tulip({ growth, phase, sway, bump }: PlantProps) {
+  const group = useGrow(growth, phase, sway, bump);
   return (
     <group ref={group}>
       <Stem height={1.3} radius={0.035} />
@@ -142,8 +155,8 @@ function Tulip({ growth, phase, sway }: PlantProps) {
   );
 }
 
-function Lavender({ growth, phase, sway }: PlantProps) {
-  const group = useGrow(growth, phase, sway);
+function Lavender({ growth, phase, sway, bump }: PlantProps) {
+  const group = useGrow(growth, phase, sway, bump);
   const spikes = [-0.12, 0, 0.12];
   return (
     <group ref={group}>
@@ -169,30 +182,70 @@ const COMPONENTS: Record<PlantKind, (props: PlantProps) => React.ReactElement> =
   lavender: Lavender,
 };
 
+function GlbPlant({ url, growth, phase, sway, bump }: PlantProps & { url: string }) {
+  const gltf = useLoader(GLTFLoader, url);
+  const group = useGrow(growth, phase, sway, bump);
+  const model = useMemo(() => gltf.scene.clone(true), [gltf]);
+  return (
+    <group ref={group}>
+      <primitive object={model} />
+    </group>
+  );
+}
+
 /** Onde cada planta fica no canteiro (x, z). O girassol é o destaque, no centro. */
 export const PLANT_SPOTS: Record<PlantKind, [number, number]> = {
-  sunflower: [0, -0.2],
-  daisy: [-1.35, 0.55],
-  tulip: [1.4, 0.45],
-  lavender: [-0.65, 1.1],
+  sunflower: [0, -0.3],
+  daisy: [-1.3, 0.5],
+  tulip: [1.35, 0.35],
+  lavender: [-0.45, 1.15],
 };
 
-export function Plant({
-  kind,
-  growth,
-  index,
-  sway,
-}: {
+/** Tamanho extra de cada planta na cena. */
+const PLANT_SCALE: Record<PlantKind, number> = { sunflower: 1.35, daisy: 1.2, tulip: 1.2, lavender: 1.25 };
+
+interface PlantSceneProps {
   kind: PlantKind;
   growth: number;
   index: number;
   sway: boolean;
-}) {
+  bumps: BumpRef;
+  onSelect?: (kind: PlantKind) => void;
+}
+
+export function Plant({ kind, growth, index, sway, bumps, onSelect }: PlantSceneProps) {
   const Component = COMPONENTS[kind];
   const [x, z] = PLANT_SPOTS[kind];
+  const root = useRef<Group>(null);
+  const bump = () => bumps.current[kind] ?? 0;
+  const model = PLANT_MODELS[kind];
+
+  // Todas as partes da planta projetam sombra no chão.
+  useLayoutEffect(() => {
+    root.current?.traverse((child) => {
+      if ("isMesh" in child) child.castShadow = true;
+    });
+  });
+
   return (
-    <group position={[x, 0, z]}>
-      <Component growth={growth} phase={index * 1.7} sway={sway} />
+    <group
+      ref={root}
+      position={[x, 0.05, z]}
+      scale={PLANT_SCALE[kind]}
+      onClick={(event) => {
+        event.stopPropagation();
+        onSelect?.(kind);
+      }}
+      onPointerOver={() => (document.body.style.cursor = "pointer")}
+      onPointerOut={() => (document.body.style.cursor = "")}
+    >
+      {model ? (
+        <Suspense fallback={null}>
+          <GlbPlant url={model} growth={growth} phase={index * 1.7} sway={sway} bump={bump} />
+        </Suspense>
+      ) : (
+        <Component growth={growth} phase={index * 1.7} sway={sway} bump={bump} />
+      )}
     </group>
   );
 }
