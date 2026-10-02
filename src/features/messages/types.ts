@@ -6,3 +6,18 @@ export const sendMessageSchema = z.object({
 });
 
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
+
+export interface MessageItem {
+  id: string;
+  sender: "user" | "doctor";
+  content: string;
+  timestamp: string;
+}
+
+export interface Chat {
+  id: string;
+  doctorName: string;
+  specialty: string;
+  lastMessage: string;
+  messages: MessageItem[];
+}

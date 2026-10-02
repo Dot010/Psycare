@@ -1,263 +1,219 @@
 "use client";
 
+import { Check } from "lucide-react";
 import { useState } from "react";
-import { useUser } from "@/context/UserContext";
 import { z } from "zod";
-import { AnimatedText } from "@/components/motion/AnimatedText";
+import { Page } from "@/components/layout/Page";
+import { useUser } from "@/components/providers/UserProvider";
+import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
+import { cn } from "@/lib/utils";
 
 const profileSchema = z.object({
   name: z.string().trim().min(3, "Nome deve ter ao menos 3 caracteres"),
   email: z.string().trim().email("E-mail inválido"),
 });
 
-// Componente do formulário isolado
+const TABS = [
+  { id: "general", label: "Perfil" },
+  { id: "notifications", label: "Notificações" },
+  { id: "security", label: "Segurança" },
+] as const;
+
+type TabId = (typeof TABS)[number]["id"];
+
+const panelClass = "space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm";
+const panelTitleClass = "text-base font-bold text-slate-800";
+
 function ProfileForm({
   user,
   updateUser,
-  onSaveSuccess,
+  onSaved,
 }: {
   user: { name: string; email: string } | null;
   updateUser: (data: { name: string; email: string }) => void;
-  onSaveSuccess: () => void;
+  onSaved: () => void;
 }) {
-  // Inicializa diretamente com os dados do usuário
-  const [name, setName] = useState(user?.name || "");
-  const [email, setEmail] = useState(user?.email || "");
+  const [name, setName] = useState(user?.name ?? "");
+  const [email, setEmail] = useState(user?.email ?? "");
   const [error, setError] = useState("");
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = profileSchema.safeParse({ name, email });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message || "Dados inválidos");
+      setError(parsed.error.issues[0]?.message ?? "Dados inválidos");
       return;
     }
-
     setError("");
-    updateUser({
-      name: parsed.data.name,
-      email: parsed.data.email,
-    });
-    onSaveSuccess();
+    updateUser(parsed.data);
+    onSaved();
   };
 
   return (
-    <form onSubmit={handleSave} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
-      <h2 className="font-bold text-slate-800 text-base border-b border-slate-100 pb-3">
-        Informações do Perfil
-      </h2>
+    <form onSubmit={handleSubmit} className={panelClass}>
+      <h2 className={cn(panelTitleClass, "border-b border-slate-100 pb-3")}>Informações do perfil</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">
-            Nome Completo
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">
-            Endereço de E-mail
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500"
-          />
-        </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Field label="Nome completo" required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
+        <Field
+          label="E-mail"
+          type="email"
+          required
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
       </div>
 
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && (
+        <p role="alert" className="text-xs text-red-600">
+          {error}
+        </p>
+      )}
 
-      <div className="pt-2 flex justify-end">
-        <button
-          type="submit"
-          className="px-5 py-2.5 text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white rounded-xl transition shadow-sm"
-        >
-          Salvar Alterações
-        </button>
+      <div className="flex justify-end">
+        <Button type="submit">Salvar alterações</Button>
       </div>
     </form>
   );
 }
 
-export default function SettingsPage() {
+function ToggleRow({
+  title,
+  description,
+  checked,
+  onChange,
+  disabled,
+}: {
+  title: string;
+  description: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <label
+      className={cn(
+        "flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-slate-50/50 p-3",
+        disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
+      )}
+    >
+      <span>
+        <span className="block text-xs font-semibold text-slate-800">{title}</span>
+        <span className="block text-[11px] text-slate-500">{description}</span>
+      </span>
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+        className="size-4 accent-brand-600"
+      />
+    </label>
+  );
+}
+
+export default function SettingsView() {
   const { user, updateUser } = useUser();
-
-  const [activeTab, setActiveTab] = useState<"general" | "notifications" | "security">("general");
-
-  // Estados dos Toggles
+  const [activeTab, setActiveTab] = useState<TabId>("general");
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications, setSmsNotifications] = useState(false);
-  const [twoFactorAuth, setTwoFactorAuth] = useState(false);
-  const [savedSuccess, setSavedSuccess] = useState(false);
+  const [saved, setSaved] = useState(false);
 
-  const handleSuccess = () => {
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 2500);
+  const handleSaved = () => {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-8 max-w-5xl mx-auto">
-      {/* Cabeçalho */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <AnimatedText as="h1" text="Configurações da Conta" className="text-2xl font-bold text-slate-800" />
-          <p className="text-slate-500 text-sm mt-1">
-            Gerencie preferências de perfil, notificações e segurança.
-          </p>
-        </div>
-
-        {savedSuccess && (
-          <span className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-full bg-brand-50 text-brand-700 border border-brand-200 animate-in fade-in">
-            ✓ Alterações salvas!
+    <Page
+      title="Configurações da Conta"
+      description="Gerencie preferências de perfil, notificações e segurança."
+      actions={
+        saved && (
+          <span
+            role="status"
+            className="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700"
+          >
+            <Check className="size-3.5" />
+            Alterações salvas
           </span>
+        )
+      }
+      width="narrow"
+    >
+      <div role="tablist" aria-label="Seções de configuração" className="flex gap-2 border-b border-slate-200 pb-2">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            id={`settings-tab-${tab.id}`}
+            aria-selected={activeTab === tab.id}
+            aria-controls={`settings-panel-${tab.id}`}
+            onClick={() => setActiveTab(tab.id)}
+            className={cn(
+              "rounded-xl px-4 py-2 text-xs font-semibold transition-colors",
+              activeTab === tab.id ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100",
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div role="tabpanel" id={`settings-panel-${activeTab}`} aria-labelledby={`settings-tab-${activeTab}`}>
+        {activeTab === "general" && (
+          <ProfileForm key={user?.email ?? "loading"} user={user} updateUser={updateUser} onSaved={handleSaved} />
+        )}
+
+        {activeTab === "notifications" && (
+          <div className={panelClass}>
+            <h2 className={cn(panelTitleClass, "border-b border-slate-100 pb-3")}>Preferências de comunicação</h2>
+            <div className="space-y-3">
+              <ToggleRow
+                title="Notificações por e-mail"
+                description="Receba avisos de cobranças, faturas e novidades."
+                checked={emailNotifications}
+                onChange={setEmailNotifications}
+              />
+              <ToggleRow
+                title="Alertas por SMS"
+                description="Receba lembretes no celular no dia do vencimento da fatura."
+                checked={smsNotifications}
+                onChange={setSmsNotifications}
+              />
+            </div>
+          </div>
+        )}
+
+        {activeTab === "security" && (
+          <div className={panelClass}>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h2 className={panelTitleClass}>Segurança e autenticação</h2>
+              <span className="rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
+                Em desenvolvimento
+              </span>
+            </div>
+            <div className="space-y-3">
+              <ToggleRow
+                title="Autenticação em duas etapas (2FA)"
+                description="Adiciona uma camada extra de segurança com um aplicativo autenticador."
+                checked={false}
+                onChange={() => {}}
+                disabled
+              />
+              <div className="flex items-center justify-between rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-xs">
+                <span className="text-slate-600">Alterar senha da conta</span>
+                <Button variant="outline" size="sm" disabled>
+                  Redefinir
+                </Button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
-
-      {/* Navegação por Abas */}
-      <div className="flex gap-2 border-b border-slate-200 pb-2">
-        <button
-          type="button"
-          onClick={() => setActiveTab("general")}
-          className={`px-4 py-2 text-xs font-semibold rounded-xl transition ${
-            activeTab === "general"
-              ? "bg-slate-900 text-white shadow-sm"
-              : "text-slate-500 hover:bg-slate-100"
-          }`}
-        >
-          👤 Geral & Perfil
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("notifications")}
-          className={`px-4 py-2 text-xs font-semibold rounded-xl transition ${
-            activeTab === "notifications"
-              ? "bg-slate-900 text-white shadow-sm"
-              : "text-slate-500 hover:bg-slate-100"
-          }`}
-        >
-          🔔 Notificações
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("security")}
-          className={`px-4 py-2 text-xs font-semibold rounded-xl transition ${
-            activeTab === "security"
-              ? "bg-slate-900 text-white shadow-sm"
-              : "text-slate-500 hover:bg-slate-100"
-          }`}
-        >
-          🛡️ Segurança
-        </button>
-      </div>
-
-      {/* Conteúdo da Aba Geral */}
-      {activeTab === "general" && (
-        <ProfileForm
-          key={user?.email || "loading"}
-          user={user}
-          updateUser={updateUser}
-          onSaveSuccess={handleSuccess}
-        />
-      )}
-
-      {/* Conteúdo da Aba Notificações */}
-      {activeTab === "notifications" && (
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
-          <h2 className="font-bold text-slate-800 text-base border-b border-slate-100 pb-3">
-            Preferências de Comunicação
-          </h2>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-slate-50/50 rounded-xl border border-slate-100">
-              <div>
-                <p className="font-semibold text-xs text-slate-800">
-                  Notificações por E-mail
-                </p>
-                <p className="text-[11px] text-slate-400">
-                  Receba avisos de cobranças, faturas e novidades.
-                </p>
-              </div>
-              <input
-                type="checkbox"
-                checked={emailNotifications}
-                onChange={(e) => setEmailNotifications(e.target.checked)}
-                className="w-4 h-4 accent-brand-600 cursor-pointer"
-              />
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-slate-50/50 rounded-xl border border-slate-100">
-              <div>
-                <p className="font-semibold text-xs text-slate-800">
-                  Alertas por SMS
-                </p>
-                <p className="text-[11px] text-slate-400">
-                  Receba lembretes no celular no dia do vencimento da fatura.
-                </p>
-              </div>
-              <input
-                type="checkbox"
-                checked={smsNotifications}
-                onChange={(e) => setSmsNotifications(e.target.checked)}
-                className="w-4 h-4 accent-brand-600 cursor-pointer"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Conteúdo da Aba Segurança */}
-      {activeTab === "security" && (
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
-          <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-            <h2 className="font-bold text-slate-800 text-base">
-              Segurança e Autenticação
-            </h2>
-            <span className="text-[10px] font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md">
-              Em desenvolvimento
-            </span>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-slate-50/50 rounded-xl border border-slate-100">
-              <div>
-                <p className="font-semibold text-xs text-slate-800">
-                  Autenticação em Duas Etapas (2FA)
-                </p>
-                <p className="text-[11px] text-slate-400">
-                  Adiciona uma camada extra de segurança usando o Google Authenticator.
-                </p>
-              </div>
-              <input
-                type="checkbox"
-                checked={twoFactorAuth}
-                onChange={(e) => setTwoFactorAuth(e.target.checked)}
-                className="w-4 h-4 accent-brand-600 cursor-pointer"
-              />
-            </div>
-
-            <div className="p-4 bg-slate-50 border border-dashed border-slate-200 rounded-xl flex items-center justify-between text-xs">
-              <span className="text-slate-600">Alterar senha da conta</span>
-              <button
-                type="button"
-                onClick={() => alert("Recurso de troca de senha em breve!")}
-                className="px-3 py-1.5 font-semibold bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition"
-              >
-                Redefinir
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    </Page>
   );
 }

@@ -1,9 +1,13 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import type { PaymentMethod } from "@/types/domain";
+import { CreditCard, Info, QrCode } from "lucide-react";
+import { useState } from "react";
 import { z } from "zod";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
+import { Field, SelectField } from "@/components/ui/field";
+import type { PaymentMethod } from "@/features/payments/types";
+import { cn } from "@/lib/utils";
 
 interface AddPaymentMethodModalProps {
   isOpen: boolean;
@@ -12,19 +16,54 @@ interface AddPaymentMethodModalProps {
   isFirstMethod: boolean;
 }
 
+type PaymentType = "credit_card" | "pix";
 type PixKeyType = "cpf" | "email" | "phone" | "random";
 
 const creditCardSchema = z.object({
-  cardBrand: z.string().min(2),
+  brand: z.string().min(2),
   // Nunca coletamos o número completo: só os 4 últimos dígitos (o resto é tarefa do gateway).
-  cardLast4: z.string().regex(/^\d{4}$/, "Informe apenas os 4 últimos dígitos"),
-  cardExpiry: z.string().regex(/^(0[1-9]|1[0-2])\/[0-9]{2}$/, "Validade inválida"),
+  last4: z.string().regex(/^\d{4}$/, "Informe apenas os 4 últimos dígitos"),
+  expiry: z.string().regex(/^(0[1-9]|1[0-2])\/[0-9]{2}$/, "Validade inválida"),
 });
 
 const pixSchema = z.object({
-  pixKeyType: z.enum(["cpf", "email", "phone", "random"]),
-  pixKey: z.string().trim().min(4, "Chave PIX inválida"),
+  keyType: z.enum(["cpf", "email", "phone", "random"]),
+  key: z.string().trim().min(4, "Chave PIX inválida"),
 });
+
+const PIX_PLACEHOLDERS: Record<PixKeyType, string> = {
+  cpf: "000.000.000-00",
+  email: "seu@email.com",
+  phone: "(11) 99999-9999",
+  random: "00000000-0000-0000-0000-000000000000",
+};
+
+const onlyDigits = (value: string, max: number) => value.replace(/\D/g, "").slice(0, max);
+
+function maskExpiry(value: string) {
+  const digits = onlyDigits(value, 4);
+  return digits.length >= 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
+}
+
+function maskPixKey(type: PixKeyType, value: string) {
+  if (type === "cpf") {
+    return onlyDigits(value, 11)
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+  }
+  if (type === "phone") {
+    return onlyDigits(value, 11)
+      .replace(/(\d{2})(\d)/, "($1) $2")
+      .replace(/(\d{5})(\d{4})$/, "$1-$2");
+  }
+  return value;
+}
+
+const TYPE_OPTIONS = [
+  { id: "credit_card", label: "Cartão de crédito", Icon: CreditCard },
+  { id: "pix", label: "PIX", Icon: QrCode },
+] as const;
 
 export default function AddPaymentMethodModal({
   isOpen,
@@ -33,130 +72,59 @@ export default function AddPaymentMethodModal({
   isFirstMethod,
 }: AddPaymentMethodModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [paymentType, setPaymentType] = useState<"credit_card" | "pix">("credit_card");
-
-  // Campos do Cartão
-  const [cardLast4, setCardLast4] = useState("");
-  const [cardBrand, setCardBrand] = useState("Visa");
-  const [cardExpiry, setCardExpiry] = useState("");
-
-  // Campos do PIX
+  const [paymentType, setPaymentType] = useState<PaymentType>("credit_card");
+  const [brand, setBrand] = useState("Visa");
+  const [last4, setLast4] = useState("");
+  const [expiry, setExpiry] = useState("");
   const [pixKeyType, setPixKeyType] = useState<PixKeyType>("cpf");
   const [pixKey, setPixKey] = useState("");
   const [formError, setFormError] = useState("");
 
-  // Reset de formulário
-  const resetForm = useCallback(() => {
-    setCardLast4("");
-    setCardExpiry("");
-    setPixKey("");
-    setPixKeyType("cpf");
-    setCardBrand("Visa");
+  const resetForm = () => {
     setPaymentType("credit_card");
+    setBrand("Visa");
+    setLast4("");
+    setExpiry("");
+    setPixKeyType("cpf");
+    setPixKey("");
     setFormError("");
-  }, []);
+  };
 
-  // Fechamento seguro
-  const handleClose = useCallback(() => {
+  const handleClose = () => {
     if (isSubmitting) return;
     resetForm();
     onClose();
-  }, [isSubmitting, resetForm, onClose]);
-
-  // Máscaras de Cartão
-  const handleCardLast4Change = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCardLast4(e.target.value.replace(/\D/g, "").substring(0, 4));
-  };
-
-  const handleCardExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = e.target.value.replace(/\D/g, "").substring(0, 4);
-    const formatted =
-      rawValue.length >= 2
-        ? `${rawValue.substring(0, 2)}/${rawValue.substring(2)}`
-        : rawValue;
-    setCardExpiry(formatted);
-  };
-
-  // Máscara dinâmica de Chave PIX
-  const handlePixKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-
-    if (pixKeyType === "cpf") {
-      const numbers = raw.replace(/\D/g, "").substring(0, 11);
-      const formatted = numbers
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-      setPixKey(formatted);
-    } else if (pixKeyType === "phone") {
-      const numbers = raw.replace(/\D/g, "").substring(0, 11);
-      const formatted = numbers
-        .replace(/(\d{2})(\d)/, "($1) $2")
-        .replace(/(\d{5})(\d{4})$/, "$1-$2");
-      setPixKey(formatted);
-    } else {
-      setPixKey(raw);
-    }
-  };
-
-  const handlePixKeyTypeChange = (type: PixKeyType) => {
-    setPixKeyType(type);
-    setPixKey("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
-    if (paymentType === "credit_card") {
-      const cardValidation = creditCardSchema.safeParse({
-        cardBrand,
-        cardLast4,
-        cardExpiry,
-      });
+    const validation =
+      paymentType === "credit_card"
+        ? creditCardSchema.safeParse({ brand, last4, expiry })
+        : pixSchema.safeParse({ keyType: pixKeyType, key: pixKey });
 
-      if (!cardValidation.success) {
-        setIsSubmitting(false);
-        setFormError(cardValidation.error.issues[0]?.message || "Dados inválidos");
-        return;
-      }
-    }
-
-    if (paymentType === "pix") {
-      const pixValidation = pixSchema.safeParse({
-        pixKeyType,
-        pixKey,
-      });
-
-      if (!pixValidation.success) {
-        setIsSubmitting(false);
-        setFormError(pixValidation.error.issues[0]?.message || "Dados inválidos");
-        return;
-      }
+    if (!validation.success) {
+      setFormError(validation.error.issues[0]?.message ?? "Dados inválidos");
+      return;
     }
 
     setFormError("");
+    setIsSubmitting(true);
 
-    // Simulação de gateway de pagamento
+    // Simula a chamada ao gateway de pagamento.
     await new Promise((resolve) => setTimeout(resolve, 800));
 
-    if (paymentType === "credit_card") {
-      onAddPaymentMethod({
-        id: crypto.randomUUID(),
-        type: "credit_card",
-        brand: cardBrand,
-        last4: cardLast4,
-        expiry: cardExpiry || "12/28",
-        isDefault: isFirstMethod,
-      });
-    } else {
-      onAddPaymentMethod({
-        id: crypto.randomUUID(),
-        type: "pix",
-        pixKey: `${pixKey} (${pixKeyType.toUpperCase()})`,
-        isDefault: isFirstMethod,
-      });
-    }
+    onAddPaymentMethod(
+      paymentType === "credit_card"
+        ? { id: crypto.randomUUID(), type: "credit_card", brand, last4, expiry, isDefault: isFirstMethod }
+        : {
+            id: crypto.randomUUID(),
+            type: "pix",
+            pixKey: `${pixKey} (${pixKeyType.toUpperCase()})`,
+            isDefault: isFirstMethod,
+          },
+    );
 
     setIsSubmitting(false);
     resetForm();
@@ -164,178 +132,113 @@ export default function AddPaymentMethodModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
-      <DialogContent aria-describedby={undefined} className="gap-6 rounded-3xl p-6 sm:max-w-md">
-        <DialogTitle className="border-b border-slate-100 pb-4 text-lg font-bold text-slate-800">Novo Método de Pagamento</DialogTitle>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent aria-describedby={undefined} className="gap-5 rounded-2xl p-6 sm:max-w-md">
+        <DialogTitle className="text-xl font-bold text-slate-800">Novo método de pagamento</DialogTitle>
 
-        {/* Seleção de Tipo */}
-        <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
-          <button
-            type="button"
-            disabled={isSubmitting}
-            onClick={() => setPaymentType("credit_card")}
-            className={`py-2 text-xs font-semibold rounded-lg transition ${
-              paymentType === "credit_card"
-                ? "bg-white text-slate-800 shadow-sm"
-                : "text-slate-500 hover:text-slate-800"
-            }`}
-          >
-            💳 Cartão de Crédito
-          </button>
-          <button
-            type="button"
-            disabled={isSubmitting}
-            onClick={() => setPaymentType("pix")}
-            className={`py-2 text-xs font-semibold rounded-lg transition ${
-              paymentType === "pix"
-                ? "bg-white text-slate-800 shadow-sm"
-                : "text-slate-500 hover:text-slate-800"
-            }`}
-          >
-            ❖ PIX
-          </button>
+        <div role="group" aria-label="Tipo de método" className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
+          {TYPE_OPTIONS.map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              type="button"
+              disabled={isSubmitting}
+              aria-pressed={paymentType === id}
+              onClick={() => setPaymentType(id)}
+              className={cn(
+                "flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition-colors",
+                paymentType === id ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800",
+              )}
+            >
+              <Icon className="size-4" />
+              {label}
+            </button>
+          ))}
         </div>
 
-        {/* Formulário */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <p className="rounded-xl bg-amber-50 p-3 text-xs text-amber-900">
-            Demonstração: não informe dados reais. O número completo do cartão nunca é solicitado
-            aqui; o pagamento real será feito em um checkout seguro do gateway.
+            Demonstração: não informe dados reais. O número completo do cartão nunca é solicitado aqui; o pagamento
+            real será feito em um checkout seguro do gateway.
           </p>
 
           {paymentType === "credit_card" ? (
             <>
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">
-                  Bandeira
-                </label>
-                <select
-                  value={cardBrand}
-                  disabled={isSubmitting}
-                  onChange={(e) => setCardBrand(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500 disabled:bg-slate-50"
-                >
-                  <option value="Visa">Visa</option>
-                  <option value="Mastercard">Mastercard</option>
-                  <option value="Elo">Elo</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">
-                  Últimos 4 dígitos do cartão
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  placeholder="0000"
-                  value={cardLast4}
-                  maxLength={4}
-                  disabled={isSubmitting}
-                  onChange={handleCardLast4Change}
-                  required
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500 disabled:bg-slate-50"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">
-                  Validade (MM/AA)
-                </label>
-                <input
-                  type="text"
-                  placeholder="MM/AA"
-                  value={cardExpiry}
-                  maxLength={5}
-                  disabled={isSubmitting}
-                  onChange={handleCardExpiryChange}
-                  required
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500 disabled:bg-slate-50"
-                />
-              </div>
+              <SelectField label="Bandeira" value={brand} disabled={isSubmitting} onChange={(e) => setBrand(e.target.value)}>
+                <option value="Visa">Visa</option>
+                <option value="Mastercard">Mastercard</option>
+                <option value="Elo">Elo</option>
+              </SelectField>
+              <Field
+                label="Últimos 4 dígitos do cartão"
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder="0000"
+                maxLength={4}
+                required
+                disabled={isSubmitting}
+                value={last4}
+                onChange={(e) => setLast4(onlyDigits(e.target.value, 4))}
+              />
+              <Field
+                label="Validade (MM/AA)"
+                placeholder="MM/AA"
+                maxLength={5}
+                required
+                disabled={isSubmitting}
+                value={expiry}
+                onChange={(e) => setExpiry(maskExpiry(e.target.value))}
+              />
             </>
           ) : (
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">
-                  Tipo de Chave PIX
-                </label>
-                <select
-                  value={pixKeyType}
-                  disabled={isSubmitting}
-                  onChange={(e) =>
-                    handlePixKeyTypeChange(e.target.value as PixKeyType)
-                  }
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500 disabled:bg-slate-50"
-                >
-                  <option value="cpf">CPF</option>
-                  <option value="email">E-mail</option>
-                  <option value="phone">Celular</option>
-                  <option value="random">Chave Aleatória (EVP)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">
-                  Chave PIX
-                </label>
-                <input
-                  type={pixKeyType === "email" ? "email" : "text"}
-                  placeholder={
-                    pixKeyType === "cpf"
-                      ? "000.000.000-00"
-                      : pixKeyType === "email"
-                      ? "seu@email.com"
-                      : pixKeyType === "phone"
-                      ? "(11) 99999-9999"
-                      : "00000000-0000-0000-0000-000000000000"
-                  }
-                  value={pixKey}
-                  disabled={isSubmitting}
-                  onChange={handlePixKeyChange}
-                  required
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500 disabled:bg-slate-50 font-mono"
-                />
-              </div>
-
-              {/* Card informativo sobre cobrança PIX */}
-              <div className="p-3 bg-brand-50 border border-brand-100 rounded-xl flex items-start gap-2 text-xs text-brand-800">
-                <span className="text-base">ℹ️</span>
-                <p>
-                  No dia da renovação, um código <strong>PIX Copia e Cola</strong> e o <strong>QR Code</strong> serão enviados para sua chave/e-mail para pagamento instantâneo.
-                </p>
-              </div>
-            </div>
+            <>
+              <SelectField
+                label="Tipo de chave PIX"
+                value={pixKeyType}
+                disabled={isSubmitting}
+                onChange={(e) => {
+                  setPixKeyType(e.target.value as PixKeyType);
+                  setPixKey("");
+                }}
+              >
+                <option value="cpf">CPF</option>
+                <option value="email">E-mail</option>
+                <option value="phone">Celular</option>
+                <option value="random">Chave aleatória (EVP)</option>
+              </SelectField>
+              <Field
+                label="Chave PIX"
+                type={pixKeyType === "email" ? "email" : "text"}
+                placeholder={PIX_PLACEHOLDERS[pixKeyType]}
+                required
+                disabled={isSubmitting}
+                className="font-mono"
+                value={pixKey}
+                onChange={(e) => setPixKey(maskPixKey(pixKeyType, e.target.value))}
+              />
+              <p className="flex items-start gap-2 rounded-xl border border-brand-100 bg-brand-50 p-3 text-xs text-brand-800">
+                <Info className="mt-0.5 size-4 shrink-0" />
+                <span>
+                  No dia da renovação, um código <strong>PIX Copia e Cola</strong> e o <strong>QR Code</strong> serão
+                  enviados para o seu e-mail.
+                </span>
+              </p>
+            </>
           )}
 
-          {formError && <p className="text-xs text-red-600">{formError}</p>}
+          {formError && (
+            <p role="alert" className="text-xs text-red-600">
+              {formError}
+            </p>
+          )}
 
-          {/* Botões do Rodapé */}
-          <div className="flex gap-3 pt-4 border-t border-slate-100">
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={handleClose}
-              className="flex-1 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition disabled:opacity-50"
-            >
+          <DialogFooter className="-mx-6 -mb-6 rounded-b-2xl px-6 py-4">
+            <Button type="button" variant="outline" disabled={isSubmitting} onClick={handleClose}>
               Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1 py-2.5 text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white rounded-xl transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {isSubmitting ? (
-                <>
-                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Salvando...
-                </>
-              ) : (
-                "Salvar Método"
-              )}
-            </button>
-          </div>
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Salvando..." : "Salvar método"}
+            </Button>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

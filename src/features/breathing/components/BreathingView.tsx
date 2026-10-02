@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { AnimatedText } from "@/components/motion/AnimatedText";
+import { Page } from "@/components/layout/Page";
+import { Button } from "@/components/ui/button";
 import { BreathingStage } from "@/features/breathing/components/BreathingStage";
 import { useBreathingSession } from "@/features/breathing/hooks/useBreathingSession";
 import {
@@ -45,21 +46,13 @@ export default function BreathingView() {
           : String(position?.remaining ?? "");
 
   return (
-    <div className="max-w-5xl space-y-8 p-6 md:p-8">
-      <header className="space-y-1">
-        <AnimatedText
-          as="h1"
-          text="Respiração Guiada"
-          className="text-2xl font-bold text-slate-800"
-        />
-        <p className="text-sm text-slate-500">
-          Acompanhe o círculo: ele cresce quando você inspira e encolhe quando você expira.
-        </p>
-      </header>
-
+    <Page
+      title="Respiração Guiada"
+      description="Acompanhe o círculo: ele cresce quando você inspira e encolhe quando você expira."
+      width="narrow"
+    >
       <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
-        {/* Palco */}
-        <div className="relative mx-auto aspect-square w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-brand-50/60">
+        <div className="relative mx-auto aspect-square w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-brand-50/60">
           <BreathingStage scaleRef={scaleRef} />
 
           <div className="pointer-events-none absolute inset-0 grid place-items-center text-center text-white [text-shadow:0_1px_10px_rgb(0_0_0/0.4)]">
@@ -82,7 +75,6 @@ export default function BreathingView() {
           </p>
         </div>
 
-        {/* Controles */}
         <div className="space-y-6">
           <fieldset className="space-y-2" disabled={isActive}>
             <legend className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">
@@ -143,39 +135,23 @@ export default function BreathingView() {
           <div className="space-y-3">
             <div className="flex gap-2">
               {status === "running" ? (
-                <button
-                  type="button"
-                  onClick={pause}
-                  className="flex-1 rounded-xl bg-brand-800 py-3 text-sm font-semibold text-white transition hover:bg-brand-900"
-                >
+                <Button onClick={pause} className="h-11 flex-1">
                   Pausar
-                </button>
+                </Button>
               ) : status === "paused" ? (
-                <button
-                  type="button"
-                  onClick={resume}
-                  className="flex-1 rounded-xl bg-brand-800 py-3 text-sm font-semibold text-white transition hover:bg-brand-900"
-                >
+                <Button onClick={resume} className="h-11 flex-1">
                   Retomar
-                </button>
+                </Button>
               ) : (
-                <button
-                  type="button"
-                  onClick={start}
-                  className="flex-1 rounded-xl bg-brand-800 py-3 text-sm font-semibold text-white transition hover:bg-brand-900"
-                >
+                <Button onClick={start} className="h-11 flex-1">
                   {status === "done" ? "Fazer de novo" : "Começar"}
-                </button>
+                </Button>
               )}
 
               {(isActive || status === "done") && (
-                <button
-                  type="button"
-                  onClick={reset}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
-                >
+                <Button variant="outline" onClick={reset} className="h-11">
                   Parar
-                </button>
+                </Button>
               )}
             </div>
 
@@ -205,6 +181,6 @@ export default function BreathingView() {
           </p>
         </div>
       </div>
-    </div>
+    </Page>
   );
 }

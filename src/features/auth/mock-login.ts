@@ -10,7 +10,7 @@ export async function loginMock(email: string): Promise<UserSession> {
 
   return {
     id: "usr_01",
-    name: "Utilizador PsyCare",
+    name: "Usuário PsyCare",
     email: email,
     role: "patient",
   };

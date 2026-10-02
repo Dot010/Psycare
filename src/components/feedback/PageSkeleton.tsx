@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function AppShellSkeleton() {
+export function PageSkeleton() {
   return (
     <div className="p-4 md:p-8 space-y-6 max-w-6xl mx-auto">
       <Skeleton className="h-32 w-full rounded-xl" />

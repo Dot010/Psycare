@@ -1,6 +1,6 @@
 export type PhaseKind = "inhale" | "hold-full" | "exhale" | "hold-empty";
 
-export interface Phase {
+interface Phase {
   kind: PhaseKind;
   label: string;
   seconds: number;

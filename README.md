@@ -1,130 +1,108 @@
-# 🧠 PsyCare
+# PsyCare
 
-> Plataforma inteligente e humanizada para acompanhamento psicológico, gestão de hábitos, diário emocional e consultas.
+Aplicativo web de acompanhamento em saúde mental: diário, hábitos, respiração guiada, consultas, mensagens, saúde e pagamentos.
 
-[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
-[![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?style=flat-square&logo=vercel)](https://psycare-seven.vercel.app)
+Ainda **não há backend**. Login, registro e todos os dados do painel são simulados (veja [Dados de demonstração](#dados-de-demonstração)).
 
-🌐 **Aceda à aplicação em produção:** [psycare-seven.vercel.app](https://psycare-seven.vercel.app)
+Produção: [psycare-seven.vercel.app](https://psycare-seven.vercel.app)
 
----
+## Stack
 
-## 🚀 Sobre o Projeto
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · shadcn/ui (Radix) · lucide-react · Zod · jose · GSAP, three.js e Framer Motion para animação · Vitest · Sentry (opcional).
 
-O **PsyCare** é uma aplicação web desenvolvida para proporcionar uma experiência fluida, acolhedora e personalizada tanto para pacientes quanto para profissionais da saúde mental. 
-
-A plataforma oferece um painel completo para acompanhamento de rotinas, registro de hábitos, diário de sentimentos, gestão de pagamentos, consultas agendadas e central de mensagens.
-
----
-
-## ✨ Funcionalidades Atuais (MVP)
-
-- **👤 Personalização Dinâmica em Tempo Real:** Sincronização do perfil do utilizador via `UserContext` e `localStorage`, com saudações contextuais e edições inline.
-- **📊 Dashboard Multimodular:** 
-  - **Home:** Visão geral da rotina, próximos compromissos e resumo diário.
-  - **Diário Emocional:** Registro e acompanhamento de humor e reflexões.
-  - **Hábitos:** Monitoramento e criação de metas diárias.
-  - **Respiração Guiada:** Exercícios de 1 a 5 minutos (técnicas 4-6, caixa e 4-7-8) com um blob 3D que guia o ritmo.
-  - **Saúde & Métricas:** Acompanhamento de evolução e bem-estar.
-  - **Consultas & Mensagens:** Gestão de agendamentos e histórico de conversas.
-  - **Pagamentos:** Controle financeiro e faturas.
-  - **Configurações:** Gestão de perfil, preferências e segurança.
-- **🧩 Componentes Modais Interativos:** Modais dedicados para Onboarding, Novo Registro de Diário, Novo Hábito e Novo Pagamento.
-- **🎨 Design Acessível e Responsivo:** Layout focado no conforto visual, construído com componentes Shadcn/UI e estilizado via Tailwind CSS.
-
----
-
-## 🛠️ Tecnologias Utilizadas
-
-- **Framework:** [Next.js](https://nextjs.org/) (App Router, Turbopack)
-- **Linguagem:** [TypeScript](https://www.typescriptlang.org/)
-- **Estilização:** [Tailwind CSS](https://tailwindcss.com/)
-- **Componentes de UI:** [Shadcn/UI](https://ui.shadcn.com/) / [Radix UI](https://www.radix-ui.com/)
-- **Gerenciamento de Estado:** React Context API + LocalStorage
-- **Deploy & Hospedagem:** [Vercel](https://vercel.com/)
-
----
-
-## 🗺️ Roadmap de Desenvolvimento
-
-- [x] Estruturação da arquitetura modular com Next.js App Router (15+ rotas).
-- [x] Criação do sistema de personalização dinâmica de perfil (`UserContext`).
-- [x] Integração de componentes interativos e modais de cadastro.
-- [x] Testes de build e publicação automatizada na Vercel.
-- [ ] Conexão com banco de dados remoto ([Supabase](https://supabase.com/) / [Prisma ORM](https://www.prisma.io/)).
-- [ ] Sistema de Autenticação completo (Clerk / NextAuth.js).
-- [ ] Integração de chamadas de vídeo para sessões online.
-
----
-
-## 💻 Como Executar o Projeto Localmente
-
-1. **Clone o repositório:**
-   ```bash
-   git clone https://github.com/Dot010/Psycare.git
-   cd Psycare
-   ```
-
-2. **Instale as dependências:**
-  ```bash
-  npm install
-  ```
-
-3. **Configure variáveis de ambiente:**
-  ```bash
-  cp .env.example .env.local
-  ```
-  Gere o segredo de sessão e cole em `SESSION_SECRET` no `.env.local`:
-  ```bash
-  node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-  ```
-
-4. **Rode em desenvolvimento:**
-  ```bash
-  npm run dev
-  ```
-
----
-
-## 🎞️ Movimento e UX de Carregamento
-
-- Skeletons globais com `loading.tsx` no App Router.
-- Lazy loading do shell do dashboard (navegação desktop/mobile) e do three.js (`next/dynamic`, só baixa quando o canvas aparece).
-- Barra de progresso global de navegação com `nextjs-toploader`.
-- **Acessibilidade:** `prefers-reduced-motion` é respeitado em CSS global, no Framer Motion (`MotionConfig reducedMotion="user"`), no GSAP e no 3D (vira um fundo estático). Efeitos de hover (`TiltCard`, `MagneticButton`) só ligam em dispositivos com mouse.
-- Animações em `src/components/motion/`; use `TiltCard`/`MagneticButton` com moderação (destaques e ação principal), não em listas e formulários.
-- Cores centralizadas em `src/app/globals.css` (`brand-*`, `canvas`, `surface`, `ink`): para trocar a cor da marca, edite só lá.
-
----
-
-
-## 🔐 Segurança
-
-> ⚠️ **Projeto em fase de demonstração.** Ainda não há backend: login e registro são **simulados** e aceitam qualquer credencial. Eles só funcionam com `DEMO_MODE=true`; sem isso, a autenticação é recusada. Não insira dados pessoais, de saúde ou de pagamento reais.
-
-- **Sessão:** cookie `httpOnly` com JWT assinado (HS256, `jose`) e expiração de 24h, validado no `proxy.ts`. Exige `SESSION_SECRET` (mínimo 32 caracteres).
-- **CSP com nonce por requisição**, montada em `src/lib/security/csp.ts` e aplicada no `proxy.ts` (sem `unsafe-eval` em produção; `style-src` mantém `unsafe-inline` por causa de bibliotecas de UI). Por isso as páginas são renderizadas por requisição.
-- **Headers de segurança** (HSTS, X-Frame-Options etc.) em `next.config.ts`.
-- **Pagamentos:** o modal nunca coleta o número completo do cartão, só os 4 últimos dígitos. Pagamento real deve usar checkout hospedado do gateway.
-- **Monitoramento:** apenas Sentry (opcional, via `NEXT_PUBLIC_SENTRY_DSN`), sem session replay e sem dados pessoais.
-- **Dependências:** Dependabot semanal e `npm audit` no CI.
-
-Antes de aceitar dados reais: backend e autenticação gerenciada (ex.: Supabase Auth com Row Level Security), política de privacidade e base legal conforme a LGPD (dados de saúde são dados sensíveis).
-
----
-
-## ✅ Qualidade e Testes
-
-- Lint: ESLint (`eslint-config-next`)
-- Tipos: `tsc --noEmit`
-- Testes: Vitest + Testing Library (`src/**/*.test.ts`)
-- CI (GitHub Actions): typecheck, lint, testes, build e auditoria de dependências
+## Rodando localmente
 
 ```bash
-npm run typecheck
-npm run lint
-npm test
-npm run check   # typecheck + lint + testes
+npm install
+cp .env.example .env.local
 ```
+
+No `.env.local`, defina `DEMO_MODE=true` e gere o segredo de sessão:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Cole o resultado em `SESSION_SECRET` e rode `npm run dev`. Qualquer e-mail e senha entram, desde que `DEMO_MODE=true`.
+
+Requer Node 22.12 ou superior.
+
+## Comandos
+
+| Comando | O que faz |
+| --- | --- |
+| `npm run dev` | servidor de desenvolvimento |
+| `npm run build` / `npm start` | build e execução de produção |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | ESLint |
+| `npm test` | Vitest |
+| `npm run check` | typecheck + lint + testes (o mesmo que o CI roda) |
+
+## Estrutura do projeto
+
+```
+src/
+├── app/                 Rotas do Next. Só roteamento: cada page.tsx importa uma View de features/.
+│   ├── (auth)/          /login e /register
+│   └── dashboard/       Área logada (layout com menu, loading e error próprios)
+├── features/            Uma pasta por área do produto. Tudo de uma área mora junto.
+│   └── <área>/
+│       ├── components/  Telas (XxxView.tsx) e modais da área
+│       ├── hooks/       Estado e lógica da área (quando existe)
+│       └── types.ts     Tipos (e schemas Zod) da área
+├── components/          Código compartilhado entre áreas
+│   ├── ui/              Primitivos (Button, Input, Field, Dialog, Skeleton)
+│   ├── layout/          Page, Nav, NavMobile, lista de itens do menu
+│   ├── feedback/        Skeleton de página, ErrorState, DemoBanner
+│   ├── motion/          Animações (AnimatedText, TiltCard, MagneticButton)
+│   ├── three/           Canvas 3D
+│   └── providers/       Contextos globais
+├── lib/                 Utilitários sem UI: sessão, formatação, CSP, observabilidade
+├── mocks/               Dados fictícios usados enquanto não há backend
+├── proxy.ts             Proteção das rotas e CSP por requisição
+└── instrumentation.ts   Inicialização do Sentry
+```
+
+Áreas em `features/`: `appointments`, `auth`, `breathing`, `diary`, `habits`, `health`, `help`, `home`, `messages`, `payments`, `settings`.
+
+### Convenções
+
+- **Nova tela:** crie `features/<área>/components/<Área>View.tsx` usando `<Page title="…">` e uma `app/dashboard/<rota>/page.tsx` que só renderiza a View. Adicione o item em `components/layout/nav-items.ts`.
+- **Formulários:** use `Field` / `SelectField` (`components/ui/field.tsx`), que já ligam rótulo, erro e `aria-*`. Botões: sempre `Button`.
+- **Ícones:** lucide-react. Sem emojis na interface.
+- **Datas e valores:** `formatDateBR` e `formatCurrencyBRL` em `lib/format.ts`.
+- **Textos:** português do Brasil.
+- **Animação:** `TiltCard` e `MagneticButton` só em destaques e na ação principal, nunca em listas ou formulários.
+- **Cores:** tokens em `src/app/globals.css` (`brand-*`, `canvas`, `surface`, `ink`). Para trocar a cor da marca, edite só lá.
+
+### Trocando os mocks por API
+
+Cada View lê dados de `mocks/user.ts` (direto ou via hook, como `useMessages` e `useAppointments`). Para ligar um backend, troque essa leitura por uma chamada (Server Action ou fetch) dentro da própria feature; as telas não precisam mudar de lugar.
+
+## Dados de demonstração
+
+- `mocks/user.ts` guarda o perfil, hábitos, diário, consultas, faturas etc. As alterações feitas na interface ficam só em memória e somem ao recarregar. O perfil editado em Configurações fica no `localStorage`.
+- `features/auth/mock-login.ts` simula o login e só responde com `DEMO_MODE=true`.
+- Botões sem função real (enviar exame, baixar recibo, redefinir senha, 2FA) aparecem desabilitados.
+- Não informe dados pessoais, de saúde ou de pagamento reais.
+
+## Segurança
+
+- **Sessão:** cookie `httpOnly` com JWT assinado (HS256, `jose`), 24h de validade, verificado no `proxy.ts`. Exige `SESSION_SECRET` com pelo menos 32 caracteres (`lib/session.ts`).
+- **CSP com nonce por requisição:** montada em `lib/security/csp.ts` e aplicada no `proxy.ts`. Por isso as páginas são renderizadas a cada requisição. Sem `unsafe-eval` em produção; `style-src` mantém `unsafe-inline` por causa das bibliotecas de UI.
+- **Headers** (HSTS, X-Frame-Options etc.) em `next.config.ts`.
+- **Pagamentos:** o modal coleta só os 4 últimos dígitos do cartão. Pagamento real deve usar checkout hospedado do gateway.
+- **Monitoramento:** Sentry opcional (`NEXT_PUBLIC_SENTRY_DSN`), sem session replay.
+- **Dependências:** Dependabot semanal e `npm audit` no CI.
+
+Antes de aceitar dados reais são necessários backend, autenticação gerenciada, política de privacidade e base legal conforme a LGPD (dados de saúde são sensíveis).
+
+## Acessibilidade e movimento
+
+`prefers-reduced-motion` é respeitado no CSS, no Framer Motion, no GSAP e no 3D (vira fundo estático). Efeitos de hover só ligam em dispositivos com mouse. O three.js só é baixado quando o canvas vai aparecer.
+
+## Próximos passos
+
+- Backend e banco de dados (Supabase ou Prisma).
+- Autenticação real.
+- Chamada de vídeo nas consultas online.

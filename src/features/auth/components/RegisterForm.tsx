@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { AuthInput } from "@/components/ui/AuthInput";
-import { ErrorMessage } from "@/components/ui/ErrorMessage";
-import { registerAction } from "@/lib/auth-utils/actions";
-import { registerSchema } from "@/lib/auth-utils/schema";
+import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
+import { ErrorMessage } from "@/features/auth/components/ErrorMessage";
+import { registerAction } from "@/features/auth/actions";
+import { registerSchema } from "@/features/auth/schema";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -59,8 +60,9 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="mt-8 space-y-4 w-full">
-      <AuthInput
+      <Field
         type="text"
+        autoComplete="name"
         placeholder="Seu nome completo"
         value={name}
         onChange={(e) => setName(e.target.value)}
@@ -69,8 +71,9 @@ export function RegisterForm() {
         disabled={isLoading}
       />
 
-      <AuthInput
+      <Field
         type="email"
+        autoComplete="email"
         placeholder="seu@email.com"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
@@ -79,8 +82,9 @@ export function RegisterForm() {
         disabled={isLoading}
       />
 
-      <AuthInput
+      <Field
         type="password"
+        autoComplete="new-password"
         placeholder="••••••••"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
@@ -89,8 +93,9 @@ export function RegisterForm() {
         disabled={isLoading}
       />
 
-      <AuthInput
+      <Field
         type="password"
+        autoComplete="new-password"
         placeholder="••••••••"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
@@ -99,13 +104,9 @@ export function RegisterForm() {
         disabled={isLoading}
       />
 
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="w-full mt-6 bg-brand-800 hover:bg-brand-900 disabled:bg-slate-300 text-white py-3 rounded-lg font-medium transition-all duration-200"
-      >
+      <Button type="submit" disabled={isLoading} className="mt-6 w-full">
         {isLoading ? "Criando conta..." : "Criar conta"}
-      </button>
+      </Button>
 
       <ErrorMessage message={error} />
 

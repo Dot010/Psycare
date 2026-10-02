@@ -4,10 +4,10 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ZodError } from "zod";
 import { isDemoMode } from "@/lib/demo";
-import { loginMock } from "./services";
+import { loginMock } from "./mock-login";
 import { loginSchema, registerSchema } from "./schema";
 
-import { COOKIE_NAME, SESSION_MAX_AGE, signSession } from "./session";
+import { COOKIE_NAME, SESSION_MAX_AGE, signSession } from "@/lib/session";
 
 async function createSession(user: { id: string; role: "patient" | "psychologist" }) {
   const token = await signSession({ userId: user.id, role: user.role });

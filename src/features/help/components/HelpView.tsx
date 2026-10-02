@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { CircleCheck, Mail, MessageCircle, BookOpen, ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
-import { AnimatedText } from "@/components/motion/AnimatedText";
+import { Page } from "@/components/layout/Page";
+import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
+import { fieldControlClass } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
-interface FAQItem {
-  question: string;
-  answer: string;
-}
-
-const faqs: FAQItem[] = [
+const FAQS = [
   {
     question: "Como funciona a renovação da assinatura?",
     answer:
@@ -17,198 +17,129 @@ const faqs: FAQItem[] = [
   },
   {
     question: "Como alterar meu método de pagamento principal?",
-    answer:
-      "Acesse a página de Pagamentos, selecione o cartão ou chave PIX desejada e clique em 'Tornar principal'.",
+    answer: "Acesse a página de Pagamentos, escolha o cartão ou a chave PIX desejada e clique em “Tornar principal”.",
   },
   {
     question: "Posso cancelar minha assinatura a qualquer momento?",
-    answer:
-      "Sim! Você pode cancelar na aba de Pagamentos. O acesso continuará ativo até o final do período já pago.",
+    answer: "Sim. Você pode cancelar na página de Pagamentos. O acesso continua ativo até o fim do período já pago.",
   },
 ];
 
-const supportTicketSchema = z.object({
-  ticketSubject: z.string().trim().min(4, "Assunto muito curto").max(120),
-  ticketMessage: z.string().trim().min(10, "Descreva melhor o problema"),
+const CONTACTS = [
+  { Icon: MessageCircle, title: "WhatsApp", text: "Atendimento em tempo real (em breve)." },
+  { Icon: Mail, title: "E-mail de suporte", text: "suporte@empresa.com.br — resposta em até 24h." },
+  { Icon: BookOpen, title: "Base de conhecimento", text: "Artigos e tutoriais (em breve)." },
+];
+
+const ticketSchema = z.object({
+  subject: z.string().trim().min(4, "Assunto muito curto").max(120),
+  message: z.string().trim().min(10, "Descreva melhor o problema"),
 });
 
-export default function HelpPage() {
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [ticketSubject, setTicketSubject] = useState("");
-  const [ticketMessage, setTicketMessage] = useState("");
+const panelClass = "space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm";
+const panelTitleClass = "border-b border-slate-100 pb-3 text-base font-bold text-slate-800";
+
+export default function HelpView() {
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
   const [isSent, setIsSent] = useState(false);
   const [error, setError] = useState("");
+  const resetTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const toggleFaq = (index: number) => {
-    setOpenFaq(openFaq === index ? null : index);
-  };
+  useEffect(() => () => clearTimeout(resetTimer.current), []);
 
-  const handleSubmitTicket = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const parsed = supportTicketSchema.safeParse({ ticketSubject, ticketMessage });
+    const parsed = ticketSchema.safeParse({ subject, message });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message || "Dados inválidos");
+      setError(parsed.error.issues[0]?.message ?? "Dados inválidos");
       return;
     }
-
     setError("");
-
     setIsSent(true);
-    setTimeout(() => {
+    resetTimer.current = setTimeout(() => {
       setIsSent(false);
-      setTicketSubject("");
-      setTicketMessage("");
+      setSubject("");
+      setMessage("");
     }, 3000);
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-8 max-w-5xl mx-auto">
-      {/* Cabeçalho */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <AnimatedText as="h1" text="Central de Ajuda e Suporte" className="text-2xl font-bold text-slate-800" />
-          <p className="text-slate-500 text-sm mt-1">
-            Tire suas dúvidas ou entre em contato com nossa equipe.
-          </p>
-        </div>
+    <Page
+      title="Central de Ajuda e Suporte"
+      description="Tire suas dúvidas ou entre em contato com a equipe."
+      width="narrow"
+    >
+      <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        {CONTACTS.map(({ Icon, title, text }) => (
+          <li key={title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <Icon className="mb-2 size-5 text-brand-600" aria-hidden />
+            <h2 className="text-sm font-bold text-slate-800">{title}</h2>
+            <p className="mt-1 text-xs text-slate-500">{text}</p>
+          </li>
+        ))}
+      </ul>
 
-        <span className="self-start md:self-auto inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-          Módulo de Suporte em Expansão
-        </span>
-      </div>
-
-      {/* Cards de Atalho */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-brand-300 hover:shadow-md transition group">
-          <a
-            href="https://wa.me/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-5 block"
-          >
-            <div className="text-2xl mb-2">💬</div>
-            <h3 className="font-bold text-slate-800 text-sm group-hover:text-brand-600 transition">
-              Atendimento via WhatsApp
-            </h3>
-            <p className="text-xs text-slate-400 mt-1">
-              Fale diretamente com um especialista em tempo real.
-            </p>
-          </a>
-        </div>
-
-        <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
-          <div className="text-2xl mb-2">📧</div>
-          <h3 className="font-bold text-slate-800 text-sm">E-mail de Suporte</h3>
-          <p className="text-xs text-slate-400 mt-1">
-            suporte@empresa.com.br (Resposta em até 24h)
-          </p>
-        </div>
-
-        <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
-          <div className="text-2xl mb-2">📚</div>
-          <h3 className="font-bold text-slate-800 text-sm">Base de Conhecimento</h3>
-          <p className="text-xs text-slate-400 mt-1">
-            Artigos completos e tutoriais em vídeo (Em breve).
-          </p>
-        </div>
-      </div>
-
-      {/* Grid: FAQ e Formulário */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-        {/* FAQs */}
-        <div className="md:col-span-7 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-          <h2 className="font-bold text-slate-800 text-base border-b border-slate-100 pb-3">
-            Perguntas Frequentes (FAQ)
-          </h2>
-
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
+        <section className={cn(panelClass, "md:col-span-7")}>
+          <h2 className={panelTitleClass}>Perguntas frequentes</h2>
           <div className="space-y-3">
-            {faqs.map((faq, index) => {
-              const isOpen = openFaq === index;
-              return (
-                <div
-                  key={faq.question}
-                  className="border border-slate-100 rounded-xl overflow-hidden transition"
-                >
-                  <button
-                    type="button"
-                    onClick={() => toggleFaq(index)}
-                    className="w-full text-left p-4 font-semibold text-xs text-slate-800 bg-slate-50/50 hover:bg-slate-100/50 transition flex justify-between items-center gap-2"
-                  >
-                    <span>{faq.question}</span>
-                    <span className="text-slate-400 font-bold">
-                      {isOpen ? "−" : "+"}
-                    </span>
-                  </button>
-                  {isOpen && (
-                    <div className="p-4 text-xs text-slate-600 bg-white border-t border-slate-100 leading-relaxed">
-                      {faq.answer}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {FAQS.map((faq) => (
+              <details key={faq.question} className="group overflow-hidden rounded-xl border border-slate-100">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-2 bg-slate-50/50 p-4 text-xs font-semibold text-slate-800 hover:bg-slate-100/50">
+                  {faq.question}
+                  <ChevronDown className="size-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" />
+                </summary>
+                <p className="border-t border-slate-100 p-4 text-xs leading-relaxed text-slate-600">{faq.answer}</p>
+              </details>
+            ))}
           </div>
-        </div>
+        </section>
 
-        {/* Formulário de Chamado */}
-        <div className="md:col-span-5 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-          <h2 className="font-bold text-slate-800 text-base border-b border-slate-100 pb-3">
-            Abrir Chamado de Ajuda
-          </h2>
+        <section className={cn(panelClass, "md:col-span-5")}>
+          <h2 className={panelTitleClass}>Abrir chamado</h2>
 
           {isSent ? (
-            <div className="p-4 bg-brand-50 border border-brand-200 rounded-xl text-center space-y-2">
-              <span className="text-2xl">🎉</span>
-              <p className="font-bold text-xs text-brand-800">
-                Chamado enviado com sucesso!
-              </p>
-              <p className="text-[11px] text-brand-700">
-                Sua mensagem foi recebida. Entraremos em contato em breve.
-              </p>
+            <div role="status" className="space-y-2 rounded-xl border border-brand-200 bg-brand-50 p-4 text-center">
+              <CircleCheck className="mx-auto size-6 text-brand-600" aria-hidden />
+              <p className="text-xs font-bold text-brand-800">Chamado enviado</p>
+              <p className="text-[11px] text-brand-700">Recebemos sua mensagem e entraremos em contato em breve.</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmitTicket} className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">
-                  Assunto
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ex: Dúvida sobre fatura"
-                  value={ticketSubject}
-                  onChange={(e) => setTicketSubject(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <Field
+                label="Assunto"
+                placeholder="Ex: Dúvida sobre fatura"
+                required
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+              />
+              <div className="space-y-1">
+                <label htmlFor="ticket-message" className="block text-xs font-medium text-slate-600">
                   Mensagem
                 </label>
                 <textarea
+                  id="ticket-message"
                   rows={4}
-                  placeholder="Descreva o que está acontecendo..."
-                  value={ticketMessage}
-                  onChange={(e) => setTicketMessage(e.target.value)}
                   required
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500 resize-none"
+                  placeholder="Descreva o que está acontecendo..."
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className={cn(fieldControlClass, "resize-none")}
                 />
               </div>
-
-              <button
-                type="submit"
-                className="w-full py-2.5 text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white rounded-xl transition shadow-sm"
-              >
-                Enviar Chamado
-              </button>
-
-              {error && <p className="text-xs text-red-600">{error}</p>}
+              {error && (
+                <p role="alert" className="text-xs text-red-600">
+                  {error}
+                </p>
+              )}
+              <Button type="submit" className="w-full">
+                Enviar chamado
+              </Button>
             </form>
           )}
-        </div>
+        </section>
       </div>
-    </div>
+    </Page>
   );
 }

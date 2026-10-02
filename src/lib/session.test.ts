@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { SignJWT } from "jose";
 import { beforeEach, describe, expect, it } from "vitest";
-import { signSession, verifySession } from "./session";
+import { signSession, verifySession } from "@/lib/session";
 
 const SECRET = "x".repeat(40);
 

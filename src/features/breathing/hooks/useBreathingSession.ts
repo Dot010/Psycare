@@ -10,7 +10,7 @@ import {
   type Technique,
 } from "@/features/breathing/techniques";
 
-export type SessionStatus = "idle" | "running" | "paused" | "done";
+type SessionStatus = "idle" | "running" | "paused" | "done";
 
 export interface SessionView {
   status: SessionStatus;

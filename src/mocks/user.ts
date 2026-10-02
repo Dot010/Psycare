@@ -1,16 +1,9 @@
-import type {
-  Agendamento,
-  Chat,
-  DiaryEntry,
-  Exame,
-  Habit,
-  Invoice,
-  Medicamento,
-  MessageItem,
-  PaymentMethod,
-  Sintoma,
-  Subscription,
-} from "@/types/domain";
+import type { Agendamento } from "@/features/appointments/types";
+import type { Chat } from "@/features/messages/types";
+import type { DiaryEntry } from "@/features/diary/types";
+import type { Exame, Medicamento, Sintoma } from "@/features/health/types";
+import type { Habit } from "@/features/habits/types";
+import type { Invoice, PaymentMethod, Subscription } from "@/features/payments/types";
 
 
 
@@ -182,27 +175,11 @@ export const mockUser = {
     },
   ] as Sintoma[],
 
-  mensagens: [
-    {
-      id: "1",
-      sender: "user",
-      content: "Olá, doutora!",
-      timestamp: "03/09/2026 08:00",
-    },
-    {
-      id: "2",
-      sender: "doctor",
-      content: "Olá! Como você está se sentindo hoje?",
-      timestamp: "03/09/2026 08:05",
-    },
-  ] as MessageItem[],
-
   chats: [
     {
       id: "1",
       doctorName: "Dra. Amanda Silva",
       specialty: "Cardiologia",
-      avatarUrl: "https://example.com/avatar.jpg",
       lastMessage: "Olá! Como você está se sentindo hoje?",
       messages: [
         {

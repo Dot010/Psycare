@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { mockUser } from "@/data/mockData";
-import type { Chat, MessageItem } from "@/types/domain";
+import { mockUser } from "@/mocks/user";
+import type { Chat, MessageItem } from "@/features/messages/types";
 import { sendMessageSchema, type SendMessageInput } from "@/features/messages/types";
 
 export function useMessages() {
