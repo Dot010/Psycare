@@ -53,9 +53,9 @@ src/
 │       └── types.ts     Tipos (e schemas Zod) da área
 ├── components/          Código compartilhado entre áreas
 │   ├── ui/              Primitivos (Button, Input, Field, Dialog, Skeleton)
-│   ├── layout/          Page, Nav, NavMobile, lista de itens do menu
+│   ├── layout/          Page, ActionSheet (gaveta com 3 posições), Nav, NavMobile, lista de itens do menu
 │   ├── feedback/        ItemMenu (editar/excluir), UndoProvider, ConfirmDialog, EmptyState, CrisisButton, ErrorState, skeletons
-│   ├── motion/          Animações (AnimatedText, TiltCard, MagneticButton)
+│   ├── motion/          Animações (AnimatedText, MagneticButton, CountUp, Stagger, AnimatedCheck)
 │   ├── three/           Canvas 3D
 │   └── providers/       Contextos globais
 ├── lib/                 Utilitários sem UI: sessão, datas, listas, armazenamento local, formatação, CSP, observabilidade
@@ -64,7 +64,7 @@ src/
 └── instrumentation.ts   Sentry no servidor
 ```
 
-Áreas em `features/`: `appointments`, `auth`, `breathing`, `diary`, `habits`, `health`, `help`, `home`, `messages`, `payments`, `settings`.
+Áreas em `features/`: `appointments`, `auth`, `breathing`, `diary`, `garden`, `habits`, `health`, `help`, `home`, `messages`, `payments`, `settings`.
 
 ### Convenções
 
@@ -76,7 +76,8 @@ src/
 - **Persistência:** estado que deve sobreviver ao recarregar usa `useLocalStorage(chave, valorInicialConstante)`.
 - **Datas e valores:** `formatDateBR` e `formatCurrencyBRL` em `lib/format.ts`.
 - **Textos:** português do Brasil.
-- **Animação:** `TiltCard` e `MagneticButton` só em destaques e na ação principal, nunca em listas ou formulários.
+- **Animação:** `MagneticButton` só na ação principal. `CountUp`, `Stagger` e `AnimatedCheck` (GSAP) para números, entrada de blocos e o "feito" dos hábitos; todos respeitam `prefers-reduced-motion`.
+- **Jardim:** `features/garden`. Ações reais (hábito concluído, entrada no diário, check-in, sessão de respiração) chamam `grantWater(origem, ref?)` e rendem uma gota por ação por dia (`water.ts`). O jardim só cresce, nunca murcha. As plantas são 3D procedural (`Plants.tsx`), carregadas sob demanda, com SVG de reserva sem WebGL. Regras de crescimento em `logic.ts` (testadas).
 - **Cores:** tokens em `src/app/globals.css`. Paleta: verde oliva `brand-*` (ações), amarelo `sun-*` (destaque, sempre com texto `ink`), marrom `ink` (texto), bege `taupe` (bordas), cinza `muted-foreground` e vermelho `danger-*` (só excluir e erros). Não use cores do Tailwind (`slate-*`, `red-*`…) direto nas telas.
 - **Fonte:** Poppins (`next/font`), 400 a 700. Texto em 12, 14, 16 e 18 px; títulos maiores.
 - **Botões:** pílula (`Button`). Estados: padrão, foco (verde escuro), desabilitado (cinza). Campos: `Field` tem erro (`error`) e sucesso (`valid`).
@@ -109,7 +110,7 @@ Antes de aceitar dados reais são necessários backend, autenticação gerenciad
 
 ## Acessibilidade e movimento
 
-`prefers-reduced-motion` é respeitado no CSS, no Framer Motion, no GSAP e no 3D (vira fundo estático). Efeitos de hover só ligam em dispositivos com mouse. O three.js só é baixado quando o canvas vai aparecer.
+`prefers-reduced-motion` é respeitado no CSS, no Framer Motion, no GSAP e no 3D (vira fundo estático). Efeitos de hover só ligam em dispositivos com mouse. O three.js só é baixado quando o canvas vai aparecer. A gaveta da Home também se opera por teclado (↑ ↓ na alça).
 
 ## Próximos passos
 

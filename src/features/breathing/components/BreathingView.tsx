@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/ui/button";
 import { BreathingStage } from "@/features/breathing/components/BreathingStage";
 import { useBreathingSession } from "@/features/breathing/hooks/useBreathingSession";
+import { grantWater } from "@/features/garden/water";
 import { formatClock, SESSION_MINUTES, TECHNIQUES } from "@/features/breathing/techniques";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,11 @@ export default function BreathingView() {
   const { scaleRef, view, start, pause, resume, reset } = useBreathingSession(technique, sessionSeconds);
 
   const { status, position, elapsed } = view;
+
+  // Terminar uma sessão rega o jardim.
+  useEffect(() => {
+    if (status === "done") grantWater("breathing");
+  }, [status]);
   const isActive = status === "running" || status === "paused";
 
   const headline =

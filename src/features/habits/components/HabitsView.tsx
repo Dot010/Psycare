@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, Flame, Plus, Sprout } from "lucide-react";
+import { AnimatedCheck } from "@/components/motion/AnimatedCheck";
 import { useState } from "react";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ItemMenu } from "@/components/feedback/ItemMenu";
@@ -116,7 +117,7 @@ export default function HabitsView() {
                         : "border-input bg-card text-transparent hover:border-brand-600 hover:text-brand-600",
                     )}
                   >
-                    <Check className="size-4" />
+                    {done ? <AnimatedCheck className="size-4" /> : <Check className="size-4" />}
                   </button>
 
                   <ItemMenu
