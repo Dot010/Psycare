@@ -3,7 +3,7 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { BackSide, BufferAttribute, BufferGeometry, Color, ShaderMaterial, type Points } from "three";
-import { seeded } from "@/features/garden/scene/terrain";
+import { seeded } from "@/features/garden/scene/heightmap";
 
 const VERTEX = /* glsl */ `
   varying float vY;

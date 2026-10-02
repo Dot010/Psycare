@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { lerpHex, skyPalette } from "@/features/garden/scene/lighting";
-import { BED_RADIUS, heightAt, seeded } from "@/features/garden/scene/terrain";
+import { BED_RADIUS, heightAt, seeded } from "@/features/garden/scene/heightmap";
 
 describe("terreno", () => {
   it("é plano no canteiro e tem relevo longe dele", () => {

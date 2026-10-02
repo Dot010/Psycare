@@ -10,7 +10,7 @@ import {
   PlaneGeometry,
   ShaderMaterial,
 } from "three";
-import { BED_RADIUS, heightAt, seeded } from "@/features/garden/scene/terrain";
+import { BED_RADIUS, heightAt, seeded } from "@/features/garden/scene/heightmap";
 
 const VERTEX = /* glsl */ `
   attribute vec3 aOffset;

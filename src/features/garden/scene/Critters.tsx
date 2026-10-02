@@ -10,7 +10,7 @@ import {
   type Group,
   type Points,
 } from "three";
-import { seeded } from "@/features/garden/scene/terrain";
+import { seeded } from "@/features/garden/scene/heightmap";
 
 /** Bolinha macia usada pelas pétalas e vaga-lumes. */
 function useDotTexture() {

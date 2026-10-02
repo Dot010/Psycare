@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { Color, Object3D, type InstancedMesh } from "three";
-import { BED_RADIUS, heightAt, seeded } from "@/features/garden/scene/terrain";
+import { BED_RADIUS, heightAt, seeded } from "@/features/garden/scene/heightmap";
 
 const FLOWER_COLORS = ["#EAD96B", "#f7f2ea", "#C97B6A", "#a08ab8", "#EAD96B", "#f7f2ea"];
 

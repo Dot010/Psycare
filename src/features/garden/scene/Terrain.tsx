@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { BufferAttribute, Color, PlaneGeometry } from "three";
-import { BED_RADIUS, heightAt } from "@/features/garden/scene/terrain";
+import { BED_RADIUS, heightAt } from "@/features/garden/scene/heightmap";
 
 const LOW = new Color("#6f8a45");
 const HIGH = new Color("#9bb066");
