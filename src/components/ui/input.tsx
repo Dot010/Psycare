@@ -1,18 +1,14 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cn } from "@/lib/utils";
+
+/** Visual de qualquer campo de texto do app. Também serve para <select> e <textarea>. */
+export const fieldControlClass =
+  "w-full min-w-0 rounded-xl border border-input bg-card px-3 py-2 text-sm transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-brand-600 focus-visible:ring-3 focus-visible:ring-brand-600/20 disabled:cursor-not-allowed disabled:bg-sunken disabled:opacity-60 aria-invalid:border-danger-600 aria-invalid:ring-danger-600/20 data-[valid=true]:border-brand-500";
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
-    <input
-      type={type}
-      data-slot="input"
-      className={cn(
-        "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
-        className
-      )}
-      {...props}
-    />
-  )
+    <input type={type} data-slot="input" className={cn("h-10", fieldControlClass, className)} {...props} />
+  );
 }
 
-export { Input }
+export { Input };

@@ -1,21 +1,12 @@
-import Nav from "@/components/Nav";
-import NavMobile from "@/components/NavMobile";
+import { cookies } from "next/headers";
+import { DashboardShell } from "@/components/layout/DashboardShell";
+import type { NavVariant } from "@/components/layout/nav-items";
+import { COOKIE_NAME, verifySession } from "@/lib/session";
 
-interface DashboardLayoutProps {
-  children: React.ReactNode;
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const session = await verifySession((await cookies()).get(COOKIE_NAME)?.value);
+  const variant: NavVariant =
+    session?.role === "professional" ? (session.specialty ?? "psychologist") : "patient";
+
+  return <DashboardShell variant={variant}>{children}</DashboardShell>;
 }
-
-const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  return (
-    <div className="flex flex-col md:flex-row h-screen overflow-hidden">
-      <Nav /> 
-      <NavMobile /> 
-
-      <main className="flex-1 bg-slate-50 overflow-y-auto pb-28 md:pb-8">
-        {children}
-      </main>
-    </div>
-  );
-};
-
-export default DashboardLayout;
