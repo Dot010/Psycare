@@ -1,44 +1,60 @@
 "use client";
 
-import { Pill, Plus, Stethoscope } from "lucide-react";
+import { FileText, Paperclip, Pill, Plus } from "lucide-react";
 import { useState } from "react";
-import { EmptyState } from "@/components/feedback/EmptyState";
 import { ItemMenu } from "@/components/feedback/ItemMenu";
 import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/ui/button";
+import { useMood } from "@/features/mood/hooks/useMood";
+import { ConsultDialog } from "@/features/health/components/ConsultDialog";
+import { DoseTimeline } from "@/features/health/components/DoseTimeline";
+import { ExameDialog } from "@/features/health/components/ExameDialog";
 import { MedicamentoDialog } from "@/features/health/components/MedicamentoDialog";
 import { SintomaDialog } from "@/features/health/components/SintomaDialog";
+import { SymptomLogger } from "@/features/health/components/SymptomLogger";
+import { WeekDots } from "@/features/health/components/WeekDots";
 import { useHealth } from "@/features/health/hooks/useHealth";
-import type { Medicamento, Sintoma } from "@/features/health/types";
-import { cn } from "@/lib/utils";
+import {
+  buildConsultSummary,
+  doseSentence,
+  dosesForDay,
+  intensityLabel,
+  medTimes,
+  weekAdherence,
+  weekSentence,
+} from "@/features/health/logic";
+import type { Exame, Medicamento, Sintoma } from "@/features/health/types";
+import { toISODate } from "@/lib/dates";
+import { formatDateBR } from "@/lib/format";
 
-const TABS = [
-  { id: "remedios", label: "Meus Remédios" },
-  { id: "exames", label: "Meus Exames" },
-  { id: "sintomas", label: "Meus Sintomas" },
-] as const;
+const h2 = "text-2xl font-semibold text-brand-ink";
+const sectionClass = "space-y-4 border-t border-border pt-8";
 
-type TabId = (typeof TABS)[number]["id"];
-
-const cardClass = "rounded-2xl border border-border bg-card p-5 shadow-sm";
-const metaClass = "text-xs font-semibold uppercase tracking-wider text-muted-foreground";
-
-function SectionHeader({ title, action }: { title: string; action: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <h2 className="text-lg font-bold text-foreground">{title}</h2>
-      {action}
-    </div>
+function todayLabel(): string {
+  const text = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long" }).format(
+    new Date(),
   );
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 export default function HealthView() {
-  const { remedios, sintomas, exames, saveRemedio, saveSintoma, deleteRemedio, deleteSintoma } = useHealth();
-  const [activeTab, setActiveTab] = useState<TabId>("remedios");
+  const health = useHealth();
+  const { entries, levels } = useMood();
+  const today = toISODate(new Date());
+
   const [remedioOpen, setRemedioOpen] = useState(false);
   const [editingRemedio, setEditingRemedio] = useState<Medicamento | undefined>();
   const [sintomaOpen, setSintomaOpen] = useState(false);
   const [editingSintoma, setEditingSintoma] = useState<Sintoma | undefined>();
+  const [exameOpen, setExameOpen] = useState(false);
+  const [editingExame, setEditingExame] = useState<Exame | undefined>();
+  const [consultOpen, setConsultOpen] = useState(false);
+
+  const doses = dosesForDay(health.remedios, today);
+  const takenToday = doses.filter((d) => health.taken.includes(d.key)).length;
+  const week = weekAdherence(health.remedios, health.taken, today);
+  const recentSymptoms = [...health.sintomas].sort((a, b) => b.data.localeCompare(a.data)).slice(0, 8);
+  const exames = [...health.exames].sort((a, b) => b.data.localeCompare(a.data));
 
   const openRemedio = (item?: Medicamento) => {
     setEditingRemedio(item);
@@ -48,173 +64,221 @@ export default function HealthView() {
     setEditingSintoma(item);
     setSintomaOpen(true);
   };
+  const openExame = (item?: Exame) => {
+    setEditingExame(item);
+    setExameOpen(true);
+  };
+
+  const summary = consultOpen
+    ? buildConsultSummary({
+        meds: health.remedios,
+        taken: health.taken,
+        sintomas: health.sintomas,
+        moodByDay: levels,
+        entries,
+        today,
+      })
+    : [];
 
   return (
-    <Page
-      title="Gestão de Saúde"
-      description="Acompanhe seus medicamentos, exames e registre sintomas do dia a dia."
-      width="wide"
-    >
-      <div
-        role="tablist"
-        aria-label="Seções de saúde"
-        className="flex gap-2 overflow-x-auto border-b border-border pb-3"
-      >
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            role="tab"
-            id={`tab-${tab.id}`}
-            aria-selected={activeTab === tab.id}
-            aria-controls={`panel-${tab.id}`}
-            onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              "whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors",
-              activeTab === tab.id
-                ? "bg-brand-600 text-white"
-                : "bg-sunken text-muted-foreground hover:bg-border",
-            )}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      <div
-        role="tabpanel"
-        id={`panel-${activeTab}`}
-        aria-labelledby={`tab-${activeTab}`}
-        className="space-y-4"
-      >
-        {activeTab === "remedios" && (
-          <>
-            <SectionHeader
-              title="Medicamentos ativos"
-              action={
-                <Button onClick={() => openRemedio()}>
-                  <Plus />
-                  Adicionar remédio
-                </Button>
-              }
-            />
-            {remedios.length === 0 ? (
-              <EmptyState
-                title="Nenhum medicamento cadastrado"
-                description="Registre o que você toma, com dose e horário, para ter tudo em um só lugar."
-                action={
-                  <Button onClick={() => openRemedio()}>
-                    <Pill />
-                    Adicionar o primeiro
-                  </Button>
-                }
-              />
-            ) : (
-              <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {remedios.map((item) => (
-                  <li key={item.id} className={cn(cardClass, "space-y-2")}>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className={metaClass}>
-                        {item.frequencia} • {item.horario}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand-ink">
-                          {item.dosagem}
-                        </span>
-                        <ItemMenu
-                          label={`medicamento ${item.nome}`}
-                          onEdit={() => openRemedio(item)}
-                          onDelete={() => deleteRemedio(item.id)}
-                        />
-                      </div>
-                    </div>
-                    <p className="text-lg font-bold text-foreground">{item.nome}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
+    <Page title="Hoje" description={todayLabel()} width="narrow" className="space-y-10 md:space-y-12">
+      <section aria-labelledby="doses-title" className="space-y-3">
+        <h2 id="doses-title" className={h2}>
+          {doseSentence(doses.length, takenToday)}
+        </h2>
+        {doses.length > 0 ? (
+          <DoseTimeline
+            doses={doses}
+            taken={health.taken}
+            onToggle={(d) => health.toggleDose(d.key, today)}
+          />
+        ) : (
+          <p className="max-w-prose text-base text-foreground">
+            {health.remedios.length === 0
+              ? "Cadastre seus remédios com horário e o app mostra aqui o que tomar em cada hora."
+              : "Seus remédios ainda não têm horário. Edite para escolher quando tomar."}
+          </p>
         )}
+      </section>
 
-        {activeTab === "exames" && (
-          <>
-            <SectionHeader
-              title="Histórico de exames"
-              action={
-                <Button disabled title="Em breve">
-                  <Plus />
-                  Enviar exame
-                </Button>
-              }
-            />
-            <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {exames.map((exame) => (
-                <li key={exame.id} className={cn(cardClass, "space-y-2")}>
-                  <span className={metaClass}>Data: {exame.data}</span>
-                  <p className="text-lg font-bold text-foreground">{exame.titulo}</p>
-                  <p className="text-xs font-medium text-brand-ink">Resultado: {exame.resultado}</p>
+      <section aria-labelledby="body-title" className={sectionClass}>
+        <h2 id="body-title" className={h2}>
+          E o corpo, como está?
+        </h2>
+        <SymptomLogger onLog={(names, intensity) => health.logSymptoms(names, intensity)} />
+      </section>
+
+      <section aria-labelledby="week-title" className={sectionClass}>
+        <h2 id="week-title" className={h2}>
+          Sua semana
+        </h2>
+        <WeekDots days={week} />
+        <p className="max-w-prose text-sm text-muted-foreground">{weekSentence(week)}</p>
+      </section>
+
+      <section aria-labelledby="meds-title" className={sectionClass}>
+        <div className="flex items-center justify-between gap-3">
+          <h2 id="meds-title" className={h2}>
+            Meus remédios
+          </h2>
+          <Button variant="outline" onClick={() => openRemedio()}>
+            <Plus />
+            Adicionar
+          </Button>
+        </div>
+        {health.remedios.length === 0 ? (
+          <p className="text-base text-muted-foreground">Nenhum remédio cadastrado ainda.</p>
+        ) : (
+          <ul>
+            {health.remedios.map((item) => {
+              const times = medTimes(item);
+              return (
+                <li
+                  key={item.id}
+                  className="flex items-center justify-between gap-3 border-t border-border py-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-lg font-medium text-foreground">
+                      <Pill className="mr-2 inline size-4 text-brand-accent" aria-hidden />
+                      {item.nome}{" "}
+                      <span className="text-base font-normal text-muted-foreground">{item.dosagem}</span>
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {times.length ? times.join(" · ") : "Sem horário"}
+                      {item.observacao ? ` · ${item.observacao}` : ""}
+                    </p>
+                  </div>
+                  <ItemMenu
+                    label={`medicamento ${item.nome}`}
+                    onEdit={() => openRemedio(item)}
+                    onDelete={() => health.deleteRemedio(item.id)}
+                  />
                 </li>
-              ))}
-            </ul>
-          </>
+              );
+            })}
+          </ul>
         )}
+        <p className="text-xs text-muted-foreground">
+          O PsyCare não substitui seu médico e nunca muda sua dose. Dúvidas sobre o remédio são com ele.
+        </p>
+      </section>
 
-        {activeTab === "sintomas" && (
-          <>
-            <SectionHeader
-              title="Registro de sintomas"
-              action={
-                <Button onClick={() => openSintoma()}>
-                  <Plus />
-                  Registrar sintoma
-                </Button>
-              }
-            />
-            {sintomas.length === 0 ? (
-              <EmptyState
-                title="Nenhum sintoma registrado"
-                description="Anotar o que você sente ajuda a perceber padrões e a conversar melhor na consulta."
-                action={
-                  <Button onClick={() => openSintoma()}>
-                    <Stethoscope />
-                    Registrar o primeiro
-                  </Button>
-                }
-              />
-            ) : (
-              <ul className="space-y-3">
-                {sintomas.map((item) => (
-                  <li key={item.id} className={cn(cardClass, "space-y-1")}>
-                    <div className="flex items-start justify-between gap-2">
-                      <span className={metaClass}>{item.data}</span>
-                      <ItemMenu
-                        label={`sintoma ${item.descricao}`}
-                        onEdit={() => openSintoma(item)}
-                        onDelete={() => deleteSintoma(item.id)}
-                      />
-                    </div>
-                    <p className="text-lg font-bold text-foreground">{item.descricao}</p>
-                    <p className="text-xs font-medium text-brand-ink">Intensidade/nota: {item.nota}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
+      <section aria-labelledby="sym-title" className={sectionClass}>
+        <div className="flex items-center justify-between gap-3">
+          <h2 id="sym-title" className={h2}>
+            Sintomas recentes
+          </h2>
+          <Button variant="outline" onClick={() => openSintoma()}>
+            <Plus />
+            Registrar
+          </Button>
+        </div>
+        {recentSymptoms.length === 0 ? (
+          <p className="text-base text-muted-foreground">Nada registrado. Anotar ajuda a perceber padrões.</p>
+        ) : (
+          <ul>
+            {recentSymptoms.map((item) => (
+              <li
+                key={item.id}
+                className="flex items-center justify-between gap-3 border-t border-border py-3"
+              >
+                <div>
+                  <p className="text-lg font-medium text-foreground">{item.descricao}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatDateBR(item.data)} · {intensityLabel(item.intensidade)}
+                    {item.nota && item.intensidade ? ` · ${item.nota}` : ""}
+                  </p>
+                </div>
+                <ItemMenu
+                  label={`sintoma ${item.descricao}`}
+                  onEdit={() => openSintoma(item)}
+                  onDelete={() => health.deleteSintoma(item.id)}
+                />
+              </li>
+            ))}
+          </ul>
         )}
-      </div>
+      </section>
+
+      <section aria-labelledby="exam-title" className={sectionClass}>
+        <div className="flex items-center justify-between gap-3">
+          <h2 id="exam-title" className={h2}>
+            Meus exames
+          </h2>
+          <Button variant="outline" onClick={() => openExame()}>
+            <Plus />
+            Guardar exame
+          </Button>
+        </div>
+        {exames.length === 0 ? (
+          <p className="max-w-prose text-base text-muted-foreground">
+            Guarde aqui um exame com o arquivo, para ter tudo à mão na consulta. Fica só neste navegador.
+          </p>
+        ) : (
+          <ul>
+            {exames.map((item) => (
+              <li
+                key={item.id}
+                className="flex items-start justify-between gap-3 border-t border-border py-3"
+              >
+                <div className="min-w-0 space-y-0.5">
+                  <p className="text-lg font-medium text-foreground">{item.titulo}</p>
+                  <p className="text-sm text-muted-foreground">{formatDateBR(item.data)}</p>
+                  {item.resultado && <p className="text-sm text-foreground">{item.resultado}</p>}
+                  {item.anexo && (
+                    <a
+                      href={item.anexo.dados}
+                      download={item.anexo.nome}
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-ink underline-offset-2 hover:underline"
+                    >
+                      <Paperclip className="size-3.5" aria-hidden />
+                      {item.anexo.nome}
+                    </a>
+                  )}
+                </div>
+                <ItemMenu
+                  label={`exame ${item.titulo}`}
+                  onEdit={() => openExame(item)}
+                  onDelete={() => health.deleteExame(item.id)}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <footer className="space-y-3 border-t border-border pt-8">
+        <Button onClick={() => setConsultOpen(true)}>
+          <FileText />
+          Gerar resumo para a consulta
+        </Button>
+        <p className="max-w-prose text-xs text-muted-foreground">
+          Reúne remédios, doses, sintomas e humor dos últimos 30 dias para você mostrar ao seu profissional.
+        </p>
+      </footer>
 
       <MedicamentoDialog
+        key={`med-${editingRemedio?.id ?? "new"}-${remedioOpen}`}
         open={remedioOpen}
         onOpenChange={setRemedioOpen}
         item={editingRemedio}
-        onSave={saveRemedio}
+        onSave={health.saveRemedio}
       />
       <SintomaDialog
+        key={`sin-${editingSintoma?.id ?? "new"}-${sintomaOpen}`}
         open={sintomaOpen}
         onOpenChange={setSintomaOpen}
         item={editingSintoma}
-        onSave={saveSintoma}
+        onSave={health.saveSintoma}
       />
+      <ExameDialog
+        key={`exa-${editingExame?.id ?? "new"}-${exameOpen}`}
+        open={exameOpen}
+        onOpenChange={setExameOpen}
+        item={editingExame}
+        onSave={health.saveExame}
+      />
+      <ConsultDialog open={consultOpen} onOpenChange={setConsultOpen} lines={summary} />
     </Page>
   );
 }

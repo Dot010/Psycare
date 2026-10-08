@@ -1,7 +1,7 @@
 import type { Agendamento } from "@/features/appointments/types";
 import type { Chat } from "@/features/messages/types";
 import type { DiaryEntry } from "@/features/diary/types";
-import type { Exame, Medicamento, Sintoma } from "@/features/health/types";
+import type { Medicamento, Sintoma } from "@/features/health/types";
 import type { Habit } from "@/features/habits/types";
 import type { Invoice, PaymentMethod, Subscription } from "@/features/payments/types";
 
@@ -144,21 +144,6 @@ export const mockUser = {
       horario: "20:00",
     },
   ] as Medicamento[],
-
-  exames: [
-    {
-      id: "1",
-      titulo: "Exame de sangue",
-      data: "01/09/2026",
-      resultado: "Normal",
-    },
-    {
-      id: "2",
-      titulo: "Exame de urina",
-      data: "05/09/2026",
-      resultado: "Normal",
-    },
-  ] as Exame[],
 
   sintomas: [
     {
