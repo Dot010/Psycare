@@ -8,6 +8,8 @@ import { useUser } from "@/components/providers/UserProvider";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
+import { DataPanel } from "./DataPanel";
+import { ReminderPanel } from "./ReminderPanel";
 
 const profileSchema = z.object({
   name: z.string().trim().min(3, "Nome deve ter ao menos 3 caracteres"),
@@ -16,7 +18,8 @@ const profileSchema = z.object({
 
 const TABS = [
   { id: "general", label: "Perfil" },
-  { id: "notifications", label: "Notificações" },
+  { id: "notifications", label: "Lembretes" },
+  { id: "data", label: "Meus dados" },
   { id: "security", label: "Segurança" },
 ] as const;
 
@@ -123,8 +126,6 @@ function ToggleRow({
 export default function SettingsView() {
   const { user, updateUser } = useUser();
   const [activeTab, setActiveTab] = useState<TabId>("general");
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [smsNotifications, setSmsNotifications] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const handleSaved = () => {
@@ -135,7 +136,7 @@ export default function SettingsView() {
   return (
     <Page
       title="Configurações da Conta"
-      description="Gerencie preferências de perfil, notificações e segurança."
+      description="Perfil, lembretes e os seus dados."
       actions={
         saved && (
           <span
@@ -183,27 +184,9 @@ export default function SettingsView() {
           />
         )}
 
-        {activeTab === "notifications" && (
-          <div className={panelClass}>
-            <h2 className={cn(panelTitleClass, "border-b border-border pb-3")}>
-              Preferências de comunicação
-            </h2>
-            <div className="space-y-3">
-              <ToggleRow
-                title="Notificações por e-mail"
-                description="Receba avisos de cobranças, faturas e novidades."
-                checked={emailNotifications}
-                onChange={setEmailNotifications}
-              />
-              <ToggleRow
-                title="Alertas por SMS"
-                description="Receba lembretes no celular no dia do vencimento da fatura."
-                checked={smsNotifications}
-                onChange={setSmsNotifications}
-              />
-            </div>
-          </div>
-        )}
+        {activeTab === "notifications" && <ReminderPanel />}
+
+        {activeTab === "data" && <DataPanel />}
 
         {activeTab === "security" && (
           <div className={panelClass}>
