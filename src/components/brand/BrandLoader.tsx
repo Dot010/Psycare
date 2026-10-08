@@ -10,7 +10,7 @@ interface BrandLoaderProps {
 export function BrandLoader({ className, label = "Carregando" }: BrandLoaderProps) {
   return (
     <div role="status" className={cn("inline-flex flex-col items-center gap-2", className)}>
-      <svg viewBox="0 0 64 72" aria-hidden="true" className="animate-sway h-18 w-16">
+      <svg width="64" height="72" viewBox="0 0 64 72" aria-hidden="true" className="animate-sway">
         <path
           d="M32 70 V30"
           stroke="#5e7638"
