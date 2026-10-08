@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 import { DataPanel } from "./DataPanel";
+import { SharingPanel } from "./SharingPanel";
 import { ReminderPanel } from "./ReminderPanel";
 
 const profileSchema = z.object({
@@ -19,6 +20,7 @@ const profileSchema = z.object({
 const TABS = [
   { id: "general", label: "Perfil" },
   { id: "notifications", label: "Lembretes" },
+  { id: "privacy", label: "Privacidade" },
   { id: "data", label: "Meus dados" },
   { id: "security", label: "Segurança" },
 ] as const;
@@ -185,6 +187,8 @@ export default function SettingsView() {
         )}
 
         {activeTab === "notifications" && <ReminderPanel />}
+
+        {activeTab === "privacy" && <SharingPanel />}
 
         {activeTab === "data" && <DataPanel />}
 

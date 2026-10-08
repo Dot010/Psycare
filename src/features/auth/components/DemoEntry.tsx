@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { demoLoginAction } from "@/features/auth/actions";
 import type { DemoProfile } from "@/features/auth/schema";
+import { countStored, loadDemoData } from "@/features/settings/data";
 import { ErrorMessage } from "@/features/auth/components/ErrorMessage";
 
 const OPTIONS: { profile: DemoProfile; title: string; hint: string }[] = [
@@ -23,6 +24,8 @@ export function DemoEntry() {
     setLoading(profile);
     const result = await demoLoginAction(profile);
     if (result.success) {
+      // Primeira vez no navegador: já entra com humor, diário e atividades de exemplo para o app não parecer vazio.
+      if (profile === "patient" && countStored(window.localStorage) === 0) loadDemoData();
       router.push(result.redirectTo);
       return;
     }
