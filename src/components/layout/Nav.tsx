@@ -5,14 +5,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/feedback/ThemeToggle";
-import { NAV_ITEMS } from "@/components/layout/nav-items";
+import { navItemsFor, type NavVariant } from "@/components/layout/nav-items";
 import { logoutAction } from "@/features/auth/actions";
 import { cn } from "@/lib/utils";
 
 const itemClass =
   "flex w-full items-center gap-x-4 rounded-xl p-3 text-primary-foreground/90 transition-colors hover:bg-white/15 hover:text-primary-foreground";
 
-export default function Nav() {
+export default function Nav({ variant = "patient" }: { variant?: NavVariant }) {
+  const items = navItemsFor(variant);
   const [open, setOpen] = useState(true);
   const pathname = usePathname();
 
@@ -52,8 +53,9 @@ export default function Nav() {
 
         <nav aria-label="Principal" className="pt-10">
           <ul>
-            {NAV_ITEMS.map(({ title, href, icon: Icon, startsGroup }) => {
-              const isActive = pathname === href;
+            {items.map(({ title, href, icon: Icon, startsGroup }) => {
+              const isActive =
+                pathname === href || (href !== "/dashboard/pro" && pathname.startsWith(`${href}/`));
               return (
                 <li key={href} className={startsGroup ? "mt-8" : "mt-2"}>
                   <Link

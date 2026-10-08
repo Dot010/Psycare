@@ -15,6 +15,32 @@ describe("session", () => {
     expect(await verifySession(token)).toEqual({ userId: "usr_01", role: "patient" });
   });
 
+  it("guarda a especialidade do profissional", async () => {
+    const token = await signSession({
+      userId: "pro_med_01",
+      role: "professional",
+      specialty: "psychiatrist",
+    });
+    expect(await verifySession(token)).toEqual({
+      userId: "pro_med_01",
+      role: "professional",
+      specialty: "psychiatrist",
+    });
+  });
+
+  it("entende o valor antigo 'psychologist' como profissional/psicólogo", async () => {
+    const legacy = await new SignJWT({ role: "psychologist" })
+      .setProtectedHeader({ alg: "HS256" })
+      .setSubject("pro_1")
+      .setExpirationTime("1h")
+      .sign(new TextEncoder().encode(SECRET));
+    expect(await verifySession(legacy)).toEqual({
+      userId: "pro_1",
+      role: "professional",
+      specialty: "psychologist",
+    });
+  });
+
   it("rejeita valores forjados (ex.: o antigo cookie 'usr_01')", async () => {
     expect(await verifySession("usr_01")).toBeNull();
     expect(await verifySession(undefined)).toBeNull();

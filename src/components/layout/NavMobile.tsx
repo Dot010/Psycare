@@ -6,14 +6,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/feedback/ThemeToggle";
-import { NAV_ITEMS } from "@/components/layout/nav-items";
+import { navItemsFor, type NavVariant } from "@/components/layout/nav-items";
 import { logoutAction } from "@/features/auth/actions";
 import { cn } from "@/lib/utils";
 
-const barItems = NAV_ITEMS.filter((item) => item.inMobileBar);
-const moreItems = NAV_ITEMS.filter((item) => !item.inMobileBar);
-
-export default function NavMobile() {
+export default function NavMobile({ variant = "patient" }: { variant?: NavVariant }) {
+  const items = navItemsFor(variant);
+  const barItems = items.filter((item) => item.inMobileBar);
+  const moreItems = items.filter((item) => !item.inMobileBar);
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
 

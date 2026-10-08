@@ -4,13 +4,14 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ZodError } from "zod";
 import { isDemoMode } from "@/lib/demo";
-import { loginMock } from "./mock-login";
-import { loginSchema, registerSchema } from "./schema";
+import { demoUser, loginMock } from "./mock-login";
+import { demoProfileSchema, loginSchema, registerSchema } from "./schema";
 
-import { COOKIE_NAME, SESSION_MAX_AGE, signSession } from "@/lib/session";
+import { homeFor } from "@/lib/roles";
+import { COOKIE_NAME, SESSION_MAX_AGE, signSession, type Role, type Specialty } from "@/lib/session";
 
-async function createSession(user: { id: string; role: "patient" | "psychologist" }) {
-  const token = await signSession({ userId: user.id, role: user.role });
+async function createSession(user: { id: string; role: Role; specialty?: Specialty }) {
+  const token = await signSession({ userId: user.id, role: user.role, specialty: user.specialty });
   const cookieStore = await cookies();
   cookieStore.set(COOKIE_NAME, token, {
     httpOnly: true,
@@ -21,8 +22,7 @@ async function createSession(user: { id: string; role: "patient" | "psychologist
   });
 }
 
-const DEMO_DISABLED_ERROR =
-  "Autenticação ainda não está disponível neste ambiente.";
+const DEMO_DISABLED_ERROR = "Autenticação ainda não está disponível neste ambiente.";
 
 function toErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof ZodError) {
@@ -33,10 +33,7 @@ function toErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
-export async function loginAction(formData: {
-  email: string;
-  password: string;
-}) {
+export async function loginAction(formData: { email: string; password: string }) {
   if (!isDemoMode()) {
     return { success: false, error: DEMO_DISABLED_ERROR };
   }
@@ -53,6 +50,27 @@ export async function loginAction(formData: {
     return {
       success: false,
       error: toErrorMessage(error, "Erro ao fazer login. Tente novamente."),
+    };
+  }
+}
+
+/**
+ * Entrada de demonstração: sem e-mail e sem senha. Só existe com DEMO_MODE ligado e entra sempre
+ * numa conta fictícia, então não dá acesso a nada real.
+ */
+export async function demoLoginAction(profile: string) {
+  if (!isDemoMode()) {
+    return { success: false as const, error: DEMO_DISABLED_ERROR };
+  }
+
+  try {
+    const user = demoUser(demoProfileSchema.parse(profile));
+    await createSession(user);
+    return { success: true as const, user, redirectTo: homeFor(user) };
+  } catch (error) {
+    return {
+      success: false as const,
+      error: toErrorMessage(error, "Não foi possível entrar na demonstração. Tente novamente."),
     };
   }
 }

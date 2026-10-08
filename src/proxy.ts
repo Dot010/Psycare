@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { COOKIE_NAME, verifySession } from "@/lib/session";
+import { canAccess, homeFor } from "@/lib/roles";
 import { buildCsp } from "@/lib/security/csp";
 
 export async function proxy(request: NextRequest) {
@@ -19,8 +20,12 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  if (isAuthRoute && isAuthenticated) {
-    return NextResponse.redirect(new URL("/dashboard/home", request.url));
+  if (session && isProtectedRoute && !canAccess(session, pathname)) {
+    return NextResponse.redirect(new URL(homeFor(session), request.url));
+  }
+
+  if (session && isAuthRoute) {
+    return NextResponse.redirect(new URL(homeFor(session), request.url));
   }
 
   // CSP com nonce por requisição (o Next aplica o nonce nos scripts durante o SSR).

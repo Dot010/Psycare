@@ -6,10 +6,7 @@ export const loginSchema = z.object({
     .min(1, "Email é obrigatório")
     .email("Email inválido")
     .transform((e) => e.toLowerCase().trim()),
-  password: z
-    .string()
-    .min(1, "Senha é obrigatória")
-    .min(6, "Senha deve ter no mínimo 6 caracteres"),
+  password: z.string().min(1, "Senha é obrigatória").min(6, "Senha deve ter no mínimo 6 caracteres"),
 });
 
 export const registerSchema = z
@@ -24,10 +21,7 @@ export const registerSchema = z
       .min(1, "Email é obrigatório")
       .email("Email inválido")
       .transform((e) => e.toLowerCase().trim()),
-    password: z
-      .string()
-      .min(1, "Senha é obrigatória")
-      .min(6, "Senha deve ter no mínimo 6 caracteres"),
+    password: z.string().min(1, "Senha é obrigatória").min(6, "Senha deve ter no mínimo 6 caracteres"),
     confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -35,3 +29,6 @@ export const registerSchema = z
     path: ["confirmPassword"],
   });
 
+export const demoProfiles = ["patient", "psychologist", "psychiatrist"] as const;
+export const demoProfileSchema = z.enum(demoProfiles);
+export type DemoProfile = (typeof demoProfiles)[number];

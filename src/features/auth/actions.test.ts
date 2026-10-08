@@ -7,7 +7,7 @@ vi.mock("next/headers", () => ({
 }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
 
-import { loginAction, registerAction } from "./actions";
+import { demoLoginAction, loginAction, registerAction } from "./actions";
 
 const validLogin = { email: "ana@example.com", password: "123456" };
 
@@ -59,5 +59,41 @@ describe("auth actions", () => {
     const result = await loginAction(validLogin);
     expect(result.success).toBe(false);
     expect(JSON.stringify(result)).not.toContain("SESSION_SECRET");
+  });
+
+  describe("demoLoginAction", () => {
+    it("recusa e não cria cookie fora do modo demo", async () => {
+      const result = await demoLoginAction("patient");
+      expect(result.success).toBe(false);
+      expect(set).not.toHaveBeenCalled();
+    });
+
+    it("entra como paciente sem e-mail nem senha", async () => {
+      process.env.DEMO_MODE = "true";
+      const result = await demoLoginAction("patient");
+      expect(result).toMatchObject({ success: true, redirectTo: "/dashboard/home" });
+      expect(set).toHaveBeenCalledTimes(1);
+      expect(set.mock.calls[0][1].split(".")).toHaveLength(3);
+    });
+
+    it.each([
+      ["psychologist", "psychologist"],
+      ["psychiatrist", "psychiatrist"],
+    ])("entra como %s na área do profissional", async (profile, specialty) => {
+      process.env.DEMO_MODE = "true";
+      const result = await demoLoginAction(profile);
+      expect(result).toMatchObject({
+        success: true,
+        redirectTo: "/dashboard/pro",
+        user: { role: "professional", specialty },
+      });
+    });
+
+    it("recusa um perfil que não existe", async () => {
+      process.env.DEMO_MODE = "true";
+      const result = await demoLoginAction("admin");
+      expect(result.success).toBe(false);
+      expect(set).not.toHaveBeenCalled();
+    });
   });
 });
