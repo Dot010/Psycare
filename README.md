@@ -1,6 +1,6 @@
 # PsyCare
 
-Aplicativo web de acompanhamento em saúde mental: diário, hábitos, respiração guiada, consultas, mensagens, saúde e pagamentos.
+Aplicativo web de acompanhamento em saúde mental: humor, diário e atividades terapêuticas, hábitos, respiração guiada, plano de segurança, saúde e remédios, consultas, mensagens e pagamentos. Tem uma área para o profissional (psicólogo ou psiquiatra) que vê apenas o que o paciente escolhe compartilhar.
 
 Ainda **não há backend**. Login, registro e todos os dados do painel são simulados (veja [Dados de demonstração](#dados-de-demonstração)).
 
@@ -23,7 +23,7 @@ No `.env.local`, defina `DEMO_MODE=true` e gere o segredo de sessão:
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-Cole o resultado em `SESSION_SECRET` e rode `npm run dev`. Qualquer e-mail e senha entram, desde que `DEMO_MODE=true`.
+Cole o resultado em `SESSION_SECRET` e rode `npm run dev`. Qualquer e-mail e senha entram, desde que `DEMO_MODE=true`. Na tela de login, com `DEMO_MODE=true`, há também **Entrar como paciente, psicólogo ou psiquiatra**, sem e-mail nem senha.
 
 Requer Node 22.12 ou superior.
 
@@ -64,7 +64,26 @@ src/
 └── instrumentation.ts   Sentry no servidor
 ```
 
-Áreas em `features/`: `appointments`, `auth`, `breathing`, `diary`, `garden`, `habits`, `health`, `help`, `home`, `messages`, `payments`, `settings`.
+Áreas em `features/`: `activities`, `appointments`, `auth`, `breathing`, `diary`, `garden`, `habits`, `health`, `help`, `home`, `messages`, `missions`, `mood`, `onboarding`, `payments`, `pro` (área do profissional), `safety`, `settings`.
+
+### Funcionalidades
+
+- **Humor** (`features/mood`): check-in com cinco rostos e tags do que influenciou o dia; a página Meu Humor mostra a média da semana, a curva, o canteiro do mês e o que mais pesou. Conta o que foi registrado, sem diagnosticar.
+- **Diário** (`features/diary`): registros com humor, convite do dia e busca. **Atividades** (`features/activities`): roda da vida com comparação entre datas, registro de pensamentos, termômetro emocional, diário do sono, lista de valores e plano de ação. Ficam guardadas para rever e refazer (a roda sugere refazer depois de 30 dias). Os campos de cada atividade estão em `catalog.ts`; para criar uma nova, acrescente ali.
+- **Plano de segurança** (`features/safety`): contatos de emergência (188 e 192) sempre primeiro, passos escritos pela pessoa e pessoas de confiança. O botão de crise do app abre este plano.
+- **Saúde** (`features/health`): tela Hoje com as doses numa linha do tempo, adesão da semana sem cobrança, sintomas com intensidade de 1 a 5, exames com arquivo guardado só no navegador e um resumo de 30 dias para levar à consulta. O app nunca sugere nem altera doses.
+- **Agenda** (`features/appointments`): bloqueia datas passadas e horários em conflito, aceita observações, mostra a contagem para a próxima sessão e exporta `.ics`.
+- **Jardim**: além das gotas por cuidado, há três **missões** por dia (`features/missions`) e um onboarding de três telas (`features/onboarding`).
+- **Configurações** (`features/settings`): lembrete diário (só guardado, não há notificações), **Privacidade** (o que o profissional vê), baixar uma cópia dos dados em JSON, apagar tudo e carregar ou limpar dados de exemplo.
+- **Mensagens, pagamentos e ajuda** têm faixa de **Demonstração**: as respostas do profissional são simuladas e nenhuma cobrança é real (`components/feedback/DemoNotice.tsx`).
+
+### Área do profissional
+
+`features/pro`, rotas em `/dashboard/pro/*`. Contas de demonstração: psicóloga (Dra. Helena Prado) e psiquiatra (Dr. Rafael Nunes); o menu muda conforme a especialidade e **Medicação** é só do psiquiatra. O papel vem da sessão (`lib/session.ts`) e o `proxy.ts` separa as duas áreas (`lib/roles.ts`).
+
+- **Painel do dia**, **Pacientes**, **Agenda**, **Atividades** (pedir uma atividade a um paciente), **Mensagens**, **Financeiro** e **Configurações**.
+- O profissional só vê o que o paciente liberou em Configurações > Privacidade (`snapshot.ts`): do diário chegam só os títulos do que foi marcado para a consulta. As notas de sessão são privadas.
+- Como não há backend, o paciente de demonstração e o profissional compartilham o `localStorage` do mesmo navegador; os outros pacientes são fictícios (`data.ts`). Em produção, `usePro` é o ponto a trocar por chamadas à API.
 
 ### Convenções
 
@@ -96,8 +115,17 @@ O hook de pré-commit (Husky) formata os arquivos alterados com Prettier (`.pret
 
 - `mocks/user.ts` guarda o perfil, hábitos, diário, consultas, faturas etc. As alterações feitas na interface (hábitos, diário, saúde, consultas, mensagens, pagamentos) ficam no `localStorage` do navegador, em chaves `psycare:<área>:v1`, via `useLocalStorage` (`lib/useLocalStorage.ts`). Para voltar aos dados iniciais, limpe o armazenamento do site. Os dados não são criptografados e não saem do navegador.
 - `features/auth/mock-login.ts` simula o login e só responde com `DEMO_MODE=true`.
-- Botões sem função real (enviar exame, baixar recibo, redefinir senha, 2FA) aparecem desabilitados.
+- Na primeira entrada pela demonstração, o navegador recebe humor, diário e atividades de exemplo. Em Configurações > Meus dados dá para carregar, limpar ou apagar tudo.
+- Botões sem função real (baixar recibo, redefinir senha, 2FA, sala de vídeo) aparecem desabilitados.
 - Não informe dados pessoais, de saúde ou de pagamento reais.
+
+## Como contribuir
+
+1. Crie uma branch a partir da `main` (`feat/nome-curto` ou `fix/nome-curto`).
+2. Faça um commit por mudança com sentido próprio. Mensagens no formato `tipo(área): o que mudou` (`feat`, `fix`, `refactor`, `chore`, `test`, `docs`).
+3. Rode `npm run check` antes de abrir o PR: o CI roda o mesmo.
+4. Lógica nova vai em um arquivo puro (`logic.ts`) com teste ao lado; telas com comportamento ganham um teste com Testing Library (`*.test.tsx`).
+5. Texto da interface em português do Brasil, sem culpa nem cobrança, e sem afirmar diagnósticos. O que for demonstração precisa dizer que é demonstração.
 
 ## Segurança
 
