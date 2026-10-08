@@ -25,13 +25,13 @@ export function DoseTimeline({ doses, taken, onToggle }: DoseTimelineProps) {
               aria-label={`${done ? "Desmarcar" : "Marcar como tomado:"} ${dose.nome}, ${dose.time}`}
               onClick={() => onToggle(dose)}
               className={cn(
-                "relative z-10 flex size-11 shrink-0 items-center justify-center rounded-full border-2 transition-colors focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none",
+                "relative z-10 flex size-11 shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-200 focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none",
                 done
-                  ? "border-brand-600 bg-brand-600 text-white"
+                  ? "animate-pop border-brand-600 bg-brand-600 text-white"
                   : "border-brand-300 bg-canvas text-transparent hover:border-brand-600",
               )}
             >
-              <Check className="size-5" aria-hidden />
+              <Check className={cn("size-5", done && "animate-draw-check")} aria-hidden />
             </button>
             <div className="flex min-w-0 flex-col">
               <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">

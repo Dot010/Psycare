@@ -27,7 +27,7 @@ export function MoodPicker({ value, onChange, labelledBy }: MoodPickerProps) {
             aria-label={MOOD_LABELS[level]}
             onClick={() => onChange(level)}
             className={cn(
-              "flex size-12 items-center justify-center rounded-full border-2 bg-card transition-transform focus-visible:ring-3 focus-visible:ring-brand-600/40 focus-visible:outline-none sm:size-14",
+              "flex size-12 items-center justify-center rounded-full border-2 bg-card transition-[transform,border-color] duration-200 ease-out focus-visible:ring-3 focus-visible:ring-brand-600/40 focus-visible:outline-none sm:size-14",
               active ? "scale-110 border-brand-600" : "border-transparent hover:scale-105",
             )}
           >

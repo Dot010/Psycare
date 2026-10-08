@@ -113,7 +113,7 @@ export function SymptomLogger({ onLog }: SymptomLoggerProps) {
         </div>
       )}
       {saved && (
-        <p role="status" className="text-sm text-brand-ink">
+        <p role="status" className="animate-page-in text-sm text-brand-ink">
           Anotado. Isso ajuda a conversar na consulta.
         </p>
       )}

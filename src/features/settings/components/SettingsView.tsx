@@ -143,9 +143,9 @@ export default function SettingsView() {
         saved && (
           <span
             role="status"
-            className="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-ink"
+            className="animate-page-in inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-ink"
           >
-            <Check className="size-3.5" />
+            <Check className="animate-draw-check size-3.5" />
             Alterações salvas
           </span>
         )
