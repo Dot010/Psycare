@@ -17,6 +17,7 @@ import { ActionSheet, type SheetSnap } from "@/components/layout/ActionSheet";
 import { CountUp } from "@/components/motion/CountUp";
 import { Stagger } from "@/components/motion/Stagger";
 import { NextSessionCard } from "@/features/appointments/components/NextSessionCard";
+import { Missions } from "@/features/missions/components/Missions";
 import { Onboarding } from "@/features/onboarding/components/Onboarding";
 import { useAppointments } from "@/features/appointments/hooks/useAppointments";
 import { splitAppointments } from "@/features/appointments/logic";
@@ -163,6 +164,8 @@ export default function HomeView() {
             />
 
             <CheckIn today={garden.todayCheckIn} onSelect={garden.checkIn} onTagsChange={garden.setTags} />
+
+            <Missions doneToday={garden.doneToday} />
 
             <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {quickLinks.map(({ href, label, icon: Icon }) => (

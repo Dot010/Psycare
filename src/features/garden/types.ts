@@ -1,6 +1,6 @@
 import type { MoodLevel } from "@/features/mood/types";
 
-export type WaterSource = "habit" | "diary" | "checkin" | "breathing";
+export type WaterSource = "habit" | "diary" | "checkin" | "breathing" | "mission";
 
 /** Uma gota de água ganha por uma ação real. `id` impede ganhar duas vezes pela mesma ação no dia. */
 export interface WaterDrop {

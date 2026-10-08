@@ -11,6 +11,7 @@ const LABELS: Record<WaterSource, string> = {
   habit: "Hábito concluído",
   diary: "Registro no diário",
   breathing: "Respiração concluída",
+  mission: "Missão cumprida",
 };
 
 /** Aviso "+1 gota no regador" em qualquer tela, quando uma ação de cuidado enche o regador. */

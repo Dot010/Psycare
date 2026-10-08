@@ -31,7 +31,7 @@ export function Onboarding() {
 
   const close = (withSeed: boolean) => {
     if (remind) update({ reminderOn: true, reminderTime: time });
-    if (withSeed) grantWater("habit", "primeira-semente");
+    if (withSeed) grantWater("mission", "primeira-semente");
     setState(finish(goal));
   };
 
