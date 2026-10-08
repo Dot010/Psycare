@@ -24,8 +24,9 @@ export function DemoEntry() {
     setLoading(profile);
     const result = await demoLoginAction(profile);
     if (result.success) {
-      // Primeira vez no navegador: já entra com humor, diário e atividades de exemplo para o app não parecer vazio.
-      if (profile === "patient" && countStored(window.localStorage) === 0) loadDemoData();
+      // Primeira vez neste navegador: já entra com humor, diário e atividades de exemplo, para o paciente
+      // não parecer vazio e o profissional ter o que ver.
+      if (countStored(window.localStorage) === 0) loadDemoData();
       router.push(result.redirectTo);
       return;
     }
