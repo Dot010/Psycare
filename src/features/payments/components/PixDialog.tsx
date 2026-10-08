@@ -38,6 +38,10 @@ export function PixDialog({ invoice, onClose }: PixDialogProps) {
           Pagamento via PIX
         </DialogTitle>
 
+        <p className="rounded-lg bg-sun-100 px-3 py-2 text-xs text-ink">
+          Demonstração: este QR Code e este código são de exemplo. Não pague nada com eles.
+        </p>
+
         {invoice && (
           <p className="text-xs text-muted-foreground">
             Escaneie o QR Code com o aplicativo do seu banco para pagar{" "}

@@ -4,6 +4,7 @@ import { CreditCard, FileText, Plus, QrCode, X } from "lucide-react";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { DemoNotice } from "@/components/feedback/DemoNotice";
 import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/ui/button";
 import AddPaymentMethodModal from "@/features/payments/components/AddPaymentMethodModal";
@@ -62,6 +63,9 @@ export default function PaymentsView() {
       description="Gerencie suas faturas, métodos de pagamento e assinatura."
       width="wide"
     >
+      <DemoNotice>
+        Nenhuma cobrança é real. Planos, faturas e cartões são exemplos para mostrar como seria.
+      </DemoNotice>
       <section
         aria-label="Assinatura"
         className="flex flex-col items-start justify-between gap-6 rounded-2xl bg-strong p-6 text-white shadow-sm md:flex-row md:items-center md:p-8"

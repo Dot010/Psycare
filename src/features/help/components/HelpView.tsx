@@ -3,6 +3,8 @@
 import { CircleCheck, Mail, MessageCircle, BookOpen, ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
+import Link from "next/link";
+import { DemoNotice } from "@/components/feedback/DemoNotice";
 import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
@@ -28,8 +30,8 @@ const FAQS = [
 ];
 
 const CONTACTS = [
-  { Icon: MessageCircle, title: "WhatsApp", text: "Atendimento em tempo real (em breve)." },
-  { Icon: Mail, title: "E-mail de suporte", text: "suporte@empresa.com.br — resposta em até 24h." },
+  { Icon: MessageCircle, title: "Chat de suporte", text: "Atendimento em tempo real (em breve)." },
+  { Icon: Mail, title: "E-mail de suporte", text: "suporte@exemplo.com (endereço de exemplo)." },
   { Icon: BookOpen, title: "Base de conhecimento", text: "Artigos e tutoriais (em breve)." },
 ];
 
@@ -72,6 +74,22 @@ export default function HelpView() {
       description="Tire suas dúvidas ou entre em contato com a equipe."
       width="narrow"
     >
+      <DemoNotice>Os contatos e o formulário abaixo são de exemplo: nada é enviado a ninguém.</DemoNotice>
+      <p className="rounded-xl bg-brand-50 p-4 text-sm text-brand-ink">
+        Precisa de ajuda agora? Ligue{" "}
+        <a className="font-semibold underline" href="tel:188">
+          188
+        </a>{" "}
+        (CVV, 24 h) ou{" "}
+        <a className="font-semibold underline" href="tel:192">
+          192
+        </a>{" "}
+        (SAMU). Seu{" "}
+        <Link className="font-semibold underline" href="/dashboard/safety">
+          plano de segurança
+        </Link>{" "}
+        está a um toque.
+      </p>
       <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {CONTACTS.map(({ Icon, title, text }) => (
           <li key={title} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
@@ -109,9 +127,9 @@ export default function HelpView() {
               className="space-y-2 rounded-xl border border-brand-200 bg-brand-50 p-4 text-center"
             >
               <CircleCheck className="mx-auto size-6 text-brand-accent" aria-hidden />
-              <p className="text-xs font-bold text-brand-ink">Chamado enviado</p>
+              <p className="text-xs font-bold text-brand-ink">Chamado simulado</p>
               <p className="text-xs text-brand-ink">
-                Recebemos sua mensagem e entraremos em contato em breve.
+                Na versão real, enviaríamos para a equipe. Aqui nada foi enviado.
               </p>
             </div>
           ) : (

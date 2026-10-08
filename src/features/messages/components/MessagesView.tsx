@@ -2,6 +2,7 @@
 
 import { Send } from "lucide-react";
 import { useState } from "react";
+import { DemoNotice } from "@/components/feedback/DemoNotice";
 import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/ui/button";
 import { fieldControlClass } from "@/components/ui/input";
@@ -57,7 +58,11 @@ export function MessagesView() {
   };
 
   return (
-    <Page title="Minhas Mensagens" description="Converse com a sua equipe médica." width="wide">
+    <Page title="Minhas Mensagens" description="Converse com o seu profissional." width="wide">
+      <DemoNotice>
+        A conversa é simulada: as respostas são de exemplo. Na versão real, a mensagem chega ao seu
+        profissional. Em crise, não espere resposta: ligue 188 ou 192.
+      </DemoNotice>
       <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-12">
         <section aria-label="Conversas" className={cn(panelClass, "space-y-3 p-4 md:col-span-4")}>
           <h2 className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">

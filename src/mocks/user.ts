@@ -104,7 +104,7 @@ export const mockUser = {
   agendamentos: [
     {
       id: "1",
-      profissional: "Dra. Amanda Silva",
+      profissional: "Dra. Helena Prado",
       data: "2026-10-15",
       hora: "15:30",
       status: "confirmado",
@@ -120,7 +120,7 @@ export const mockUser = {
     },
     {
       id: "3",
-      profissional: "Dra. Amanda Silva",
+      profissional: "Dra. Helena Prado",
       data: "2026-09-08",
       hora: "15:30",
       status: "confirmado",
@@ -163,8 +163,8 @@ export const mockUser = {
   chats: [
     {
       id: "1",
-      doctorName: "Dra. Amanda Silva",
-      specialty: "Cardiologia",
+      doctorName: "Dra. Helena Prado",
+      specialty: "Psicologia",
       lastMessage: "Olá! Como você está se sentindo hoje?",
       messages: [
         {
