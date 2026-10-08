@@ -143,7 +143,7 @@ export function ActionSheet({
 
       <div
         inert={snap === "peek"}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-8 md:px-6"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-24 md:px-6 md:pb-8"
       >
         {children}
       </div>
