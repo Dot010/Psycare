@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Field, SelectField } from "@/components/ui/field";
+import { toISODate } from "@/lib/dates";
 import type { Agendamento, AppointmentType, CreateAppointmentInput } from "@/features/appointments/types";
 
 interface AppointmentModalProps {
@@ -43,11 +44,12 @@ function AppointmentForm({
   const [data, setData] = useState(appointment?.data ?? "");
   const [hora, setHora] = useState(appointment?.hora ?? "");
   const [tipo, setTipo] = useState<AppointmentType>(appointment?.tipo ?? "online");
+  const [observacao, setObservacao] = useState(appointment?.observacao ?? "");
   const [formError, setFormError] = useState("");
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const result = onSave({ profissional, data, hora, tipo }, appointment?.id);
+    const result = onSave({ profissional, data, hora, tipo, observacao }, appointment?.id);
     if (!result.success) {
       setFormError(result.error);
       return;
@@ -66,7 +68,14 @@ function AppointmentForm({
       />
 
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Data" type="date" value={data} onChange={(e) => setData(e.target.value)} required />
+        <Field
+          label="Data"
+          type="date"
+          min={toISODate(new Date())}
+          value={data}
+          onChange={(e) => setData(e.target.value)}
+          required
+        />
         <Field label="Hora" type="time" value={hora} onChange={(e) => setHora(e.target.value)} required />
       </div>
 
@@ -74,6 +83,21 @@ function AppointmentForm({
         <option value="online">Online</option>
         <option value="presencial">Presencial</option>
       </SelectField>
+
+      <div className="space-y-1">
+        <label htmlFor="ag-obs" className="block text-xs font-medium text-muted-foreground">
+          Quero lembrar de (opcional)
+        </label>
+        <textarea
+          id="ag-obs"
+          rows={2}
+          maxLength={200}
+          value={observacao}
+          onChange={(e) => setObservacao(e.target.value)}
+          placeholder="Ex: falar sobre o sono"
+          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+        />
+      </div>
 
       {formError && (
         <p role="alert" className="text-xs text-danger-600">

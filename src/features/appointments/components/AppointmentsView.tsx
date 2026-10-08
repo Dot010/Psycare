@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarPlus, Plus } from "lucide-react";
+import { CalendarPlus, Download, Plus } from "lucide-react";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
 import { EmptyState } from "@/components/feedback/EmptyState";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { AppointmentModal } from "@/features/appointments/components/AppointmentModal";
 import { NextSessionCard } from "@/features/appointments/components/NextSessionCard";
 import { useAppointments } from "@/features/appointments/hooks/useAppointments";
-import { splitAppointments } from "@/features/appointments/logic";
+import { buildIcs, splitAppointments } from "@/features/appointments/logic";
 import type { Agendamento } from "@/features/appointments/types";
 import { toISODate } from "@/lib/dates";
 import { formatDateBR } from "@/lib/format";
@@ -39,6 +39,7 @@ function AppointmentRow({
         <p className="text-sm text-muted-foreground">
           {formatDateBR(item.data)} às {item.hora} · {item.tipo === "online" ? "Online" : "Presencial"}
         </p>
+        {item.observacao && <p className="text-sm text-foreground">Lembrar de: {item.observacao}</p>}
       </div>
       <div className="flex shrink-0 items-center gap-1">
         <span
@@ -75,6 +76,18 @@ export function AppointmentsView() {
     `${toISODate(now)}T${now.toTimeString().slice(0, 5)}`,
   );
 
+  const exportCalendar = () => {
+    const blob = new Blob([buildIcs(upcoming)], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "psycare-consultas.ics";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
   const openNew = () => {
     setEditing(undefined);
     setModalOpen(true);
@@ -98,8 +111,8 @@ export function AppointmentsView() {
     >
       <NextSessionCard
         action={
-          <Button disabled title="Disponível em breve">
-            Entrar na sala
+          <Button disabled title="Demonstração: a sala de vídeo ainda não existe">
+            Entrar na sala (em breve)
           </Button>
         }
       />
@@ -118,7 +131,15 @@ export function AppointmentsView() {
       ) : (
         <>
           <section className="space-y-3">
-            <h2 className="text-xl font-semibold text-foreground">Próximas</h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-xl font-semibold text-foreground">Próximas</h2>
+              {upcoming.length > 0 && (
+                <Button variant="ghost" size="sm" onClick={exportCalendar}>
+                  <Download />
+                  Exportar para o calendário
+                </Button>
+              )}
+            </div>
             {upcoming.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nenhuma sessão futura.</p>
             ) : (

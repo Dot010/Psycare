@@ -2,6 +2,8 @@
 
 import type { Agendamento } from "@/features/appointments/types";
 import { createAppointmentSchema, type CreateAppointmentInput } from "@/features/appointments/types";
+import { validateSlot } from "@/features/appointments/logic";
+import { toISODate } from "@/lib/dates";
 import { upsertById } from "@/lib/list";
 import { useLocalStorage } from "@/lib/useLocalStorage";
 import { mockUser } from "@/mocks/user";
@@ -21,6 +23,15 @@ export function useAppointments() {
       return { success: false as const, error: parsed.error.issues[0]?.message || "Dados inválidos" };
     }
 
+    const now = new Date();
+    const slotError = validateSlot(
+      parsed.data,
+      appointments,
+      `${toISODate(now)}T${now.toTimeString().slice(0, 5)}`,
+      id,
+    );
+    if (slotError) return { success: false as const, error: slotError };
+
     const saved: Agendamento = {
       id: id ?? crypto.randomUUID(),
       profissional: parsed.data.profissional,
@@ -28,6 +39,7 @@ export function useAppointments() {
       hora: parsed.data.hora,
       status: "pendente",
       tipo: parsed.data.tipo,
+      observacao: parsed.data.observacao || undefined,
     };
 
     setAppointments((current) => upsertById(current, saved));

@@ -10,6 +10,8 @@ export type Agendamento = {
   hora: string;
   status: "pendente" | "confirmado" | "cancelado";
   tipo: AppointmentType;
+  /** O que a pessoa quer lembrar ou levar para a sessão. */
+  observacao?: string;
 };
 
 export const createAppointmentSchema = z.object({
@@ -17,6 +19,7 @@ export const createAppointmentSchema = z.object({
   data: z.string().min(1, "Informe a data"),
   hora: z.string().min(1, "Informe o horário"),
   tipo: z.enum(appointmentTypes),
+  observacao: z.string().trim().max(200, "A observação passa de 200 caracteres").optional(),
 });
 
 export type CreateAppointmentInput = z.infer<typeof createAppointmentSchema>;
