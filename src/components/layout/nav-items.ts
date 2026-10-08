@@ -9,6 +9,7 @@ import {
   MessageCircle,
   Pill,
   Settings,
+  ShieldCheck,
   Smile,
   SquareCheckBig,
   Users,
@@ -57,6 +58,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: CreditCard,
     startsGroup: true,
   },
+  { title: "Plano de segurança", shortTitle: "Segurança", href: "/dashboard/safety", icon: ShieldCheck },
   { title: "Ajuda", href: "/dashboard/help", icon: CircleHelp },
   { title: "Configurações", shortTitle: "Ajustes", href: "/dashboard/settings", icon: Settings },
 ];

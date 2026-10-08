@@ -4,9 +4,15 @@ import { LifeBuoy, Phone } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { EmergencyCalls } from "@/features/safety/components/EmergencyCalls";
+import { useSafetyPlan } from "@/features/safety/hooks/useSafetyPlan";
+import { isPlanEmpty, phoneHref } from "@/features/safety/logic";
 
-/** Botão sempre visível no painel: leva a quem pode ajudar em uma crise. */
+/** Botão sempre visível no painel: leva a quem pode ajudar em uma crise, e ao plano de segurança da pessoa. */
 export function CrisisButton() {
+  const { plan } = useSafetyPlan();
+  const hasPlan = !isPlanEmpty(plan);
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -20,38 +26,57 @@ export function CrisisButton() {
         </button>
       </DialogTrigger>
 
-      <DialogContent className="gap-4 rounded-2xl p-6 sm:max-w-md">
+      <DialogContent className="max-h-[92dvh] gap-4 overflow-y-auto rounded-2xl p-6 sm:max-w-md">
         <DialogTitle className="text-xl font-bold text-foreground">Você não está sozinho(a)</DialogTitle>
         <DialogDescription className="text-sm text-muted-foreground">
           Se você está em sofrimento ou pensando em se machucar, fale com alguém agora. A ligação é gratuita.
         </DialogDescription>
 
-        <div className="space-y-3">
-          <a
-            href="tel:188"
-            className="flex items-center gap-3 rounded-xl border border-border bg-sunken p-4 transition-colors hover:border-brand-600"
+        <EmergencyCalls />
+
+        {hasPlan ? (
+          <section aria-labelledby="crisis-plan" className="space-y-3 border-t border-border pt-4">
+            <h3 id="crisis-plan" className="text-sm font-semibold text-foreground">
+              Do seu plano
+            </h3>
+            {plan.coping.length > 0 && (
+              <ul className="space-y-1 text-sm text-foreground">
+                {plan.coping.slice(0, 3).map((item) => (
+                  <li key={item} className="flex gap-2">
+                    <span aria-hidden className="text-brand-400">
+                      •
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {plan.contacts.slice(0, 3).map((contact) => (
+              <a
+                key={contact.id}
+                href={phoneHref(contact.phone)}
+                className="flex min-h-11 items-center justify-between rounded-xl border border-border bg-sunken px-4 text-sm transition-colors hover:border-brand-600"
+              >
+                <span>
+                  <span className="font-semibold text-foreground">{contact.name}</span>
+                  {contact.role && <span className="text-muted-foreground"> · {contact.role}</span>}
+                </span>
+                <Phone className="size-4 text-brand-accent" aria-hidden />
+              </a>
+            ))}
+            <Link href="/dashboard/safety" className="text-sm font-semibold text-brand-ink hover:underline">
+              Abrir meu plano completo
+            </Link>
+          </section>
+        ) : (
+          <Link
+            href="/dashboard/safety"
+            className="rounded-xl border border-dashed border-input p-4 text-sm text-muted-foreground transition-colors hover:border-brand-600"
           >
-            <Phone className="size-5 text-brand-accent" aria-hidden />
-            <span>
-              <span className="block font-semibold text-foreground">CVV: 188</span>
-              <span className="block text-xs text-muted-foreground">
-                Apoio emocional, 24 horas. Também por chat em cvv.org.br.
-              </span>
-            </span>
-          </a>
-          <a
-            href="tel:192"
-            className="flex items-center gap-3 rounded-xl border border-border bg-sunken p-4 transition-colors hover:border-brand-600"
-          >
-            <Phone className="size-5 text-danger-600" aria-hidden />
-            <span>
-              <span className="block font-semibold text-foreground">SAMU: 192</span>
-              <span className="block text-xs text-muted-foreground">
-                Emergência médica, risco imediato à vida.
-              </span>
-            </span>
-          </a>
-        </div>
+            <span className="block font-semibold text-foreground">Monte seu plano de segurança</span>
+            Nos dias calmos, escreva o que ajuda e quem você pode chamar. Ele aparece aqui quando precisar.
+          </Link>
+        )}
 
         <Button asChild variant="outline">
           <Link href="/dashboard/breathing">Fazer um exercício de respiração</Link>
