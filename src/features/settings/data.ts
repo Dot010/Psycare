@@ -1,5 +1,8 @@
 import type { DiaryEntry } from "@/features/diary/types";
 import type { CheckIn } from "@/features/garden/types";
+import { ACTIVITIES_KEY, ASSIGNMENTS_KEY } from "@/features/activities/hooks/useActivities";
+import type { ActivityRecord, Assignment } from "@/features/activities/types";
+import { WHEEL_AREAS } from "@/features/activities/catalog";
 import { MOOD_LABELS } from "@/features/mood/logic";
 import type { MoodLevel } from "@/features/mood/types";
 import { toISODate } from "@/lib/dates";
@@ -9,7 +12,12 @@ import { removeStored, writeStored } from "@/lib/storage";
 export const STORAGE_PREFIX = "psycare:";
 
 /** Chaves dos dados de exemplo (as outras não são tocadas ao carregar ou limpar o exemplo). */
-export const DEMO_KEYS = ["psycare:checkins:v1", "psycare:diary:v1"] as const;
+export const DEMO_KEYS = [
+  "psycare:checkins:v1",
+  "psycare:diary:v1",
+  ACTIVITIES_KEY,
+  ASSIGNMENTS_KEY,
+] as const;
 
 export interface ExportFile {
   app: "PsyCare";
@@ -103,7 +111,12 @@ const DEMO_DIARY: ReadonlyArray<{ daysAgo: number; title: string; content: strin
 ];
 
 /** Dados de exemplo cobrindo os últimos dias, só para ver o app preenchido. Os registros são fictícios. */
-export function buildDemoData(today: Date = new Date()): { checkins: CheckIn[]; diary: DiaryEntry[] } {
+export function buildDemoData(today: Date = new Date()): {
+  checkins: CheckIn[];
+  diary: DiaryEntry[];
+  activities: ActivityRecord[];
+  assignments: Assignment[];
+} {
   const dayOffset = (daysAgo: number) => {
     const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - daysAgo);
     return toISODate(d);
@@ -122,13 +135,49 @@ export function buildDemoData(today: Date = new Date()): { checkins: CheckIn[]; 
     title: e.title,
     content: e.content,
   }));
-  return { checkins, diary };
+  const wheel = (id: string, daysAgo: number, scores: number[]): ActivityRecord => ({
+    id,
+    kind: "wheel",
+    date: dayOffset(daysAgo),
+    answers: Object.fromEntries(WHEEL_AREAS.map((area, i) => [area, scores[i]])),
+  });
+  const activities: ActivityRecord[] = [
+    {
+      ...wheel("demo-roda", 36, [4, 7, 5, 3, 4, 4, 6, 6]),
+      note: "Eu estava no meio da mudança de emprego e quase sem tempo para mim.",
+    },
+    {
+      id: "demo-termometro",
+      kind: "thermometer",
+      date: dayOffset(20),
+      answers: {
+        feeling: "Ansiedade antes de uma reunião",
+        before: 8,
+        action: "Respirei devagar por três minutos",
+        after: 5,
+      },
+    },
+  ];
+  const assignments: Assignment[] = [
+    {
+      id: "demo-pedido-1",
+      kind: "thoughts",
+      by: "Dra. Helena Prado",
+      assignedAt: dayOffset(5),
+      dueDate: dayOffset(-2),
+      message: "Escolha uma situação da semana que ficou na sua cabeça.",
+    },
+    { id: "demo-pedido-2", kind: "sleep", by: "Dra. Helena Prado", assignedAt: dayOffset(5) },
+  ];
+  return { checkins, diary, activities, assignments };
 }
 
 export function loadDemoData(today: Date = new Date()): void {
-  const { checkins, diary } = buildDemoData(today);
+  const { checkins, diary, activities, assignments } = buildDemoData(today);
   writeStored("psycare:checkins:v1", checkins);
   writeStored("psycare:diary:v1", diary);
+  writeStored(ACTIVITIES_KEY, activities);
+  writeStored(ASSIGNMENTS_KEY, assignments);
 }
 
 export function clearDemoData(): void {

@@ -62,7 +62,8 @@ export function DataPanel() {
         <div>
           <p className="font-medium text-foreground">Ver o app com dados de exemplo</p>
           <p className="text-sm text-muted-foreground">
-            Preenche humor e diário com registros fictícios. Substitui o humor e o diário atuais.
+            Preenche humor, diário e atividades com registros fictícios. Substitui o que você tem nessas
+            áreas.
           </p>
         </div>
         <div className="flex gap-2">
@@ -74,10 +75,10 @@ export function DataPanel() {
             variant="ghost"
             onClick={() => {
               clearDemoData();
-              setMessage("Humor e diário foram esvaziados.");
+              setMessage("Humor, diário e atividades foram esvaziados.");
             }}
           >
-            Limpar humor e diário
+            Limpar exemplo
           </Button>
         </div>
       </div>
@@ -113,11 +114,11 @@ export function DataPanel() {
         open={confirmDemo}
         onOpenChange={setConfirmDemo}
         title="Carregar dados de exemplo?"
-        description="O humor e o diário atuais serão substituídos por registros fictícios."
+        description="O humor, o diário e as atividades atuais serão substituídos por registros fictícios."
         confirmLabel="Carregar"
         onConfirm={() => {
           loadDemoData();
-          setMessage("Dados de exemplo carregados. Veja em Meu Humor e no Diário.");
+          setMessage("Dados de exemplo carregados. Veja em Meu Humor, no Diário e nas Atividades.");
         }}
       />
     </section>

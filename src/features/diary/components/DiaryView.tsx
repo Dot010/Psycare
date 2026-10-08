@@ -132,6 +132,12 @@ export default function DiaryView() {
             >
               Ver meu humor
             </Link>
+            <Link
+              href="/dashboard/diary/activities"
+              className="text-sm font-semibold text-brand-ink underline-offset-4 hover:underline"
+            >
+              Atividades
+            </Link>
           </div>
         </header>
 

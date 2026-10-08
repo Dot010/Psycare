@@ -49,11 +49,13 @@ describe("apagar dados", () => {
 
 describe("dados de exemplo", () => {
   it("gera registros recentes e válidos", () => {
-    const { checkins, diary } = buildDemoData(new Date(2026, 9, 8));
+    const { checkins, diary, activities, assignments } = buildDemoData(new Date(2026, 9, 8));
     expect(checkins).toHaveLength(8);
     expect(new Set(checkins.map((c) => c.date)).size).toBe(8);
     expect(checkins.every((c) => c.date < "2026-10-08")).toBe(true);
     expect(diary).toHaveLength(3);
+    expect(activities.some((a) => a.kind === "wheel")).toBe(true);
+    expect(assignments.every((a) => !a.doneRecordId)).toBe(true);
     expect(dailyLevels(checkins, diary).size).toBeGreaterThanOrEqual(8);
   });
 });
