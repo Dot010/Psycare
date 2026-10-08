@@ -207,6 +207,181 @@
     animation: enter var(--motion-duration-slow) var(--motion-ease-emphasis) both;
   }
 }
+
+/* Movimento do PsyCare: tudo curto (até 300 ms) e desligado com "reduzir movimento". */
+@keyframes shimmer-slide {
+  from {
+    background-position: -300px 0;
+  }
+  to {
+    background-position: 300px 0;
+  }
+}
+@keyframes sky-cycle {
+  0%,
+  100% {
+    background-color: #f7eeb3;
+  }
+  33% {
+    background-color: #cfe0ea;
+  }
+  66% {
+    background-color: #d9d3ea;
+  }
+}
+@keyframes orb-breathe {
+  0%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+@keyframes orb-drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(18px, -12px);
+  }
+}
+@keyframes phrase-cycle {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  8%,
+  28% {
+    opacity: 1;
+    transform: none;
+  }
+  36%,
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes draw-check {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes sprout-grow {
+  0% {
+    transform: scaleY(0.2);
+    opacity: 0.4;
+  }
+  60%,
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+@keyframes leaf-open {
+  0%,
+  30% {
+    transform: scale(0) rotate(-30deg);
+  }
+  70%,
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+
+@layer utilities {
+  .animate-shimmer {
+    background: linear-gradient(90deg, var(--sunken) 0, var(--canvas) 150px, var(--sunken) 300px);
+    background-size: 600px 100%;
+    animation: shimmer-slide 1.4s linear infinite;
+  }
+  .animate-sky {
+    animation: sky-cycle 36s ease-in-out infinite;
+  }
+  .animate-orb {
+    animation: orb-breathe 8s ease-in-out infinite;
+  }
+  .animate-orb-reverse {
+    animation: orb-breathe 8s ease-in-out infinite reverse;
+  }
+  .animate-drift {
+    animation: orb-drift 9s ease-in-out infinite;
+  }
+  .animate-drift-slow {
+    animation: orb-drift 11s ease-in-out infinite reverse;
+  }
+  .animate-phrase {
+    opacity: 0;
+    animation: phrase-cycle 12s ease-in-out infinite;
+  }
+  .animate-page-in {
+    animation: page-in 220ms var(--motion-ease-emphasis) both;
+  }
+  .animate-pop {
+    animation: pop 240ms ease-out;
+  }
+  .animate-draw-check {
+    stroke-dasharray: 24;
+    animation: draw-check 220ms ease-out forwards;
+  }
+  .animate-sway {
+    transform-origin: 50% 100%;
+    animation: sway 3.6s ease-in-out infinite;
+  }
+  .animate-sprout {
+    transform-origin: 50% 100%;
+    animation: sprout-grow 1.8s ease-out infinite;
+  }
+  .animate-leaf {
+    transform-origin: 50% 100%;
+    animation: leaf-open 1.8s ease-out infinite;
+  }
+}
+/* Sem movimento: só a primeira frase fica visível e o check aparece desenhado. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-phrase:first-child {
+    opacity: 1;
+  }
+  .animate-draw-check {
+    stroke-dashoffset: 0;
+  }
+}
 /* Respeita a preferência do sistema por menos movimento (WCAG 2.3.3). Spinners continuam girando. */
 @media (prefers-reduced-motion: reduce) {
   *:not(.animate-spin),
