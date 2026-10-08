@@ -1,5 +1,6 @@
 "use client";
 
+import { Spinner } from "@/components/brand/Spinner";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { demoLoginAction } from "@/features/auth/actions";
@@ -59,7 +60,7 @@ export function DemoEntry() {
                 <span className="block text-xs text-muted-foreground">{hint}</span>
               </span>
               <span aria-hidden="true" className="text-brand-accent">
-                {loading === profile ? "…" : "→"}
+                {loading === profile ? <Spinner /> : "→"}
               </span>
             </button>
           </li>

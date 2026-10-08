@@ -70,8 +70,8 @@ export function LoginForm() {
         disabled={isLoading}
       />
 
-      <Button type="submit" disabled={isLoading} className="mt-6 w-full">
-        {isLoading ? "Entrando..." : "Entrar"}
+      <Button type="submit" loading={isLoading} className="mt-6 w-full">
+        {isLoading ? "Entrando…" : "Entrar"}
       </Button>
 
       <ErrorMessage message={error} />
