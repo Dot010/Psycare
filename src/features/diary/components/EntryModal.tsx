@@ -7,13 +7,14 @@ import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/u
 import { Field } from "@/components/ui/field";
 import { fieldControlClass } from "@/components/ui/input";
 import type { DiaryEntry } from "@/features/diary/types";
-import { MOODS } from "@/features/diary/utils";
+import { MoodPicker } from "@/features/mood/components/MoodPicker";
+import { entryLevel, MOOD_LABELS } from "@/features/mood/logic";
+import type { MoodLevel } from "@/features/mood/types";
 import { toISODate } from "@/lib/dates";
-import { cn } from "@/lib/utils";
 
 const entrySchema = z.object({
   title: z.string().trim().min(2, "Título muito curto").max(120),
-  mood: z.string().trim().min(2),
+  moodLevel: z.number().int().min(1).max(5),
   content: z.string().trim().min(8, "Escreva um pouco mais sobre como se sente"),
   anxietyLevel: z.number().min(1).max(5),
 });
@@ -56,7 +57,7 @@ function EntryForm({
   onDone: () => void;
 }) {
   const [title, setTitle] = useState(entry?.title ?? "");
-  const [mood, setMood] = useState(entry?.mood ?? MOODS[0]);
+  const [moodLevel, setMoodLevel] = useState<MoodLevel>((entry && entryLevel(entry)) ?? 3);
   const [anxietyLevel, setAnxietyLevel] = useState(entry?.anxietyLevel ?? 2);
   const [content, setContent] = useState(entry?.content ?? "");
   const [discussInSession, setDiscussInSession] = useState(entry?.discussInSession ?? false);
@@ -65,7 +66,7 @@ function EntryForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const parsed = entrySchema.safeParse({ title, mood, content, anxietyLevel });
+    const parsed = entrySchema.safeParse({ title, moodLevel, content, anxietyLevel });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Dados inválidos");
       return;
@@ -76,7 +77,8 @@ function EntryForm({
       id: entry?.id ?? crypto.randomUUID(),
       date: entry?.date ?? today,
       editedAt: entry ? today : undefined,
-      mood: parsed.data.mood,
+      mood: MOOD_LABELS[parsed.data.moodLevel as MoodLevel],
+      moodLevel: parsed.data.moodLevel as MoodLevel,
       title: parsed.data.title,
       content: parsed.data.content,
       anxietyLevel: parsed.data.anxietyLevel,
@@ -95,27 +97,12 @@ function EntryForm({
         placeholder="Ex: Reflexão sobre a semana de estudos"
       />
 
-      <fieldset>
-        <legend className="mb-2 text-xs font-medium text-muted-foreground">Como você se sente?</legend>
-        <div className="flex flex-wrap gap-2">
-          {MOODS.map((option) => (
-            <button
-              key={option}
-              type="button"
-              aria-pressed={mood === option}
-              onClick={() => setMood(option)}
-              className={cn(
-                "rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors",
-                mood === option
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-sunken text-muted-foreground hover:bg-border",
-              )}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-      </fieldset>
+      <div>
+        <p id="entry-mood" className="mb-2 text-xs font-medium text-muted-foreground">
+          Como você se sente? <span className="font-bold text-brand-accent">{MOOD_LABELS[moodLevel]}</span>
+        </p>
+        <MoodPicker value={moodLevel} onChange={setMoodLevel} labelledBy="entry-mood" />
+      </div>
 
       <div>
         <div className="mb-2 flex justify-between text-xs font-medium text-muted-foreground">

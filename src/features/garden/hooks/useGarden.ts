@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { addCheckIn } from "@/features/garden/checkin";
+import { addCheckIn, setCheckInTags } from "@/features/garden/checkin";
 import {
   availableDrops,
   careStreak,
@@ -11,6 +11,7 @@ import {
   sourcesOnDay,
 } from "@/features/garden/logic";
 import type { CheckIn, WaterDrop } from "@/features/garden/types";
+import type { MoodLevel } from "@/features/mood/types";
 import {
   CHECKINS_KEY,
   grantWater,
@@ -37,10 +38,13 @@ export function useGarden() {
   const poured = storedPoured ?? earned;
   const todayCheckIn = checkIns.find((item) => item.date === today);
 
-  const checkIn = (mood: string) => {
-    setCheckIns((current) => addCheckIn(current, today, mood));
+  const checkIn = (level: MoodLevel) => {
+    // Trocar o rosto no mesmo dia mantém as tags já marcadas.
+    setCheckIns((current) => addCheckIn(current, today, level, current.find((i) => i.date === today)?.tags));
     grantWater("checkin");
   };
+
+  const setTags = (tags: string[]) => setCheckIns((current) => setCheckInTags(current, today, tags));
 
   return {
     /** Gotas já despejadas: o que faz o jardim crescer. */
@@ -55,6 +59,8 @@ export function useGarden() {
     streak: careStreak(drops, today),
     doneToday: sourcesOnDay(drops, today),
     todayCheckIn,
+    checkIns,
     checkIn,
+    setTags,
   };
 }

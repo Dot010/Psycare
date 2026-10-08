@@ -1,48 +1,44 @@
 "use client";
 
-import { Check } from "lucide-react";
-import { MOODS } from "@/features/diary/utils";
-import { cn } from "@/lib/utils";
+import { MoodPicker } from "@/features/mood/components/MoodPicker";
+import { TagPicker } from "@/features/mood/components/TagPicker";
+import { checkInLevel } from "@/features/mood/logic";
+import type { MoodLevel } from "@/features/mood/types";
+import type { CheckIn as CheckInRecord } from "@/features/garden/types";
 
 interface CheckInProps {
-  mood?: string;
-  onSelect: (mood: string) => void;
+  today?: CheckInRecord;
+  onSelect: (level: MoodLevel) => void;
+  onTagsChange: (tags: string[]) => void;
 }
 
 /** "Como você está agora?": um toque, uma vez por dia (pode trocar), e o jardim ganha água. */
-export function CheckIn({ mood, onSelect }: CheckInProps) {
+export function CheckIn({ today, onSelect, onTagsChange }: CheckInProps) {
+  const level = today ? checkInLevel(today) : undefined;
+
   return (
-    <section aria-labelledby="checkin-title" className="space-y-3">
+    <section aria-labelledby="checkin-title" className="space-y-4">
       <div>
         <h2 id="checkin-title" className="text-base font-bold text-foreground">
           Como você está agora?
         </h2>
         <p className="text-xs text-muted-foreground">
-          {mood ? `Hoje: ${mood}. Pode mudar se sentir diferente.` : "Um toque e seu jardim ganha água."}
+          {today
+            ? `Hoje: ${today.mood}. Pode mudar se sentir diferente.`
+            : "Um toque e seu jardim ganha água."}
         </p>
       </div>
-      <div role="group" aria-labelledby="checkin-title" className="flex flex-wrap gap-2">
-        {MOODS.map((option) => {
-          const active = mood === option;
-          return (
-            <button
-              key={option}
-              type="button"
-              aria-pressed={active}
-              onClick={() => onSelect(option)}
-              className={cn(
-                "flex h-9 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors focus-visible:ring-3 focus-visible:ring-brand-600/40 focus-visible:outline-none",
-                active
-                  ? "border-brand-600 bg-brand-600 text-white"
-                  : "border-input bg-card text-foreground hover:border-brand-600",
-              )}
-            >
-              {active && <Check className="size-3.5" aria-hidden />}
-              {option}
-            </button>
-          );
-        })}
-      </div>
+
+      <MoodPicker value={level} onChange={onSelect} labelledBy="checkin-title" />
+
+      {today && (
+        <div className="space-y-2">
+          <p id="checkin-tags" className="text-xs font-medium text-muted-foreground">
+            O que influenciou? (se quiser)
+          </p>
+          <TagPicker value={today.tags ?? []} onChange={onTagsChange} />
+        </div>
+      )}
     </section>
   );
 }

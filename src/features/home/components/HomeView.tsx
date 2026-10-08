@@ -158,7 +158,7 @@ export default function HomeView() {
               onPour={garden.pour}
             />
 
-            <CheckIn mood={garden.todayCheckIn?.mood} onSelect={garden.checkIn} />
+            <CheckIn today={garden.todayCheckIn} onSelect={garden.checkIn} onTagsChange={garden.setTags} />
 
             <ul className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               {quickLinks.map(({ href, label, icon: Icon }) => (

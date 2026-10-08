@@ -1,7 +1,9 @@
 import type { DiaryEntry } from "@/features/diary/types";
+import { entryLevel, levelFromLabel, MOOD_LABELS, MOOD_LEVELS } from "@/features/mood/logic";
 import { daysBetween, fromISODate, toISODate } from "@/lib/dates";
 
-export const MOODS = ["Calmo", "Ansioso", "Motivado", "Sobrecarregado", "Reflexivo"];
+/** Os cinco humores para filtrar a lista (registros antigos entram pelo rosto mais próximo). */
+export const MOODS = MOOD_LEVELS.map((level) => MOOD_LABELS[level]);
 
 /** "Hoje", "Ontem" ou "3 de setembro de 2026". */
 export function dayHeading(iso: string, today: string): string {
@@ -39,7 +41,7 @@ export function filterEntries(
 ): DiaryEntry[] {
   const needle = query.trim().toLowerCase();
   return entries.filter((entry) => {
-    if (mood && entry.mood !== mood) return false;
+    if (mood && entryLevel(entry) !== levelFromLabel(mood)) return false;
     if (onlyForSession && !entry.discussInSession) return false;
     if (!needle) return true;
     return [entry.title, entry.content, entry.mood].some((text) => text.toLowerCase().includes(needle));
