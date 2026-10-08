@@ -7,13 +7,14 @@ import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/u
 import { Field } from "@/components/ui/field";
 import { fieldControlClass } from "@/components/ui/input";
 import type { DiaryEntry } from "@/features/diary/types";
+import { dailyPrompt, titleFromContent } from "@/features/diary/utils";
 import { MoodPicker } from "@/features/mood/components/MoodPicker";
 import { entryLevel, MOOD_LABELS } from "@/features/mood/logic";
 import type { MoodLevel } from "@/features/mood/types";
 import { toISODate } from "@/lib/dates";
 
 const entrySchema = z.object({
-  title: z.string().trim().min(2, "Título muito curto").max(120),
+  title: z.string().trim().max(120),
   moodLevel: z.number().int().min(1).max(5),
   content: z.string().trim().min(8, "Escreva um pouco mais sobre como se sente"),
   anxietyLevel: z.number().min(1).max(5),
@@ -30,7 +31,10 @@ interface EntryModalProps {
 export function EntryModal({ open, onOpenChange, entry, onSave }: EntryModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-describedby={undefined} className="gap-5 rounded-2xl p-6 sm:max-w-lg">
+      <DialogContent
+        aria-describedby={undefined}
+        className="max-h-[94dvh] gap-5 overflow-y-auto rounded-2xl p-6 sm:max-w-xl"
+      >
         <DialogTitle className="text-xl font-bold text-foreground">
           {entry ? "Editar registro" : "Novo registro no diário"}
         </DialogTitle>
@@ -79,7 +83,7 @@ function EntryForm({
       editedAt: entry ? today : undefined,
       mood: MOOD_LABELS[parsed.data.moodLevel as MoodLevel],
       moodLevel: parsed.data.moodLevel as MoodLevel,
-      title: parsed.data.title,
+      title: parsed.data.title || titleFromContent(parsed.data.content),
       content: parsed.data.content,
       anxietyLevel: parsed.data.anxietyLevel,
       discussInSession,
@@ -90,11 +94,10 @@ function EntryForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <Field
-        label="Título"
-        required
+        label="Título (se quiser)"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Ex: Reflexão sobre a semana de estudos"
+        placeholder="Se ficar em branco, uso o começo do texto"
       />
 
       <div>
@@ -122,15 +125,15 @@ function EntryForm({
 
       <div className="space-y-1">
         <label htmlFor="entry-content" className="block text-xs font-medium text-muted-foreground">
-          Suas anotações
+          O que você quer escrever?
         </label>
         <textarea
           id="entry-content"
-          rows={4}
+          rows={7}
           required
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="Escreva livremente sobre seus pensamentos e o que disparou essa emoção..."
+          placeholder={entry ? undefined : dailyPrompt(toISODate(new Date()))}
           className={fieldControlClass}
         />
       </div>

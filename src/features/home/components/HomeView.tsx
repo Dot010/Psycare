@@ -5,6 +5,7 @@ import {
   BookOpen,
   CircleHelp,
   Droplets,
+  Smile,
   SquareCheckBig,
   Volume2,
   VolumeX,
@@ -42,6 +43,7 @@ const quickLinks = [
   { href: "/dashboard/diary", label: "Escrever no diário", icon: BookOpen },
   { href: "/dashboard/breathing", label: "Respirar um minuto", icon: Wind },
   { href: "/dashboard/habits", label: "Marcar hábitos", icon: SquareCheckBig },
+  { href: "/dashboard/mood", label: "Ver meu humor", icon: Smile },
 ];
 
 export default function HomeView() {
@@ -160,7 +162,7 @@ export default function HomeView() {
 
             <CheckIn today={garden.todayCheckIn} onSelect={garden.checkIn} onTagsChange={garden.setTags} />
 
-            <ul className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {quickLinks.map(({ href, label, icon: Icon }) => (
                 <li key={href}>
                   <Link

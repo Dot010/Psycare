@@ -1,24 +1,25 @@
 "use client";
 
-import { NotebookPen, Plus, Search } from "lucide-react";
+import { NotebookPen, Plus, Search, Star } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ItemMenu } from "@/components/feedback/ItemMenu";
-import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/ui/button";
 import { fieldControlClass } from "@/components/ui/input";
 import { EntryModal } from "@/features/diary/components/EntryModal";
-import { MoodChart } from "@/features/diary/components/MoodChart";
 import { useDiary } from "@/features/diary/hooks/useDiary";
 import type { DiaryEntry } from "@/features/diary/types";
-import { anxietyColor, dayHeading, filterEntries, groupByDay, MOODS } from "@/features/diary/utils";
+import { dayHeading, filterEntries, groupByDay, MOODS, writtenDays } from "@/features/diary/utils";
+import { MoodFace } from "@/features/mood/components/MoodFace";
+import { entryLevel } from "@/features/mood/logic";
 import { toISODate } from "@/lib/dates";
 import { formatDateBR } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const COLLAPSED_LENGTH = 220;
 
-function EntryCard({
+function EntryRow({
   entry,
   onEdit,
   onDelete,
@@ -29,53 +30,64 @@ function EntryCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const isLong = entry.content.length > COLLAPSED_LENGTH;
+  const level = entryLevel(entry);
+
+  const meta = [
+    entry.anxietyLevel !== undefined ? `Ansiedade ${entry.anxietyLevel}/5` : null,
+    entry.editedAt ? `editado em ${formatDateBR(entry.editedAt)}` : null,
+  ].filter(Boolean);
 
   return (
-    <li
-      className="relative space-y-2 rounded-2xl border border-border bg-card py-5 pr-4 pl-6 shadow-sm"
-      style={{ ["--bar" as string]: anxietyColor(entry.anxietyLevel) }}
-    >
-      <span aria-hidden className="absolute inset-y-3 left-0 w-1.5 rounded-r-full bg-(--bar)" />
-
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="text-base font-semibold text-foreground">{entry.title}</h3>
-        <ItemMenu label={`registro "${entry.title}"`} onEdit={onEdit} onDelete={onDelete} />
+    <li className="flex gap-4 border-t border-border py-5">
+      <div className="flex w-10 shrink-0 flex-col items-center gap-1 pt-0.5">
+        {level !== undefined ? (
+          <MoodFace level={level} size={40} labelled />
+        ) : (
+          <span aria-hidden className="size-10 rounded-full bg-sunken" />
+        )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 text-xs">
-        <span className="rounded-full border border-brand-100 bg-brand-50 px-3 py-1 font-semibold text-brand-ink">
+      <div className="min-w-0 flex-1 space-y-1.5">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="text-lg leading-snug font-semibold text-foreground">{entry.title}</h3>
+          <ItemMenu label={`registro "${entry.title}"`} onEdit={onEdit} onDelete={onDelete} />
+        </div>
+
+        <p className="text-xs font-medium text-brand-ink">
           {entry.mood}
-        </span>
-        {entry.anxietyLevel !== undefined && (
-          <span className="rounded-full bg-sunken px-3 py-1 font-semibold text-muted-foreground">
-            Ansiedade {entry.anxietyLevel}/5
-          </span>
-        )}
-        {entry.discussInSession && (
-          <span className="rounded-full bg-sun-100 px-3 py-1 font-semibold text-ink">
-            Para a próxima consulta
-          </span>
-        )}
-        {entry.editedAt && (
-          <span className="text-muted-foreground">editado em {formatDateBR(entry.editedAt)}</span>
+          {meta.length > 0 && (
+            <span className="font-normal text-muted-foreground"> · {meta.join(" · ")}</span>
+          )}
+          {entry.discussInSession && (
+            <span className="ml-2 inline-flex items-center gap-1 font-semibold text-sun-700">
+              <Star className="size-3 fill-current" aria-hidden />
+              Para a consulta
+            </span>
+          )}
+        </p>
+
+        <p className="text-base leading-relaxed text-foreground/90">
+          {isLong && !expanded ? `${entry.content.slice(0, COLLAPSED_LENGTH).trimEnd()}…` : entry.content}
+        </p>
+        {isLong && (
+          <button
+            type="button"
+            aria-expanded={expanded}
+            onClick={() => setExpanded((value) => !value)}
+            className="text-sm font-semibold text-brand-ink hover:underline"
+          >
+            {expanded ? "Mostrar menos" : "Ler mais"}
+          </button>
         )}
       </div>
-
-      <p className="text-sm leading-relaxed text-muted-foreground">
-        {isLong && !expanded ? `${entry.content.slice(0, COLLAPSED_LENGTH).trimEnd()}…` : entry.content}
-      </p>
-      {isLong && (
-        <button
-          type="button"
-          aria-expanded={expanded}
-          onClick={() => setExpanded((value) => !value)}
-          className="text-xs font-semibold text-brand-ink hover:underline"
-        >
-          {expanded ? "Mostrar menos" : "Ler mais"}
-        </button>
-      )}
     </li>
   );
+}
+
+function writingSentence(days: number): string {
+  if (days === 0) return "Quando você quiser, é só começar. Uma frase já basta.";
+  if (days === 1) return "Você escreveu em 1 dia da última semana.";
+  return `Você escreveu em ${days} dias da última semana.`;
 }
 
 export default function DiaryView() {
@@ -101,112 +113,123 @@ export default function DiaryView() {
   };
 
   return (
-    <Page
-      title="Meu Diário Emocional"
-      description="Registre como foi o seu dia e acompanhe sua evolução."
-      actions={
-        <Button onClick={openNew}>
-          <Plus />
-          Novo registro
-        </Button>
-      }
-    >
-      <MoodChart entries={entries} today={today} />
-
-      {entries.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative min-w-52 flex-1">
-            <Search
-              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden
-            />
-            <input
-              type="search"
-              aria-label="Buscar no diário"
-              placeholder="Buscar no diário"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className={cn(fieldControlClass, "h-10 rounded-full pl-9")}
-            />
-          </div>
-          <select
-            aria-label="Filtrar por humor"
-            value={mood}
-            onChange={(e) => setMood(e.target.value)}
-            className={cn(fieldControlClass, "h-10 w-auto rounded-full")}
-          >
-            <option value="">Todos os humores</option>
-            {MOODS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            aria-pressed={onlyForSession}
-            onClick={() => setOnlyForSession((value) => !value)}
-            className={cn(
-              "h-10 rounded-full border px-4 text-xs font-semibold transition-colors",
-              onlyForSession
-                ? "border-sun-300 bg-sun-100 text-ink"
-                : "border-input bg-card text-muted-foreground hover:bg-sunken",
-            )}
-          >
-            Para a consulta
-          </button>
-        </div>
-      )}
-
-      {entries.length === 0 ? (
-        <EmptyState
-          title="Seu diário está em branco"
-          description="Uma frase já basta para começar. Escrever ajuda a perceber como você está ao longo dos dias."
-          action={
+    <div className="bg-linear-to-b from-brand-100/70 to-transparent">
+      <div className="mx-auto w-full max-w-2xl space-y-10 px-5 pt-8 pb-16 md:px-8 md:pt-12">
+        <header className="space-y-3">
+          <p className="text-xs font-medium tracking-widest text-brand-accent uppercase">Diário</p>
+          <h1 className="text-4xl leading-tight font-semibold text-ink">Meu diário</h1>
+          <p className="max-w-md text-lg leading-snug text-foreground">
+            {writingSentence(writtenDays(entries, today))}
+          </p>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-2">
             <Button onClick={openNew}>
-              <NotebookPen />
-              Escrever o primeiro registro
+              <Plus />
+              Novo registro
             </Button>
-          }
-        />
-      ) : groups.length === 0 && hasFilters ? (
-        <EmptyState
-          title="Nada encontrado"
-          description="Nenhum registro combina com a busca ou os filtros escolhidos."
-          action={
-            <Button
-              variant="outline"
-              onClick={() => {
-                setQuery("");
-                setMood("");
-                setOnlyForSession(false);
-              }}
+            <Link
+              href="/dashboard/mood"
+              className="text-sm font-semibold text-brand-ink underline-offset-4 hover:underline"
             >
-              Limpar filtros
-            </Button>
-          }
-        />
-      ) : (
-        <div className="space-y-8">
-          {groups.map((group) => (
-            <section key={group.date} aria-label={dayHeading(group.date, today)} className="space-y-3">
-              <h2 className="text-sm font-semibold text-muted-foreground">{dayHeading(group.date, today)}</h2>
-              <ul className="space-y-3">
-                {group.entries.map((entry) => (
-                  <EntryCard
-                    key={entry.id}
-                    entry={entry}
-                    onEdit={() => openEdit(entry)}
-                    onDelete={() => deleteEntry(entry.id)}
-                  />
-                ))}
-              </ul>
-            </section>
-          ))}
-        </div>
-      )}
+              Ver meu humor
+            </Link>
+          </div>
+        </header>
 
-      <EntryModal open={modalOpen} onOpenChange={setModalOpen} entry={editing} onSave={saveEntry} />
-    </Page>
+        {entries.length > 0 && (
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative min-w-52 flex-1">
+              <Search
+                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden
+              />
+              <input
+                type="search"
+                aria-label="Buscar no diário"
+                placeholder="Buscar no diário"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className={cn(fieldControlClass, "h-10 rounded-full pl-9")}
+              />
+            </div>
+            <select
+              aria-label="Filtrar por humor"
+              value={mood}
+              onChange={(e) => setMood(e.target.value)}
+              className={cn(fieldControlClass, "h-10 w-auto rounded-full")}
+            >
+              <option value="">Todos os humores</option>
+              {MOODS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              aria-pressed={onlyForSession}
+              onClick={() => setOnlyForSession((value) => !value)}
+              className={cn(
+                "h-10 rounded-full border px-4 text-xs font-semibold transition-colors",
+                onlyForSession
+                  ? "border-sun-300 bg-sun-100 text-ink"
+                  : "border-input bg-card text-muted-foreground hover:bg-sunken",
+              )}
+            >
+              Para a consulta
+            </button>
+          </div>
+        )}
+
+        {entries.length === 0 ? (
+          <EmptyState
+            title="Seu diário está em branco"
+            description="Uma frase já basta para começar. Escrever ajuda a perceber como você está ao longo dos dias."
+            action={
+              <Button onClick={openNew}>
+                <NotebookPen />
+                Escrever o primeiro registro
+              </Button>
+            }
+          />
+        ) : groups.length === 0 && hasFilters ? (
+          <EmptyState
+            title="Nada encontrado"
+            description="Nenhum registro combina com a busca ou os filtros escolhidos."
+            action={
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setQuery("");
+                  setMood("");
+                  setOnlyForSession(false);
+                }}
+              >
+                Limpar filtros
+              </Button>
+            }
+          />
+        ) : (
+          <div className="space-y-10">
+            {groups.map((group) => (
+              <section key={group.date} aria-label={dayHeading(group.date, today)}>
+                <h2 className="mb-1 text-xl font-semibold text-brand-ink">{dayHeading(group.date, today)}</h2>
+                <ul>
+                  {group.entries.map((entry) => (
+                    <EntryRow
+                      key={entry.id}
+                      entry={entry}
+                      onEdit={() => openEdit(entry)}
+                      onDelete={() => deleteEntry(entry.id)}
+                    />
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+        )}
+
+        <EntryModal open={modalOpen} onOpenChange={setModalOpen} entry={editing} onSave={saveEntry} />
+      </div>
+    </div>
   );
 }

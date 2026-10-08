@@ -9,6 +9,7 @@ import {
   MessageCircle,
   Pill,
   Settings,
+  Smile,
   SquareCheckBig,
   Users,
   Wallet,

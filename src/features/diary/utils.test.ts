@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
 import type { DiaryEntry } from "@/features/diary/types";
 import { toISODate } from "@/lib/dates";
-import { dayHeading, filterEntries, getAnxietyTrend, groupByDay } from "./utils";
+import {
+  DAILY_PROMPTS,
+  dailyPrompt,
+  dayHeading,
+  filterEntries,
+  getAnxietyTrend,
+  groupByDay,
+  titleFromContent,
+  writtenDays,
+} from "./utils";
 
 const entry = (over: Partial<DiaryEntry>): DiaryEntry => ({
   id: "x",
@@ -55,5 +64,30 @@ describe("diary utils", () => {
     );
     expect(trend.map((p) => p.date)).toEqual(["2026-09-01", "2026-09-02", "2026-09-03"]);
     expect(trend.map((p) => p.average)).toEqual([null, null, 3]);
+  });
+});
+
+describe("convite do dia, dias escritos e título", () => {
+  it("o convite é fixo no dia e muda no dia seguinte", () => {
+    expect(dailyPrompt("2026-10-02")).toBe(dailyPrompt("2026-10-02"));
+    expect(DAILY_PROMPTS).toContain(dailyPrompt("2026-10-02"));
+    expect(dailyPrompt("2026-10-02")).not.toBe(dailyPrompt("2026-10-03"));
+    expect(DAILY_PROMPTS).toContain(dailyPrompt("2025-01-01"));
+  });
+
+  it("conta os dias com registro na última semana", () => {
+    const entry = (date: string) => ({ id: date, date, mood: "Bem", title: "t", content: "c" });
+    const entries = [entry("2026-10-02"), entry("2026-10-02"), entry("2026-10-01"), entry("2026-09-20")];
+    expect(writtenDays(entries, "2026-10-02", 7)).toBe(2);
+    expect(writtenDays([], "2026-10-02", 7)).toBe(0);
+  });
+
+  it("cria um título a partir do começo do texto", () => {
+    expect(titleFromContent("Hoje foi um dia calmo")).toBe("Hoje foi um dia calmo");
+    expect(titleFromContent("  Primeira linha\nsegunda linha  ")).toBe("Primeira linha");
+    const long = "Hoje acordei cedo e fui caminhar no parque perto de casa com calma";
+    const title = titleFromContent(long);
+    expect(title.endsWith("…")).toBe(true);
+    expect(title.length).toBeLessThanOrEqual(41);
   });
 });
