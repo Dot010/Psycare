@@ -17,6 +17,7 @@ import { ActionSheet, type SheetSnap } from "@/components/layout/ActionSheet";
 import { CountUp } from "@/components/motion/CountUp";
 import { Stagger } from "@/components/motion/Stagger";
 import { NextSessionCard } from "@/features/appointments/components/NextSessionCard";
+import { Onboarding } from "@/features/onboarding/components/Onboarding";
 import { useAppointments } from "@/features/appointments/hooks/useAppointments";
 import { splitAppointments } from "@/features/appointments/logic";
 import { useDiary } from "@/features/diary/hooks/useDiary";
@@ -79,6 +80,7 @@ export default function HomeView() {
   return (
     // Ocupa a tela toda (o -mb anula o espaço reservado do layout): o jardim é o fundo da página.
     <div className="relative -mb-28 h-screen overflow-hidden bg-gradient-to-b from-sun-50 via-brand-50 to-brand-100 md:-mb-8">
+      <Onboarding />
       <div className="absolute inset-0">
         <GardenScene plants={garden.plants} lift={lift} onSelect={selectPlant} />
       </div>
