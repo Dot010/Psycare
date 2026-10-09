@@ -4,6 +4,7 @@ import Link from "next/link";
 import { DemoNotice } from "@/components/feedback/DemoNotice";
 import { Page } from "@/components/layout/Page";
 import { usePro } from "../hooks/usePro";
+import { adherence } from "../prescriptions";
 
 export default function MedicationView() {
   const pro = usePro();
@@ -16,7 +17,7 @@ export default function MedicationView() {
       width="narrow"
       className="space-y-10"
     >
-      <DemoNotice>Dados de exemplo. O PsyCare não prescreve nem muda doses.</DemoNotice>
+      <DemoNotice>Dados de exemplo. Nada aqui é prescrição de verdade.</DemoNotice>
       {rows.map(({ patient, snap }) => (
         <section key={patient.id} aria-label={patient.name} className="space-y-2">
           <h2 className="text-2xl font-semibold text-brand-ink">
@@ -34,7 +35,7 @@ export default function MedicationView() {
                     <li key={m.nome} className="border-t border-border py-2 text-base text-foreground">
                       {m.nome} <span className="text-muted-foreground">{m.dosagem}</span>
                       <span className="block text-sm text-muted-foreground">
-                        {m.horarios} · {m.taken} de {m.planned} doses marcadas nos últimos 7 dias
+                        {m.horarios} · {adherenceText(m.taken, m.planned)}
                       </span>
                     </li>
                   ))}
@@ -59,4 +60,10 @@ export default function MedicationView() {
       ))}
     </Page>
   );
+}
+
+function adherenceText(taken: number, planned: number): string {
+  const percent = adherence(taken, planned);
+  if (percent === null) return "sem doses previstas nos últimos 7 dias";
+  return `${percent}% das doses marcadas nos últimos 7 dias (${taken} de ${planned})`;
 }
