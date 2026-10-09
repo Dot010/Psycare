@@ -4,6 +4,8 @@ import {
   CircleHelp,
   ClipboardList,
   CreditCard,
+  FileText,
+  FlaskConical,
   House,
   LayoutDashboard,
   MessageCircle,
@@ -91,15 +93,14 @@ const PRO_TAIL: NavItem[] = [
   { title: "Configurações", shortTitle: "Ajustes", href: "/dashboard/pro/settings", icon: Settings },
 ];
 
-const PSYCHIATRIST_ONLY: NavItem = {
-  title: "Medicação",
-  href: "/dashboard/pro/medication",
-  icon: Pill,
-  inMobileBar: true,
-};
+const PSYCHIATRIST_ONLY: NavItem[] = [
+  { title: "Receitas", href: "/dashboard/pro/prescriptions", icon: FileText, inMobileBar: true },
+  { title: "Exames", href: "/dashboard/pro/exams", icon: FlaskConical },
+  { title: "Medicação", href: "/dashboard/pro/medication", icon: Pill },
+];
 
 export function navItemsFor(variant: NavVariant): NavItem[] {
   if (variant === "patient") return NAV_ITEMS;
-  if (variant === "psychiatrist") return [...PRO_COMMON, PSYCHIATRIST_ONLY, ...PRO_TAIL];
+  if (variant === "psychiatrist") return [...PRO_COMMON, ...PSYCHIATRIST_ONLY, ...PRO_TAIL];
   return [...PRO_COMMON, ...PRO_TAIL];
 }
