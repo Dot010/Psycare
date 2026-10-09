@@ -149,6 +149,7 @@ export default function DiaryView() {
                 aria-hidden
               />
               <input
+                name="busca"
                 type="search"
                 aria-label="Buscar no diário"
                 placeholder="Buscar no diário"
@@ -158,6 +159,7 @@ export default function DiaryView() {
               />
             </div>
             <select
+              name="filtro-humor"
               aria-label="Filtrar por humor"
               value={mood}
               onChange={(e) => setMood(e.target.value)}

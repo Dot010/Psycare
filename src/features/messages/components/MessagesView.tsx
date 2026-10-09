@@ -164,6 +164,7 @@ export function MessagesView() {
 
             <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-border pt-2">
               <input
+                name="mensagem"
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
