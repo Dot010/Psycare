@@ -393,3 +393,26 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Caixa e comprimido em 3D da ficha do remédio: giram devagar e param com "reduzir movimento". */
+@keyframes med-spin {
+  from {
+    transform: rotateX(-16deg) rotateY(0deg);
+  }
+  to {
+    transform: rotateX(-16deg) rotateY(360deg);
+  }
+}
+.med-scene {
+  perspective: 700px;
+}
+.med-spin {
+  transform-style: preserve-3d;
+  animation: med-spin 14s linear infinite;
+}
+.med-face {
+  position: absolute;
+  box-sizing: border-box;
+  overflow: hidden;
+  backface-visibility: hidden;
+}
