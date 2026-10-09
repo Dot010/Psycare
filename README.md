@@ -144,7 +144,6 @@ Antes de aceitar dados reais são necessários backend, autenticação gerenciad
 
 ## Próximos passos
 
-- Imagem do login: confirmar origem e licença em `public/assets/CREDITS.md`.
 - Backend e banco de dados (Supabase ou Prisma).
 - Autenticação real.
 - Chamada de vídeo nas consultas online.

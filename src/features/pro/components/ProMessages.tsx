@@ -64,6 +64,7 @@ export default function ProMessages() {
           </div>
           <form onSubmit={send} className="flex items-center gap-2 border-t border-border pt-3">
             <input
+              name="mensagem"
               value={text}
               onChange={(e) => setText(e.target.value)}
               aria-label="Mensagem"

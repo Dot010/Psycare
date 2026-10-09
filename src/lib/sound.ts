@@ -1,14 +1,10 @@
-/**
- * Sons do jardim gerados no navegador (Web Audio), sem arquivos de áudio.
- * Navegadores só liberam som depois de um toque do usuário, por isso `unlockAudio` é chamado no botão de som.
- */
-
 let context: AudioContext | null = null;
 let ambient: { stop: () => void } | null = null;
 
-function getContext(): AudioContext | null {
+function getContext(create = false): AudioContext | null {
   if (typeof window === "undefined") return null;
   if (!context) {
+    if (!create) return null;
     const Ctor =
       window.AudioContext ??
       (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -19,10 +15,9 @@ function getContext(): AudioContext | null {
 }
 
 export function unlockAudio(): void {
-  const ctx = getContext();
+  const ctx = getContext(true);
   if (ctx && ctx.state === "suspended") void ctx.resume();
 }
-
 function noiseBuffer(ctx: AudioContext, seconds: number): AudioBuffer {
   const buffer = ctx.createBuffer(1, ctx.sampleRate * seconds, ctx.sampleRate);
   const data = buffer.getChannelData(0);
@@ -30,10 +25,9 @@ function noiseBuffer(ctx: AudioContext, seconds: number): AudioBuffer {
   return buffer;
 }
 
-/** "Plim" de uma gota de água caindo. */
 export function playDrop(): void {
   const ctx = getContext();
-  if (!ctx || ctx.state !== "running") return;
+  if (!ctx || ctx.state === "suspended") return;
   const now = ctx.currentTime;
 
   const tone = ctx.createOscillator();
@@ -62,10 +56,9 @@ export function playDrop(): void {
   splash.stop(now + 0.9);
 }
 
-/** Riacho suave ao fundo: ruído filtrado com volume que sobe e desce devagar. */
 export function startAmbient(): void {
   const ctx = getContext();
-  if (!ctx || ambient) return;
+  if (!ctx || ambient || ctx.state === "suspended") return;
 
   const source = ctx.createBufferSource();
   source.buffer = noiseBuffer(ctx, 3);

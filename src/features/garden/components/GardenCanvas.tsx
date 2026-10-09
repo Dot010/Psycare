@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
-import { PCFSoftShadowMap } from "three";
+import { PCFShadowMap } from "three";
 import { Plant, type BumpRef } from "@/features/garden/components/Plants";
 import { Butterfly, Fireflies, Petals } from "@/features/garden/scene/Critters";
 import { Pebbles, Sprouts, Wildflowers } from "@/features/garden/scene/Details";
@@ -125,7 +125,7 @@ function Scene({ plants, animate, night, quality, lift, onSelect }: GardenCanvas
 export default function GardenCanvas(props: GardenCanvasProps) {
   return (
     <Canvas
-      shadows={{ type: PCFSoftShadowMap }}
+      shadows={{ type: PCFShadowMap }}
       camera={{ position: [0, 2.1, 8.4], fov: 42, near: 0.1, far: 120 }}
       dpr={props.quality === "high" ? [1, 1.75] : [1, 1.25]}
       frameloop={props.animate ? "always" : "demand"}
