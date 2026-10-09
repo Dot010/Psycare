@@ -1,6 +1,13 @@
 import { addDays } from "@/features/health/logic";
 import { daysUntil } from "./prescriptions";
-import type { Prescription, PrescriptionChange, PrescriptionKind } from "./types";
+import type {
+  Consultation,
+  PatientStep,
+  Prescription,
+  PrescriptionChange,
+  PrescriptionKind,
+  PrescriptionRequest,
+} from "./types";
 
 /** Nome, cor do papel e cor do selo de cada tipo de receita. */
 export const KIND_INFO: Record<PrescriptionKind, { label: string; paper: string; chip: string }> = {
@@ -16,13 +23,12 @@ export const KIND_INFO: Record<PrescriptionKind, { label: string; paper: string;
 
 export const KINDS: PrescriptionKind[] = ["A", "B", "C1", "common"];
 
-/** Onde a receita está: emitida, usada, vencida ou suspensa. */
-export type Lifecycle = "issued" | "used" | "expired" | "stopped";
+/** Onde a receita está para o médico: pronta, vencida ou suspensa. O que o paciente fez depois não conta. */
+export type Lifecycle = "ready" | "expired" | "stopped";
 
 export function lifecycle(p: Pick<Prescription, "status" | "useUntil">, today: string): Lifecycle {
   if (p.status === "stopped") return "stopped";
-  if (p.status === "used") return "used";
-  return daysUntil(p.useUntil, today) < 0 ? "expired" : "issued";
+  return daysUntil(p.useUntil, today) < 0 ? "expired" : "ready";
 }
 
 /** Compara a receita nova com a anterior do mesmo paciente. */
@@ -42,40 +48,67 @@ export function latestPerMedicine(list: Prescription[]): Prescription[] {
   for (const p of list) {
     const key = `${p.patientId}|${p.nome.trim().toLowerCase()}`;
     const current = latest.get(key);
-    if (!current || p.consultationDate >= current.consultationDate) latest.set(key, p);
+    if (!current || p.preparedAt >= current.preparedAt) latest.set(key, p);
   }
   return [...latest.values()];
 }
 
-/** Um remédio precisa de atenção quando a última receita já foi usada, venceu ou vence em até 5 dias. */
+/** Precisa de atenção quando a última receita venceu ou vence em até 5 dias. Suspensa nunca precisa. */
 export function needsAttention(latest: Prescription, today: string): boolean {
   const state = lifecycle(latest, today);
   if (state === "stopped") return false;
-  if (state === "used" || state === "expired") return true;
+  if (state === "expired") return true;
   return daysUntil(latest.useUntil, today) <= 5;
 }
 
-/** Rascunho da próxima receita: tudo igual à última, consulta hoje. O período o psiquiatra ajusta. */
+/**
+ * Consultas em que ainda dá para registrar uma receita nova deste remédio: já aconteceram (ou são de hoje),
+ * são do mesmo paciente e vêm depois do registro da última receita dele.
+ */
+export function eligibleConsultations(
+  consultations: Consultation[],
+  last: Pick<Prescription, "patientId" | "preparedAt">,
+  today: string,
+): Consultation[] {
+  return consultations
+    .filter((c) => c.patientId === last.patientId && c.date <= today && c.date > last.preparedAt)
+    .sort((a, b) => b.date.localeCompare(a.date) || b.hora.localeCompare(a.hora));
+}
+
+/** Rascunho da próxima receita: tudo igual à última. O período o psiquiatra ajusta. */
 export interface PrescriptionDraft {
   patientId: string;
   nome: string;
   dosagem: string;
   kind: PrescriptionKind;
-  consultationDate: string;
   useFrom: string;
   useUntil: string;
 }
 
 const DEFAULT_USE_DAYS = 30;
 
-export function draftFrom(last: Prescription, today: string): PrescriptionDraft {
+/** `from` é o dia a partir do qual a receita vale (o dia da consulta, ou hoje se veio de um pedido). */
+export function draftFrom(last: Prescription, from: string): PrescriptionDraft {
   return {
     patientId: last.patientId,
     nome: last.nome,
     dosagem: last.dosagem,
     kind: last.kind,
-    consultationDate: today,
-    useFrom: today,
-    useUntil: addDays(today, DEFAULT_USE_DAYS),
+    useFrom: from,
+    useUntil: addDays(from, DEFAULT_USE_DAYS),
   };
+}
+
+/** Em que ponto está um pedido, do ponto de vista do paciente. */
+export type RequestStage = "sent" | "ready" | "consult" | "no";
+
+export function requestStage(request: Pick<PrescriptionRequest, "answer">): RequestStage {
+  return request.answer?.kind ?? "sent";
+}
+
+/** O passo seguinte do paciente depois que a receita está pronta: retirei, depois comprei. */
+export function nextStep(current: PatientStep | undefined): PatientStep | undefined {
+  if (current === undefined) return "retirei";
+  if (current === "retirei") return "comprei";
+  return undefined;
 }

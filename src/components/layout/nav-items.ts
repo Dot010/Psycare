@@ -78,10 +78,6 @@ const PRO_COMMON: NavItem[] = [
   },
   { title: "Pacientes", href: "/dashboard/pro/patients", icon: Users, inMobileBar: true },
   { title: "Agenda", href: "/dashboard/pro/agenda", icon: CalendarCheck, inMobileBar: true },
-];
-
-/** Atividades terapêuticas são da psicóloga; o psiquiatra cuida de receitas e exames. */
-const PSYCHOLOGIST_ONLY: NavItem[] = [
   { title: "Atividades", href: "/dashboard/pro/activities", icon: ClipboardList },
 ];
 
@@ -106,5 +102,5 @@ const PSYCHIATRIST_ONLY: NavItem[] = [
 export function navItemsFor(variant: NavVariant): NavItem[] {
   if (variant === "patient") return NAV_ITEMS;
   if (variant === "psychiatrist") return [...PRO_COMMON, ...PSYCHIATRIST_ONLY, ...PRO_TAIL];
-  return [...PRO_COMMON, ...PSYCHOLOGIST_ONLY, ...PRO_TAIL];
+  return [...PRO_COMMON, ...PRO_TAIL];
 }

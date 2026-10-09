@@ -78,9 +78,23 @@ export type PrescriptionKind = "A" | "B" | "C1" | "common";
 /** O que mudou em relação à receita anterior do mesmo remédio. */
 export type PrescriptionChange = "none" | "dose" | "switch" | "stop";
 
+/** Uma consulta já feita (ou de hoje) entre o médico e um paciente. */
+export interface Consultation {
+  id: string;
+  patientId: string;
+  /** AAAA-MM-DD */
+  date: string;
+  hora: string;
+  status: "realizada" | "confirmado";
+}
+
+/** De onde a receita saiu: de uma consulta ou de um pedido que o médico avaliou. */
+export type PrescriptionOrigin =
+  { type: "consultation"; consultationId: string } | { type: "request"; requestId: string };
+
 /**
- * Receita de exemplo: documento de uso único, de um paciente, emitido numa consulta.
- * Nada é emitido de verdade; a demonstração só mostra como seria acompanhar.
+ * Registro de uma receita. O app NÃO emite nem envia receita: o psiquiatra a entrega em mãos
+ * (na consulta ou deixando pronta no consultório) e aqui só registra o que preparou.
  */
 export interface Prescription {
   id: string;
@@ -88,16 +102,26 @@ export interface Prescription {
   nome: string;
   dosagem: string;
   kind: PrescriptionKind;
-  /** Dia da consulta em que ela foi emitida (AAAA-MM-DD). */
-  consultationDate: string;
-  /** Período de uso definido pelo psiquiatra (AAAA-MM-DD). */
+  origin: PrescriptionOrigin;
+  /** Dia em que o psiquiatra registrou (AAAA-MM-DD). */
+  preparedAt: string;
+  /** Período de uso, definido por ele (AAAA-MM-DD). */
   useFrom: string;
   useUntil: string;
-  /** Emitida e ainda não usada; usada (o paciente já comprou); ou suspensa pelo médico. */
-  status: "issued" | "used" | "stopped";
+  /** "ready" = pronta para o paciente; "stopped" = o médico suspendeu o remédio. */
+  status: "ready" | "stopped";
   change: PrescriptionChange;
   /** Nota curta, só quando houve mudança. */
   changeNote?: string;
+}
+
+/** Resposta do psiquiatra a um pedido. */
+export interface RequestAnswer {
+  kind: "ready" | "consult" | "no";
+  /** Motivo curto, só em "no". */
+  reason?: string;
+  at: string;
+  prescriptionId?: string;
 }
 
 /** Pedido de nova receita feito pelo paciente. */
@@ -107,16 +131,19 @@ export interface PrescriptionRequest {
   nome: string;
   requestedAt: string;
   note?: string;
+  answer?: RequestAnswer;
 }
 
-/** Aviso curto que o paciente recebe quando algo muda na receita dele. */
+/** Aviso curto que o paciente recebe quando algo muda. */
 export interface PatientNotice {
   id: string;
   patientId: string;
-  prescriptionId: string;
   text: string;
   at: string;
 }
+
+/** Passo que só o paciente vê: ele retirou a receita? comprou o remédio? O médico não sabe. */
+export type PatientStep = "retirei" | "comprei";
 
 /** 1 = pedido, 2 = coletado, 3 = resultado chegou. */
 export type ExamStep = 1 | 2 | 3;
