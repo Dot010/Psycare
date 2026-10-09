@@ -68,18 +68,54 @@ export interface ProSession {
   status: "confirmado" | "pendente" | "cancelado" | "realizada";
 }
 
-/** Receita de exemplo. Nada é emitido: a demonstração só mostra como seria acompanhar. */
+/**
+ * Tipo da receita, escolhido pelo psiquiatra (cor do papel):
+ * A = Notificação de Receita A (amarela), B = Notificação B (azul),
+ * C1 = Receita de Controle Especial em 2 vias (branca), common = receita comum (branca).
+ */
+export type PrescriptionKind = "A" | "B" | "C1" | "common";
+
+/** O que mudou em relação à receita anterior do mesmo remédio. */
+export type PrescriptionChange = "none" | "dose" | "switch" | "stop";
+
+/**
+ * Receita de exemplo: documento de uso único, de um paciente, emitido numa consulta.
+ * Nada é emitido de verdade; a demonstração só mostra como seria acompanhar.
+ */
 export interface Prescription {
   id: string;
   patientId: string;
   nome: string;
   dosagem: string;
-  /** Último dia de validade (AAAA-MM-DD). */
-  validUntil: string;
-  /** Receita de controle especial. */
-  controlled: boolean;
-  status: "active" | "suspended";
+  kind: PrescriptionKind;
+  /** Dia da consulta em que ela foi emitida (AAAA-MM-DD). */
+  consultationDate: string;
+  /** Período de uso definido pelo psiquiatra (AAAA-MM-DD). */
+  useFrom: string;
+  useUntil: string;
+  /** Emitida e ainda não usada; usada (o paciente já comprou); ou suspensa pelo médico. */
+  status: "issued" | "used" | "stopped";
+  change: PrescriptionChange;
+  /** Nota curta, só quando houve mudança. */
+  changeNote?: string;
+}
+
+/** Pedido de nova receita feito pelo paciente. */
+export interface PrescriptionRequest {
+  id: string;
+  patientId: string;
+  nome: string;
+  requestedAt: string;
   note?: string;
+}
+
+/** Aviso curto que o paciente recebe quando algo muda na receita dele. */
+export interface PatientNotice {
+  id: string;
+  patientId: string;
+  prescriptionId: string;
+  text: string;
+  at: string;
 }
 
 /** 1 = pedido, 2 = coletado, 3 = resultado chegou. */

@@ -1,7 +1,14 @@
 import type { ActivityRecord } from "@/features/activities/types";
 import { WHEEL_AREAS } from "@/features/activities/catalog";
 import { addDays } from "@/features/health/logic";
-import type { ExamRequest, Patient, PatientSnapshot, Prescription, ProSession } from "./types";
+import type {
+  ExamRequest,
+  Patient,
+  PatientSnapshot,
+  Prescription,
+  PrescriptionRequest,
+  ProSession,
+} from "./types";
 
 /** Pacientes fictícios da demonstração. O primeiro usa o app neste navegador; os outros são só exemplo. */
 export const LIVE_PATIENT_ID = "usr_01";
@@ -135,55 +142,77 @@ export function demoSessions(today: string): ProSession[] {
   ];
 }
 
-/** Receitas de exemplo. A validade é calculada a partir de hoje para a demonstração sempre ter casos a renovar. */
+/** Receitas de exemplo, no estado em que estariam hoje. */
 export function demoPrescriptions(today: string): Prescription[] {
+  const rx = (
+    id: string,
+    patientId: string,
+    nome: string,
+    dosagem: string,
+    kind: Prescription["kind"],
+    consultaHa: number,
+    usoDe: number,
+    usoAte: number,
+    status: Prescription["status"] = "issued",
+    extra: Partial<Prescription> = {},
+  ): Prescription => ({
+    id,
+    patientId,
+    nome,
+    dosagem,
+    kind,
+    consultationDate: addDays(today, consultaHa),
+    useFrom: addDays(today, usoDe),
+    useUntil: addDays(today, usoAte),
+    status,
+    change: "none",
+    ...extra,
+  });
+  return [
+    rx("rec_1", LIVE_PATIENT_ID, "Sertralina", "50 mg, 1 comprimido pela manhã", "common", -28, -28, 2),
+    rx("rec_2", LIVE_PATIENT_ID, "Clonazepam", "0,5 mg, à noite se necessário", "B", -9, -9, 51),
+    rx(
+      "rec_3",
+      LIVE_PATIENT_ID,
+      "Metilfenidato",
+      "10 mg, 1 comprimido ao acordar",
+      "A",
+      -35,
+      -35,
+      -5,
+      "used",
+    ),
+    rx("rec_4", "pac_marina", "Escitalopram", "10 mg, 1 comprimido pela manhã", "common", -20, -20, 40),
+    rx("rec_5", "pac_pedro", "Amitriptilina", "25 mg, 1 comprimido à noite", "C1", -34, -34, -2),
+    rx(
+      "rec_6",
+      "pac_lucia",
+      "Sertralina",
+      "50 mg, 1 comprimido pela manhã",
+      "common",
+      -60,
+      -60,
+      -30,
+      "stopped",
+      {
+        change: "stop",
+        changeNote: "Suspensa para troca de medicação.",
+      },
+    ),
+  ];
+}
+
+/** Pedidos de nova receita que os pacientes já fizeram. */
+export function demoRequests(today: string): PrescriptionRequest[] {
   return [
     {
-      id: "rec_1",
+      id: "ped_1",
       patientId: LIVE_PATIENT_ID,
       nome: "Sertralina",
-      dosagem: "50 mg, 1 comprimido pela manhã",
-      validUntil: addDays(today, 12),
-      controlled: false,
-      status: "active",
+      requestedAt: addDays(today, -1),
+      note: "Acaba em 2 dias.",
     },
-    {
-      id: "rec_2",
-      patientId: LIVE_PATIENT_ID,
-      nome: "Clonazepam",
-      dosagem: "0,5 mg, à noite se necessário",
-      validUntil: addDays(today, 3),
-      controlled: true,
-      status: "active",
-    },
-    {
-      id: "rec_3",
-      patientId: "pac_marina",
-      nome: "Escitalopram",
-      dosagem: "10 mg, 1 comprimido pela manhã",
-      validUntil: addDays(today, 40),
-      controlled: false,
-      status: "active",
-    },
-    {
-      id: "rec_4",
-      patientId: "pac_pedro",
-      nome: "Fluoxetina",
-      dosagem: "20 mg, 1 cápsula pela manhã",
-      validUntil: addDays(today, -2),
-      controlled: false,
-      status: "active",
-    },
-    {
-      id: "rec_5",
-      patientId: "pac_lucia",
-      nome: "Sertralina",
-      dosagem: "50 mg, 1 comprimido pela manhã",
-      validUntil: addDays(today, 20),
-      controlled: false,
-      status: "suspended",
-      note: "Suspensa para troca de medicação.",
-    },
+    { id: "ped_2", patientId: "pac_pedro", nome: "Amitriptilina", requestedAt: today },
   ];
 }
 

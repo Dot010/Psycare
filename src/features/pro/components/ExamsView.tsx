@@ -8,12 +8,12 @@ import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/u
 import { cn } from "@/lib/utils";
 import { patientById, PATIENTS } from "../data";
 import { advanceLabel, EXAM_CATALOG, STEP_LABEL } from "../exams";
-import { usePrescriptions } from "../hooks/usePrescriptions";
+import { useExams } from "../hooks/useExams";
 
 const control = "h-11 w-full rounded-lg border border-border bg-card px-3 text-base";
 
 export default function ExamsView() {
-  const { exams, requestExam, advanceExam } = usePrescriptions();
+  const { exams, requestExam, advanceExam } = useExams();
   const [open, setOpen] = useState(false);
   const [patient, setPatient] = useState(PATIENTS[0].id);
   const [pick, setPick] = useState("");
