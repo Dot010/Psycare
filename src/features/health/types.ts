@@ -38,4 +38,6 @@ export interface Sintoma {
   nota: string;
   /** 1 (muito leve) a 5 (muito forte). */
   intensidade?: number;
+  /** Nome do remédio a que o sintoma está ligado, quando foi anotado pela ficha dele. */
+  remedio?: string;
 }

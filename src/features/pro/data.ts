@@ -189,9 +189,8 @@ export function demoPrescriptions(today: string): Prescription[] {
     ...extra,
   });
   return [
-    rx("rec_1", LIVE_PATIENT_ID, "c_u2", "Sertralina", "50 mg, 1 comprimido pela manhã", "common", 28, 2),
-    rx("rec_2", LIVE_PATIENT_ID, "c_u3", "Clonazepam", "0,5 mg, à noite se necessário", "B", 9, 51),
-    rx("rec_3", LIVE_PATIENT_ID, "c_u1", "Metilfenidato", "10 mg, 1 comprimido ao acordar", "A", 35, -5),
+    rx("rec_1", LIVE_PATIENT_ID, "c_u2", "Lyberdia", "70 mg, 1 cápsula pela manhã", "A", 28, 2),
+    rx("rec_2", LIVE_PATIENT_ID, "c_u3", "Topiramato", "100 mg, 1 comprimido à noite", "common", 9, 51),
     rx("rec_4", "pac_marina", "c_m1", "Escitalopram", "10 mg, 1 comprimido pela manhã", "common", 20, 40),
     rx("rec_5", "pac_pedro", "c_p1", "Amitriptilina", "25 mg, 1 comprimido à noite", "C1", 34, -2),
     rx("rec_6", "pac_lucia", "c_l1", "Sertralina", "50 mg, 1 comprimido pela manhã", "common", 60, -30, {
@@ -208,9 +207,9 @@ export function demoRequests(today: string): PrescriptionRequest[] {
     {
       id: "ped_1",
       patientId: LIVE_PATIENT_ID,
-      nome: "Sertralina",
+      nome: "Lyberdia",
       requestedAt: addDays(today, -1),
-      note: "Acaba em 2 dias.",
+      note: "Está acabando.",
     },
     { id: "ped_2", patientId: "pac_pedro", nome: "Amitriptilina", requestedAt: today },
   ];
@@ -231,3 +230,15 @@ export function demoExams(today: string): ExamRequest[] {
     { id: "exa_3", patientId: "pac_pedro", nome: "Glicemia", requestedAt: addDays(today, -1), step: 1 },
   ];
 }
+
+/** Receitas de exemplo que o paciente já usou (retirou e comprou). Só ele sabe, e elas não aparecem mais para ele. */
+export const DEMO_STEPS: Record<string, "retirei" | "comprei"> = {
+  rec_1: "comprei",
+  rec_2: "comprei",
+};
+
+/** Estoque de exemplo: o Lyberdia está perto de acabar, o Topiramato tem folga. */
+export const DEMO_STOCK: Record<string, { count: number; since: string }> = {
+  lyberdia: { count: 9, since: "2026-10-01" },
+  topiramato: { count: 40, since: "2026-10-01" },
+};

@@ -5,7 +5,14 @@ import { useUndo } from "@/components/feedback/UndoProvider";
 import { toISODate } from "@/lib/dates";
 import { useLocalStorage } from "@/lib/useLocalStorage";
 import { makeId } from "@/features/activities/logic";
-import { demoConsultations, demoPrescriptions, demoRequests, demoSessions, patientById } from "../data";
+import {
+  DEMO_STEPS,
+  demoConsultations,
+  demoPrescriptions,
+  demoRequests,
+  demoSessions,
+  patientById,
+} from "../data";
 import { detectChange, eligibleConsultations, nextStep, type PrescriptionDraft } from "../prescriptionRules";
 import { SESSION_STATUS_KEY } from "./usePro";
 import type {
@@ -56,7 +63,8 @@ export function usePrescriptions() {
   const today = toISODate(new Date());
   const { showUndo } = useUndo();
   const [rx, setRx] = useLocalStorage(RX_STATE_KEY, EMPTY_RX);
-  const [steps, setSteps] = useLocalStorage(RX_STEPS_KEY, NO_STEPS);
+  const [storedSteps, setSteps] = useLocalStorage(RX_STEPS_KEY, NO_STEPS);
+  const steps = useMemo(() => ({ ...DEMO_STEPS, ...storedSteps }), [storedSteps]);
   const [sessionStatus] = useLocalStorage<Record<string, string>>(SESSION_STATUS_KEY, NO_SESSION_STATUS);
 
   const prescriptions: Prescription[] = useMemo(

@@ -6,6 +6,7 @@ import {
   latestPerMedicine,
   lifecycle,
   needsAttention,
+  pendingPrescription,
   nextStep,
   requestStage,
 } from "./prescriptionRules";
@@ -73,6 +74,33 @@ describe("needsAttention", () => {
   });
   it("suspensa nunca precisa", () => {
     expect(needsAttention({ ...base, status: "stopped" }, "2026-12-01")).toBe(false);
+  });
+});
+
+describe("pendingPrescription", () => {
+  const list = [base];
+  it("pronta e ainda não comprada aparece", () => {
+    expect(pendingPrescription(list, "p1", "sertralina", {}, "2026-09-20")?.id).toBe("r1");
+    expect(pendingPrescription(list, "p1", "Sertralina", { r1: "retirei" }, "2026-09-20")?.id).toBe("r1");
+  });
+  it("depois de comprada some", () => {
+    expect(pendingPrescription(list, "p1", "Sertralina", { r1: "comprei" }, "2026-09-20")).toBeUndefined();
+  });
+  it("vencida ou suspensa não aparece", () => {
+    expect(pendingPrescription(list, "p1", "Sertralina", {}, "2026-10-05")).toBeUndefined();
+    expect(
+      pendingPrescription([{ ...base, status: "stopped" }], "p1", "Sertralina", {}, "2026-09-20"),
+    ).toBeUndefined();
+  });
+  it("só olha o paciente e o remédio pedidos", () => {
+    expect(pendingPrescription(list, "outro", "Sertralina", {}, "2026-09-20")).toBeUndefined();
+    expect(pendingPrescription(list, "p1", "Lyberdia", {}, "2026-09-20")).toBeUndefined();
+  });
+  it("com duas receitas olha a mais recente", () => {
+    const newer = { ...base, id: "r2", preparedAt: "2026-09-15", useUntil: "2026-10-15" };
+    expect(pendingPrescription([base, newer], "p1", "Sertralina", { r1: "comprei" }, "2026-09-20")?.id).toBe(
+      "r2",
+    );
   });
 });
 

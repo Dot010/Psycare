@@ -62,6 +62,26 @@ export function needsAttention(latest: Prescription, today: string): boolean {
 }
 
 /**
+ * A receita que o paciente ainda tem a usar de um remédio: a mais recente, se estiver pronta (dentro do prazo)
+ * e se ele ainda não a comprou. Depois de comprada, ou vencida, ou suspensa, ela não aparece mais para ele.
+ */
+export function pendingPrescription(
+  list: Prescription[],
+  patientId: string,
+  nome: string,
+  steps: Record<string, PatientStep>,
+  today: string,
+): Prescription | undefined {
+  const key = nome.trim().toLowerCase();
+  const latest = list
+    .filter((p) => p.patientId === patientId && p.nome.trim().toLowerCase() === key)
+    .sort((a, b) => b.preparedAt.localeCompare(a.preparedAt))[0];
+  if (!latest) return undefined;
+  if (lifecycle(latest, today) !== "ready") return undefined;
+  return steps[latest.id] === "comprei" ? undefined : latest;
+}
+
+/**
  * Consultas em que ainda dá para registrar uma receita nova deste remédio: já aconteceram (ou são de hoje),
  * são do mesmo paciente e vêm depois do registro da última receita dele.
  */

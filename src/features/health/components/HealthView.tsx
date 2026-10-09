@@ -9,8 +9,7 @@ import { useMood } from "@/features/mood/hooks/useMood";
 import { ConsultDialog } from "@/features/health/components/ConsultDialog";
 import { DoseTimeline } from "@/features/health/components/DoseTimeline";
 import { ExameDialog } from "@/features/health/components/ExameDialog";
-import { MedicamentoDialog } from "@/features/health/components/MedicamentoDialog";
-import { PrescriptionsSection } from "@/features/health/components/PrescriptionsSection";
+import { MedicineFicha } from "@/features/health/components/MedicineFicha";
 import { SintomaDialog } from "@/features/health/components/SintomaDialog";
 import { SymptomLogger } from "@/features/health/components/SymptomLogger";
 import { WeekDots } from "@/features/health/components/WeekDots";
@@ -24,7 +23,7 @@ import {
   weekAdherence,
   weekSentence,
 } from "@/features/health/logic";
-import type { Exame, Medicamento, Sintoma } from "@/features/health/types";
+import type { Exame, Sintoma } from "@/features/health/types";
 import { toISODate } from "@/lib/dates";
 import { formatDateBR } from "@/lib/format";
 
@@ -43,8 +42,6 @@ export default function HealthView() {
   const { entries, levels } = useMood();
   const today = toISODate(new Date());
 
-  const [remedioOpen, setRemedioOpen] = useState(false);
-  const [editingRemedio, setEditingRemedio] = useState<Medicamento | undefined>();
   const [sintomaOpen, setSintomaOpen] = useState(false);
   const [editingSintoma, setEditingSintoma] = useState<Sintoma | undefined>();
   const [exameOpen, setExameOpen] = useState(false);
@@ -57,10 +54,6 @@ export default function HealthView() {
   const recentSymptoms = [...health.sintomas].sort((a, b) => b.data.localeCompare(a.data)).slice(0, 8);
   const exames = [...health.exames].sort((a, b) => b.data.localeCompare(a.data));
 
-  const openRemedio = (item?: Medicamento) => {
-    setEditingRemedio(item);
-    setRemedioOpen(true);
-  };
   const openSintoma = (item?: Sintoma) => {
     setEditingSintoma(item);
     setSintomaOpen(true);
@@ -118,15 +111,12 @@ export default function HealthView() {
       </section>
 
       <section aria-labelledby="meds-title" className={sectionClass}>
-        <div className="flex items-center justify-between gap-3">
-          <h2 id="meds-title" className={h2}>
-            Meus remédios
-          </h2>
-          <Button variant="outline" onClick={() => openRemedio()}>
-            <Plus />
-            Adicionar
-          </Button>
-        </div>
+        <h2 id="meds-title" className={h2}>
+          Meus remédios
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Quem escolhe os seus remédios é o seu psiquiatra. Aqui você acompanha o que sobra e pede a receita.
+        </p>
         {health.remedios.length === 0 ? (
           <p className="text-base text-muted-foreground">Nenhum remédio cadastrado ainda.</p>
         ) : (
@@ -138,22 +128,19 @@ export default function HealthView() {
                   key={item.id}
                   className="flex items-center justify-between gap-3 border-t border-border py-3"
                 >
-                  <div className="min-w-0">
-                    <p className="text-lg font-medium text-foreground">
-                      <Pill className="mr-2 inline size-4 text-brand-accent" aria-hidden />
-                      {item.nome}{" "}
-                      <span className="text-base font-normal text-muted-foreground">{item.dosagem}</span>
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {times.length ? times.join(" · ") : "Sem horário"}
-                      {item.observacao ? ` · ${item.observacao}` : ""}
-                    </p>
+                  <div className="flex min-w-0 items-center gap-3">
+                    <MedicineFicha item={item} taken={health.taken}>
+                      <p className="text-lg font-medium text-foreground">
+                        <Pill className="mr-2 inline size-4 text-brand-accent" aria-hidden />
+                        {item.nome}{" "}
+                        <span className="text-base font-normal text-muted-foreground">{item.dosagem}</span>
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {times.length ? times.join(" · ") : "Sem horário"}
+                        {item.observacao ? ` · ${item.observacao}` : ""}
+                      </p>
+                    </MedicineFicha>
                   </div>
-                  <ItemMenu
-                    label={`medicamento ${item.nome}`}
-                    onEdit={() => openRemedio(item)}
-                    onDelete={() => health.deleteRemedio(item.id)}
-                  />
                 </li>
               );
             })}
@@ -163,8 +150,6 @@ export default function HealthView() {
           O PsyCare não substitui seu médico e nunca muda sua dose. Dúvidas sobre o remédio são com ele.
         </p>
       </section>
-
-      <PrescriptionsSection />
 
       <section aria-labelledby="sym-title" className={sectionClass}>
         <div className="flex items-center justify-between gap-3">
@@ -189,6 +174,7 @@ export default function HealthView() {
                   <p className="text-lg font-medium text-foreground">{item.descricao}</p>
                   <p className="text-sm text-muted-foreground">
                     {formatDateBR(item.data)} · {intensityLabel(item.intensidade)}
+                    {item.remedio ? ` · ${item.remedio}` : ""}
                     {item.nota && item.intensidade ? ` · ${item.nota}` : ""}
                   </p>
                 </div>
@@ -260,13 +246,6 @@ export default function HealthView() {
         </p>
       </footer>
 
-      <MedicamentoDialog
-        key={`med-${editingRemedio?.id ?? "new"}-${remedioOpen}`}
-        open={remedioOpen}
-        onOpenChange={setRemedioOpen}
-        item={editingRemedio}
-        onSave={health.saveRemedio}
-      />
       <SintomaDialog
         key={`sin-${editingSintoma?.id ?? "new"}-${sintomaOpen}`}
         open={sintomaOpen}

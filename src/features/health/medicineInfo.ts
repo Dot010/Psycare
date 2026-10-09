@@ -12,10 +12,34 @@ export interface MedicineInfo {
   precoData: string;
   forma: "comprimido" | "capsula";
   embalagem: string;
+  /** Quantas unidades vêm numa caixa (exemplo; a fonte oficial é a lista CMED/ANVISA). */
+  caixa: number;
   tarja: "vermelha" | "preta";
 }
 
 const INFO: Record<string, MedicineInfo> = {
+  lyberdia: {
+    uso: "Usado no tratamento de TDAH, para ajudar na atenção e no controle dos impulsos.",
+    efeitos: "Menos apetite, boca seca, insônia, coração mais acelerado.",
+    procurarMedico: "Se tiver dor no peito, palpitação forte, muita agitação ou mudança grande no humor.",
+    preco: "R$ 389,90",
+    precoData: "09/2026",
+    forma: "capsula",
+    embalagem: "30 cápsulas",
+    caixa: 30,
+    tarja: "preta",
+  },
+  topiramato: {
+    uso: "Usado para prevenir crises de enxaqueca e em alguns tipos de epilepsia.",
+    efeitos: "Formigamento nas mãos e nos pés, sonolência, menos apetite, pensamento mais lento.",
+    procurarMedico: "Se tiver dor ou visão embaçada nos olhos, dor forte nas costas ou mudança de humor.",
+    preco: "R$ 46,50",
+    precoData: "09/2026",
+    forma: "comprimido",
+    embalagem: "30 comprimidos",
+    caixa: 30,
+    tarja: "vermelha",
+  },
   sertralina: {
     uso: "Ajuda no tratamento de depressão e de ansiedade.",
     efeitos: "Náusea leve, sono alterado, boca seca. Costumam melhorar nas primeiras semanas.",
@@ -24,6 +48,7 @@ const INFO: Record<string, MedicineInfo> = {
     precoData: "09/2026",
     forma: "comprimido",
     embalagem: "30 comprimidos",
+    caixa: 30,
     tarja: "vermelha",
   },
   escitalopram: {
@@ -34,6 +59,7 @@ const INFO: Record<string, MedicineInfo> = {
     precoData: "09/2026",
     forma: "comprimido",
     embalagem: "30 comprimidos",
+    caixa: 30,
     tarja: "vermelha",
   },
   clonazepam: {
@@ -44,6 +70,7 @@ const INFO: Record<string, MedicineInfo> = {
     precoData: "09/2026",
     forma: "comprimido",
     embalagem: "30 comprimidos",
+    caixa: 30,
     tarja: "preta",
   },
   metilfenidato: {
@@ -54,6 +81,7 @@ const INFO: Record<string, MedicineInfo> = {
     precoData: "09/2026",
     forma: "comprimido",
     embalagem: "30 comprimidos",
+    caixa: 30,
     tarja: "preta",
   },
   amitriptilina: {
@@ -64,12 +92,19 @@ const INFO: Record<string, MedicineInfo> = {
     precoData: "09/2026",
     forma: "comprimido",
     embalagem: "30 comprimidos",
+    caixa: 30,
     tarja: "vermelha",
   },
 };
 
 export function medicineInfoFor(nome: string): MedicineInfo | undefined {
   return INFO[nome.trim().toLowerCase()];
+}
+
+/** "cápsula" ou "comprimido", no singular ou no plural. */
+export function unitName(forma: MedicineInfo["forma"] | undefined, count: number): string {
+  const one = forma === "capsula" ? "cápsula" : "comprimido";
+  return count === 1 ? one : `${one}s`;
 }
 
 export const MEDICINE_DISCLAIMER = "Informação geral. Não substitui a orientação do seu médico.";

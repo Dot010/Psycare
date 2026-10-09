@@ -13,6 +13,7 @@ import { KIND_INFO } from "@/features/pro/prescriptionRules";
 import type { PrescriptionKind } from "@/features/pro/types";
 import { MEDICINE_DISCLAIMER, medicineInfoFor } from "../medicineInfo";
 import { MedicineArt } from "./MedicineArt";
+import { MedicineSymptoms } from "./MedicineSymptoms";
 
 const BAND: Record<PrescriptionKind, string> = {
   A: "#b8960b",
@@ -26,11 +27,15 @@ interface Props {
   dosagem: string;
   /** Tipo da receita atual, se houver. */
   kind?: PrescriptionKind;
+  /** O que o psiquiatra pediu para este remédio (dose e como tomar). */
+  prescribed?: string;
+  /** Estoque e receita, mostrados abaixo do que o psiquiatra pediu. */
+  children?: React.ReactNode;
   onClose: () => void;
 }
 
 /** Ficha do remédio: para que serve, efeitos, quando procurar o médico, preço máximo e a bula. */
-export function MedicineSheet({ nome, dosagem, kind, onClose }: Props) {
+export function MedicineSheet({ nome, dosagem, kind, prescribed, children, onClose }: Props) {
   const info = medicineInfoFor(nome);
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -47,9 +52,19 @@ export function MedicineSheet({ nome, dosagem, kind, onClose }: Props) {
           </DialogDescription>
         </DialogHeader>
 
+        <MedicineArt nome={nome} dosagem={dosagem} info={info} band={BAND[kind ?? "common"]} />
+
+        {prescribed && (
+          <section aria-label="Receita do seu psiquiatra" className="space-y-1 rounded-xl bg-sunken p-4">
+            <h3 className="font-semibold text-foreground">Como o seu psiquiatra pediu</h3>
+            <p className="text-sm text-foreground">{prescribed}</p>
+          </section>
+        )}
+
+        {children}
+
         {info ? (
           <div className="space-y-4">
-            <MedicineArt nome={nome} dosagem={dosagem} info={info} band={BAND[kind ?? "common"]} />
             <section className="space-y-1">
               <h3 className="font-semibold text-foreground">Para que serve</h3>
               <p className="text-sm text-muted-foreground">{info.uso}</p>
@@ -82,6 +97,8 @@ export function MedicineSheet({ nome, dosagem, kind, onClose }: Props) {
             Ainda não temos a ficha deste remédio. Veja a bula ou pergunte ao seu médico.
           </p>
         )}
+
+        <MedicineSymptoms nome={nome} />
 
         <p className="text-xs text-muted-foreground">{MEDICINE_DISCLAIMER}</p>
         <DialogFooter>

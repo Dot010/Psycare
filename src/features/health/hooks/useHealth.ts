@@ -40,13 +40,16 @@ export function useHealth() {
   };
 
   /** Registra vários sintomas de hoje com a mesma intensidade. Repetir o mesmo sintoma no dia atualiza o registro. */
-  const logSymptoms = (names: string[], intensidade: number, nota = "") => {
+  const logSymptoms = (names: string[], intensidade: number, nota = "", remedio?: string) => {
     const date = toISODate(new Date());
     setSintomas((current) => {
       let next = current.map(normalizeSintoma);
       for (const name of names) {
         const existing = next.find(
-          (s) => s.data === date && s.descricao.toLowerCase() === name.toLowerCase(),
+          (s) =>
+            s.data === date &&
+            s.descricao.toLowerCase() === name.toLowerCase() &&
+            (s.remedio ?? "") === (remedio ?? ""),
         );
         const item: Sintoma = {
           id: existing?.id ?? crypto.randomUUID(),
@@ -54,6 +57,7 @@ export function useHealth() {
           data: date,
           nota: nota || existing?.nota || "",
           intensidade,
+          ...(remedio ? { remedio } : {}),
         };
         next = upsertById(next, item);
       }
