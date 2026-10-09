@@ -1,7 +1,7 @@
 import type { ActivityRecord } from "@/features/activities/types";
 import { WHEEL_AREAS } from "@/features/activities/catalog";
 import { addDays } from "@/features/health/logic";
-import type { Patient, PatientSnapshot, ProSession } from "./types";
+import type { ExamRequest, Patient, PatientSnapshot, Prescription, ProSession } from "./types";
 
 /** Pacientes fictícios da demonstração. O primeiro usa o app neste navegador; os outros são só exemplo. */
 export const LIVE_PATIENT_ID = "usr_01";
@@ -132,5 +132,73 @@ export function demoSessions(today: string): ProSession[] {
       tipo: "presencial",
       status: "realizada",
     },
+  ];
+}
+
+/** Receitas de exemplo. A validade é calculada a partir de hoje para a demonstração sempre ter casos a renovar. */
+export function demoPrescriptions(today: string): Prescription[] {
+  return [
+    {
+      id: "rec_1",
+      patientId: LIVE_PATIENT_ID,
+      nome: "Sertralina",
+      dosagem: "50 mg, 1 comprimido pela manhã",
+      validUntil: addDays(today, 12),
+      controlled: false,
+      status: "active",
+    },
+    {
+      id: "rec_2",
+      patientId: LIVE_PATIENT_ID,
+      nome: "Clonazepam",
+      dosagem: "0,5 mg, à noite se necessário",
+      validUntil: addDays(today, 3),
+      controlled: true,
+      status: "active",
+    },
+    {
+      id: "rec_3",
+      patientId: "pac_marina",
+      nome: "Escitalopram",
+      dosagem: "10 mg, 1 comprimido pela manhã",
+      validUntil: addDays(today, 40),
+      controlled: false,
+      status: "active",
+    },
+    {
+      id: "rec_4",
+      patientId: "pac_pedro",
+      nome: "Fluoxetina",
+      dosagem: "20 mg, 1 cápsula pela manhã",
+      validUntil: addDays(today, -2),
+      controlled: false,
+      status: "active",
+    },
+    {
+      id: "rec_5",
+      patientId: "pac_lucia",
+      nome: "Sertralina",
+      dosagem: "50 mg, 1 comprimido pela manhã",
+      validUntil: addDays(today, 20),
+      controlled: false,
+      status: "suspended",
+      note: "Suspensa para troca de medicação.",
+    },
+  ];
+}
+
+/** Exames de exemplo, um em cada etapa. */
+export function demoExams(today: string): ExamRequest[] {
+  return [
+    {
+      id: "exa_1",
+      patientId: LIVE_PATIENT_ID,
+      nome: "Hemograma",
+      requestedAt: addDays(today, -9),
+      step: 3,
+      result: "Valores dentro da referência (exemplo).",
+    },
+    { id: "exa_2", patientId: LIVE_PATIENT_ID, nome: "TSH", requestedAt: addDays(today, -4), step: 2 },
+    { id: "exa_3", patientId: "pac_pedro", nome: "Glicemia", requestedAt: addDays(today, -1), step: 1 },
   ];
 }

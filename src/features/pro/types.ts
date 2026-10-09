@@ -67,3 +67,29 @@ export interface ProSession {
   tipo: "online" | "presencial";
   status: "confirmado" | "pendente" | "cancelado" | "realizada";
 }
+
+/** Receita de exemplo. Nada é emitido: a demonstração só mostra como seria acompanhar. */
+export interface Prescription {
+  id: string;
+  patientId: string;
+  nome: string;
+  dosagem: string;
+  /** Último dia de validade (AAAA-MM-DD). */
+  validUntil: string;
+  /** Receita de controle especial. */
+  controlled: boolean;
+  status: "active" | "suspended";
+  note?: string;
+}
+
+/** 1 = pedido, 2 = coletado, 3 = resultado chegou. */
+export type ExamStep = 1 | 2 | 3;
+
+export interface ExamRequest {
+  id: string;
+  patientId: string;
+  nome: string;
+  requestedAt: string;
+  step: ExamStep;
+  result?: string;
+}
