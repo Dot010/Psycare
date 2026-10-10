@@ -6,7 +6,7 @@ import type { Habit } from "@/features/habits/types";
 import type { Invoice, PaymentMethod, Subscription } from "@/features/payments/types";
 
 export const mockUser = {
-  name: "Usuário Demonstração",
+  name: "Ana Lima",
 
   subscription: {
     planName: "Plano PsyCare Premium",
