@@ -86,7 +86,7 @@ export function habitTasks(habits: Habit[], today: string): Task[] {
     importance: "medium" as const,
     done: h.lastCompleted === today,
     source: "habito" as const,
-    href: "/dashboard/habits",
+    href: "/dashboard/planner?aba=habitos",
   }));
 }
 

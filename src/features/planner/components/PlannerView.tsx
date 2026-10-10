@@ -2,6 +2,7 @@
 
 import { CalendarPlus, ChevronLeft, ChevronRight, Download, Plus } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { ItemMenu } from "@/components/feedback/ItemMenu";
 import { Page } from "@/components/layout/Page";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { addDays } from "@/features/health/logic";
 import { formatDateBR } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { HabitsPanel } from "@/features/habits/components/HabitsPanel";
 import { usePlanner } from "../hooks/usePlanner";
 import {
   IMPORTANCE_LABEL,
@@ -26,11 +28,12 @@ import {
 import type { Task } from "../types";
 import { TaskDialog } from "./TaskDialog";
 
-type Tab = "hoje" | "lista" | "calendario";
+type Tab = "hoje" | "lista" | "calendario" | "habitos";
 const TABS: { id: Tab; label: string }[] = [
   { id: "hoje", label: "Hoje" },
   { id: "lista", label: "Lista" },
   { id: "calendario", label: "Calendário" },
+  { id: "habitos", label: "Hábitos" },
 ];
 
 const MONTHS = [
@@ -65,7 +68,7 @@ function dayLabel(iso: string, today: string): string {
 export default function PlannerView() {
   const planner = usePlanner();
   const { today, tasks } = planner;
-  const [tab, setTab] = useState<Tab>("hoje");
+  const [tab, setTab] = useState<Tab>(useSearchParams()?.get("aba") === "habitos" ? "habitos" : "hoje");
   const [editing, setEditing] = useState<Task | undefined>();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogDate, setDialogDate] = useState<string | undefined>();
@@ -138,6 +141,7 @@ export default function PlannerView() {
       </div>
 
       {tab === "hoje" && <TodayTab planner={planner} row={row} onAdd={() => open(undefined, today)} />}
+      {tab === "habitos" && <HabitsPanel />}
       {tab === "lista" && <ListTab tasks={tasks} today={today} row={row} />}
       {tab === "calendario" && (
         <CalendarTab tasks={tasks} today={today} row={row} onAdd={(date) => open(undefined, date)} />

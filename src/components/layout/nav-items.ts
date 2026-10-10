@@ -15,7 +15,6 @@ import {
   Settings,
   ShieldCheck,
   Smile,
-  SquareCheckBig,
   Users,
   Wallet,
   type LucideIcon,
@@ -41,7 +40,6 @@ export const NAV_ITEMS: NavItem[] = [
   { title: "Saúde", href: "/dashboard/health", icon: Pill, inMobileBar: true },
   // Cuidado: quem me acompanha e o que fazer se eu não estiver bem.
   { title: "Consultas", href: "/dashboard/appointments", icon: CalendarCheck, startsGroup: true },
-  { title: "Meus Hábitos", shortTitle: "Hábitos", href: "/dashboard/habits", icon: SquareCheckBig },
   { title: "Mensagens", href: "/dashboard/messages", icon: MessageCircle },
   { title: "Plano de segurança", shortTitle: "Segurança", href: "/dashboard/safety", icon: ShieldCheck },
   // Conta.

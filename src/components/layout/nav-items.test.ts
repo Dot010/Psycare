@@ -27,7 +27,7 @@ describe("navItemsFor", () => {
 
   it("os atalhos antigos continuam no menu, fora da barra", () => {
     const titles = navItemsFor("patient").map((i) => i.title);
-    expect(titles).toEqual(expect.arrayContaining(["Meus Hábitos", "Consultas"]));
+    expect(titles).toEqual(expect.arrayContaining(["Consultas", "Mensagens"]));
   });
 
   it("o menu do paciente usa um nome por tela e Atividades fica em /dashboard/activities", () => {

@@ -15,7 +15,7 @@ export const MISSION_POOL: readonly Mission[] = [
   { id: "checkin", text: "Contar como você está", auto: "checkin" },
   { id: "diario", text: "Escrever uma linha no diário", auto: "diary", href: "/dashboard/diary" },
   { id: "respirar", text: "Respirar por um minuto", auto: "breathing", href: "/dashboard/breathing" },
-  { id: "habito", text: "Concluir um hábito", auto: "habit", href: "/dashboard/habits" },
+  { id: "habito", text: "Concluir um hábito", auto: "habit", href: "/dashboard/planner?aba=habitos" },
   { id: "agua", text: "Beber um copo de água" },
   { id: "caminhar", text: "Dar uma volta de cinco minutos" },
   { id: "pessoa", text: "Mandar uma mensagem para alguém de quem gosta" },
