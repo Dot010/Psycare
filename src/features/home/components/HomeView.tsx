@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  ArrowRight,
-  BookOpen,
-  CircleHelp,
-  Droplets,
-  Smile,
-  SquareCheckBig,
-  Volume2,
-  VolumeX,
-  Wind,
-} from "lucide-react";
+import { BookOpen, CircleHelp, Droplets, Smile, SquareCheckBig, Volume2, VolumeX } from "lucide-react";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { ActionSheet, type SheetSnap } from "@/components/layout/ActionSheet";
@@ -44,7 +34,6 @@ const SHEET_KEY = "psycare:home-sheet:v1";
 
 const quickLinks = [
   { href: "/dashboard/diary", label: "Escrever no diário", icon: BookOpen },
-  { href: "/dashboard/breathing", label: "Respirar um minuto", icon: Wind },
   { href: "/dashboard/habits", label: "Marcar hábitos", icon: SquareCheckBig },
   { href: "/dashboard/mood", label: "Ver meu humor", icon: Smile },
 ];
@@ -156,6 +145,8 @@ export default function HomeView() {
           topInset={compact ? 112 : 124}
         >
           <Stagger className="space-y-8 pt-2">
+            <NowCard />
+
             <WaterCard
               available={garden.available}
               pouring={garden.pouring}
@@ -163,8 +154,6 @@ export default function HomeView() {
               toNext={garden.toNext}
               onPour={garden.pour}
             />
-
-            <NowCard />
 
             <CheckIn today={garden.todayCheckIn} onSelect={garden.checkIn} onTagsChange={garden.setTags} />
 
@@ -202,17 +191,6 @@ export default function HomeView() {
               </dl>
 
               <NextSessionCard />
-
-              <Link
-                href="/dashboard/breathing"
-                className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-card p-4 transition-colors hover:border-brand-600"
-              >
-                <div>
-                  <h2 className="text-base font-bold text-foreground">Um minuto para respirar</h2>
-                  <p className="mt-1 text-xs text-muted-foreground">Exercício guiado de 1 a 5 minutos.</p>
-                </div>
-                <ArrowRight className="size-4 shrink-0 text-brand-accent" aria-hidden />
-              </Link>
             </Stagger>
           ) : (
             <p className="pt-6 text-center text-xs text-muted-foreground">

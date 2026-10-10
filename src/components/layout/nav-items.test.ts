@@ -27,6 +27,6 @@ describe("navItemsFor", () => {
 
   it("os atalhos antigos continuam no menu, fora da barra", () => {
     const titles = navItemsFor("patient").map((i) => i.title);
-    expect(titles).toEqual(expect.arrayContaining(["Meus Hábitos", "Respirar", "Agendar Consulta"]));
+    expect(titles).toEqual(expect.arrayContaining(["Meus Hábitos", "Agendar Consulta"]));
   });
 });

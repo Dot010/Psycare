@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Page } from "@/components/layout/Page";
 import { toISODate } from "@/lib/dates";
@@ -138,6 +139,15 @@ export default function ActivitiesView() {
           Começar por conta própria
         </h2>
         <p className="mb-2 text-sm text-muted-foreground">Tudo opcional, sem prazo.</p>
+        <Link href="/dashboard/breathing" className={rowClass}>
+          <span className="flex flex-col gap-0.5">
+            <span className="text-base text-foreground">Respirar um minuto</span>
+            <span className="text-sm text-muted-foreground">Exercício guiado de 1 a 5 minutos.</span>
+          </span>
+          <span aria-hidden className="text-muted-foreground">
+            →
+          </span>
+        </Link>
         {ACTIVITY_KINDS.map((kind) => (
           <button
             key={kind}
