@@ -1,7 +1,7 @@
 "use client";
 
 import { FileText, Paperclip, Pill, Plus } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ItemMenu } from "@/components/feedback/ItemMenu";
 import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,9 @@ import { SintomaDialog } from "@/features/health/components/SintomaDialog";
 import { SymptomLogger } from "@/features/health/components/SymptomLogger";
 import { WeekDots } from "@/features/health/components/WeekDots";
 import { useHealth } from "@/features/health/hooks/useHealth";
+import { medicinesFor } from "@/features/health/medicines";
+import { LIVE_PATIENT_ID } from "@/features/pro/data";
+import { usePrescriptions } from "@/features/pro/hooks/usePrescriptions";
 import {
   buildConsultSummary,
   doseSentence,
@@ -39,6 +42,11 @@ function todayLabel(): string {
 
 export default function HealthView() {
   const health = useHealth();
+  const { prescriptions } = usePrescriptions();
+  const remedios = useMemo(
+    () => medicinesFor(health.remedios, prescriptions, LIVE_PATIENT_ID),
+    [health.remedios, prescriptions],
+  );
   const { entries, levels } = useMood();
   const today = toISODate(new Date());
 
@@ -48,9 +56,9 @@ export default function HealthView() {
   const [editingExame, setEditingExame] = useState<Exame | undefined>();
   const [consultOpen, setConsultOpen] = useState(false);
 
-  const doses = dosesForDay(health.remedios, today);
+  const doses = dosesForDay(remedios, today);
   const takenToday = doses.filter((d) => health.taken.includes(d.key)).length;
-  const week = weekAdherence(health.remedios, health.taken, today);
+  const week = weekAdherence(remedios, health.taken, today);
   const recentSymptoms = [...health.sintomas].sort((a, b) => b.data.localeCompare(a.data)).slice(0, 8);
   const exames = [...health.exames].sort((a, b) => b.data.localeCompare(a.data));
 
@@ -65,7 +73,7 @@ export default function HealthView() {
 
   const summary = consultOpen
     ? buildConsultSummary({
-        meds: health.remedios,
+        meds: remedios,
         taken: health.taken,
         sintomas: health.sintomas,
         moodByDay: levels,
@@ -88,7 +96,7 @@ export default function HealthView() {
           />
         ) : (
           <p className="max-w-prose text-base text-foreground">
-            {health.remedios.length === 0
+            {remedios.length === 0
               ? "Cadastre seus remédios com horário e o app mostra aqui o que tomar em cada hora."
               : "Seus remédios ainda não têm horário. Edite para escolher quando tomar."}
           </p>
@@ -117,11 +125,11 @@ export default function HealthView() {
         <p className="text-sm text-muted-foreground">
           Quem escolhe os seus remédios é o seu psiquiatra. Aqui você acompanha o que sobra e pede a receita.
         </p>
-        {health.remedios.length === 0 ? (
+        {remedios.length === 0 ? (
           <p className="text-base text-muted-foreground">Nenhum remédio cadastrado ainda.</p>
         ) : (
           <ul>
-            {health.remedios.map((item) => {
+            {remedios.map((item) => {
               const times = medTimes(item);
               return (
                 <li
