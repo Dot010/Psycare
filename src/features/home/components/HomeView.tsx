@@ -17,7 +17,6 @@ import { Button } from "@/components/ui/button";
 import { CheckIn } from "@/features/garden/components/CheckIn";
 import { GardenScene } from "@/features/garden/components/GardenScene";
 import { IntroHint } from "@/features/garden/components/IntroHint";
-import { WaterCard } from "@/features/garden/components/WaterCard";
 import { WaterHelp } from "@/features/garden/components/WaterHelp";
 import { WeekStrip } from "@/features/garden/components/WeekStrip";
 import { PLANT_NAMES } from "@/features/garden/logic";
@@ -147,17 +146,9 @@ export default function HomeView() {
           <Stagger className="space-y-8 pt-2">
             <NowCard />
 
-            <WaterCard
-              available={garden.available}
-              pouring={garden.pouring}
-              doneToday={garden.doneToday}
-              toNext={garden.toNext}
-              onPour={garden.pour}
-            />
-
             <CheckIn today={garden.todayCheckIn} onSelect={garden.checkIn} onTagsChange={garden.setTags} />
 
-            <Missions doneToday={garden.doneToday} />
+            <Missions doneToday={garden.doneToday} available={garden.available} toNext={garden.toNext} />
 
             <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {quickLinks.map(({ href, label, icon: Icon }) => (

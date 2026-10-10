@@ -6,6 +6,7 @@ import {
   missionSentence,
   NO_MISSIONS,
   toggleManual,
+  waterSentence,
 } from "./logic";
 
 describe("missões do dia", () => {
@@ -43,5 +44,15 @@ describe("missões do dia", () => {
     expect(missionSentence(0, 3)).toMatch(/couberem/);
     expect(missionSentence(2, 3)).toBe("2 de 3. Cada um já conta.");
     expect(missionSentence(3, 3)).toMatch(/Tudo feito/);
+  });
+});
+
+describe("waterSentence", () => {
+  it("diz quantas gotas estão prontas, quantas faltam para a próxima planta, ou nada", () => {
+    expect(waterSentence(1, 4)).toBe("1 gota pronta para regar.");
+    expect(waterSentence(3, 4)).toBe("3 gotas prontas para regar.");
+    expect(waterSentence(0, 1)).toBe("Faltam 1 gota para uma planta nova.");
+    expect(waterSentence(0, 5)).toBe("Faltam 5 gotas para uma planta nova.");
+    expect(waterSentence(0, null)).toBe("");
   });
 });
