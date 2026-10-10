@@ -34,7 +34,7 @@ const SHEET_KEY = "psycare:home-sheet:v1";
 const quickLinks = [
   { href: "/dashboard/diary", label: "Escrever no diário", icon: BookOpen },
   { href: "/dashboard/planner?aba=habitos", label: "Marcar hábitos", icon: SquareCheckBig },
-  { href: "/dashboard/mood", label: "Ver meu humor", icon: Smile },
+  { href: "/dashboard/diary?aba=humor", label: "Ver meu humor", icon: Smile },
 ];
 
 export default function HomeView() {

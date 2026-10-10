@@ -40,7 +40,7 @@ function AnxietyLine({ values }: { values: (number | null)[] }) {
 
 const sectionTitle = "text-xl font-semibold text-brand-ink";
 
-/** A página Humor: a semana, o canteiro do mês e o que mais anda junto com os dias difíceis. */
+/** O Humor, dentro do Diário: a semana, o canteiro do mês e o que mais anda junto com os dias difíceis. */
 export default function MoodView() {
   const { checkIns, entries, levels, today } = useMood();
 
@@ -58,21 +58,21 @@ export default function MoodView() {
   const hasAnything = levels.size > 0;
 
   return (
-    <div className="bg-linear-to-b from-brand-100/70 to-transparent">
-      <div className="mx-auto w-full max-w-2xl space-y-12 px-5 pt-8 pb-16 md:px-8 md:pt-12">
+    <div>
+      <div className="space-y-12">
         <header className="space-y-2">
           <p className="text-xs font-medium tracking-widest text-brand-accent uppercase">
             Humor · esta semana
           </p>
           {average === null ? (
-            <h1 className="text-3xl leading-tight font-semibold text-ink">Seu humor, sem pressa</h1>
+            <h2 className="text-3xl leading-tight font-semibold text-ink">Seu humor, sem pressa</h2>
           ) : (
-            <h1 className="flex items-baseline gap-3 text-ink">
+            <h2 className="flex items-baseline gap-3 text-ink">
               <span className="text-8xl leading-none font-semibold tracking-tight text-brand-ink">
                 {formatDecimal(average)}
               </span>
               <span className="text-lg text-muted-foreground">de 5</span>
-            </h1>
+            </h2>
           )}
           <p className="max-w-sm text-lg leading-snug text-foreground">
             {weekSentence(average, previousAverage)}
@@ -87,7 +87,7 @@ export default function MoodView() {
           )}
         </header>
 
-        <section aria-label="Humor dia a dia" className="-mx-5 md:-mx-8">
+        <section aria-label="Humor dia a dia" className="">
           <WeekChart days={week} />
         </section>
 

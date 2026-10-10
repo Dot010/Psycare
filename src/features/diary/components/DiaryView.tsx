@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { BookCover } from "@/features/diary/components/BookCover";
 import { DrawPanel } from "@/features/diary/components/DrawPanel";
@@ -9,15 +9,17 @@ import { WeekPanel } from "@/features/diary/components/WeekPanel";
 import { WritePanel } from "@/features/diary/components/WritePanel";
 import { useDiary } from "@/features/diary/hooks/useDiary";
 import { writtenDays } from "@/features/diary/utils";
+import MoodView from "@/features/mood/components/MoodView";
 import { toISODate } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 
-type Tab = "escrever" | "semana" | "desenho" | "paginas";
+type Tab = "escrever" | "desenho" | "semana" | "humor" | "paginas";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "escrever", label: "Escrever" },
-  { id: "semana", label: "Semana" },
   { id: "desenho", label: "Desenho" },
+  { id: "semana", label: "Semana" },
+  { id: "humor", label: "Humor" },
   { id: "paginas", label: "Páginas" },
 ];
 
@@ -30,7 +32,7 @@ function writingSentence(days: number): string {
 export default function DiaryView() {
   const { entries, saveEntry, deleteEntry } = useDiary();
   const [opened, setOpened] = useState(true);
-  const [tab, setTab] = useState<Tab>("escrever");
+  const [tab, setTab] = useState<Tab>(useSearchParams()?.get("aba") === "humor" ? "humor" : "escrever");
   const today = toISODate(new Date());
 
   return (
@@ -42,14 +44,6 @@ export default function DiaryView() {
           <p className="max-w-md text-lg leading-snug text-foreground">
             {writingSentence(writtenDays(entries, today))}
           </p>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-1">
-            <Link
-              href="/dashboard/mood"
-              className="text-sm font-semibold text-brand-ink underline-offset-4 hover:underline"
-            >
-              Ver meu humor
-            </Link>
-          </div>
         </header>
 
         <BookCover
@@ -88,8 +82,9 @@ export default function DiaryView() {
             </div>
             <div role="tabpanel" id={`diario-panel-${tab}`} aria-labelledby={`diario-tab-${tab}`}>
               {tab === "escrever" && <WritePanel onSave={saveEntry} />}
-              {tab === "semana" && <WeekPanel entries={entries} />}
               {tab === "desenho" && <DrawPanel onSave={saveEntry} />}
+              {tab === "semana" && <WeekPanel entries={entries} />}
+              {tab === "humor" && <MoodView />}
               {tab === "paginas" && (
                 <PagesPanel entries={entries} today={today} onSave={saveEntry} onDelete={deleteEntry} />
               )}
