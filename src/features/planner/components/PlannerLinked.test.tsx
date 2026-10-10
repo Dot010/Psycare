@@ -74,7 +74,7 @@ describe("Meu dia ligado à receita e à consulta", () => {
     await userEvent.click(screen.getByRole("tab", { name: "Lista" }));
     const row = screen.getByText("Comprar o remédio Lyberdia").closest("li") as HTMLElement;
     expect(within(row).getByRole("checkbox")).toBeDisabled();
-    expect(within(row).getByRole("link", { name: "Abrir" })).toHaveAttribute("href", "/dashboard/health");
+    expect(within(row).getByRole("link", { name: "Abrir" })).toHaveAttribute("href", "/dashboard/health?aba=remedios");
   });
 
   it("tarefa de receita muda de importância, mas não pode ser excluída", async () => {

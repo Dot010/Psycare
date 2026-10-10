@@ -39,7 +39,7 @@ export function receitaTasks(
         importance: "high" as const,
         done: false,
         source: "receita" as const,
-        href: "/dashboard/health",
+        href: "/dashboard/health?aba=remedios",
         readonly: true,
       },
     ];

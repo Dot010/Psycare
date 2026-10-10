@@ -35,26 +35,29 @@ function Both() {
     </>
   );
 }
-const setup = () =>
+/** Os remédios ficam na aba "Remédios" de Saúde. */
+const setup = async () => {
   render(
     <UndoProvider>
       <Both />
     </UndoProvider>,
   );
+  await userEvent.click(screen.getByRole("tab", { name: "Remédios" }));
+};
 const list = () => screen.getByRole("region", { name: "Meus remédios" });
 
 describe("Saúde: a lista de remédios vem do psiquiatra", () => {
   beforeEach(() => window.localStorage.clear());
 
-  it("mostra os remédios de exemplo e nenhum botão de cadastro", () => {
-    setup();
+  it("mostra os remédios de exemplo e nenhum botão de cadastro", async () => {
+    await setup();
     expect(within(list()).getByRole("button", { name: "Ver ficha de Lyberdia" })).toBeInTheDocument();
     expect(within(list()).getByRole("button", { name: "Ver ficha de Topiramato" })).toBeInTheDocument();
     expect(within(list()).queryByRole("button", { name: "Adicionar" })).not.toBeInTheDocument();
   });
 
   it("remédio novo registrado pelo psiquiatra entra sozinho, com horário", async () => {
-    setup();
+    await setup();
     expect(within(list()).queryByRole("button", { name: "Ver ficha de Sertralina" })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Psiquiatra registra Sertralina" }));
     expect(within(list()).getByRole("button", { name: "Ver ficha de Sertralina" })).toBeInTheDocument();
@@ -65,8 +68,29 @@ describe("Saúde: a lista de remédios vem do psiquiatra", () => {
   });
 
   it("remédio suspenso pelo psiquiatra sai da lista", async () => {
-    setup();
+    await setup();
     await userEvent.click(screen.getByRole("button", { name: "Psiquiatra suspende Lyberdia" }));
     expect(within(list()).queryByRole("button", { name: "Ver ficha de Lyberdia" })).not.toBeInTheDocument();
+  });
+});
+
+describe("Saúde em abas", () => {
+  beforeEach(() => window.localStorage.clear());
+
+  it("tem Hoje, Remédios, Exames e Encaminhamento, e cada aba mostra só o seu assunto", async () => {
+    render(
+      <UndoProvider>
+        <Both />
+      </UndoProvider>,
+    );
+    const tabs = screen.getAllByRole("tab").map((t) => t.textContent);
+    expect(tabs).toEqual(["Hoje", "Remédios", "Exames", "Encaminhamento"]);
+    expect(screen.getByText("E o corpo, como está?")).toBeInTheDocument();
+    expect(screen.queryByText("Meus exames")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("tab", { name: "Exames" }));
+    expect(screen.getByText("Meus exames")).toBeInTheDocument();
+    expect(screen.queryByText("E o corpo, como está?")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("tab", { name: "Encaminhamento" }));
+    expect(screen.getByText("Meu encaminhamento")).toBeInTheDocument();
   });
 });
