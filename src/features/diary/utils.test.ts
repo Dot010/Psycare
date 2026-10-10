@@ -5,10 +5,14 @@ import {
   DAILY_PROMPTS,
   dailyPrompt,
   dayHeading,
+  drawingEntry,
+  MAX_DRAWING_LENGTH,
   filterEntries,
   getAnxietyTrend,
   groupByDay,
+  SUGGESTIONS,
   titleFromContent,
+  weekDays,
   writtenDays,
 } from "./utils";
 
@@ -89,5 +93,50 @@ describe("convite do dia, dias escritos e título", () => {
     const title = titleFromContent(long);
     expect(title.endsWith("…")).toBe(true);
     expect(title.length).toBeLessThanOrEqual(41);
+  });
+});
+
+describe("semana do diário", () => {
+  const entry = (date: string, moodLevel?: 1 | 2 | 3 | 4 | 5) => ({
+    id: date + String(moodLevel),
+    date,
+    mood: "x",
+    moodLevel,
+    title: "t",
+    content: "c",
+  });
+
+  it("traz os últimos 7 dias, do mais antigo ao de hoje, com contagem e humor médio", () => {
+    const week = weekDays(
+      [entry("2026-10-09", 4), entry("2026-10-09", 5), entry("2026-10-07", 2), entry("2026-10-01", 3)],
+      "2026-10-09",
+    );
+    expect(week).toHaveLength(7);
+    expect(week[0].date).toBe("2026-10-03");
+    expect(week[6]).toMatchObject({ date: "2026-10-09", count: 2, level: 5 });
+    expect(week[4]).toMatchObject({ date: "2026-10-07", count: 1, level: 2 });
+    expect(week[5]).toMatchObject({ count: 0, level: undefined });
+  });
+
+  it("tem sugestões para escrever", () => {
+    expect(SUGGESTIONS.length).toBeGreaterThanOrEqual(4);
+  });
+});
+
+describe("drawingEntry", () => {
+  const ok = "data:image/png;base64,AAAA";
+  it("cria uma página de desenho, com título padrão", () => {
+    expect(drawingEntry({ id: "d", dataUrl: ok, title: "  ", today: "2026-10-09" })).toMatchObject({
+      id: "d",
+      kind: "drawing",
+      drawing: ok,
+      title: "Meu desenho",
+      date: "2026-10-09",
+    });
+  });
+  it("recusa imagem inválida ou grande demais", () => {
+    expect(drawingEntry({ id: "d", dataUrl: "http://x/y.png", title: "", today: "2026-10-09" })).toBeNull();
+    const big = "data:image/png;base64," + "A".repeat(MAX_DRAWING_LENGTH);
+    expect(drawingEntry({ id: "d", dataUrl: big, title: "", today: "2026-10-09" })).toBeNull();
   });
 });
