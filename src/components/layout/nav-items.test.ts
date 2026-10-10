@@ -16,4 +16,16 @@ describe("navItemsFor", () => {
     expect(t).not.toContain("Receitas");
     expect(t).not.toContain("Exames");
   });
+
+  it("o paciente tem 5 abas na barra do celular: Início, Meu dia, Diário, Atividades e Saúde", () => {
+    const bar = navItemsFor("patient")
+      .filter((i) => i.inMobileBar)
+      .map((i) => i.shortTitle ?? i.title);
+    expect(bar).toEqual(["Início", "Meu dia", "Diário", "Atividades", "Saúde"]);
+  });
+
+  it("os atalhos antigos continuam no menu, fora da barra", () => {
+    const titles = navItemsFor("patient").map((i) => i.title);
+    expect(titles).toEqual(expect.arrayContaining(["Meus Hábitos", "Respirar", "Agendar Consulta"]));
+  });
 });
