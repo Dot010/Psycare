@@ -29,7 +29,7 @@ function writingSentence(days: number): string {
 
 export default function DiaryView() {
   const { entries, saveEntry, deleteEntry } = useDiary();
-  const [opened, setOpened] = useState(false);
+  const [opened, setOpened] = useState(true);
   const [tab, setTab] = useState<Tab>("escrever");
   const today = toISODate(new Date());
 
@@ -64,6 +64,10 @@ export default function DiaryView() {
           opened={opened}
           onOpen={() => setOpened((value) => !value)}
         />
+
+        {!opened && (
+          <p className="text-center text-sm text-muted-foreground">Toque no livro para abrir o diário.</p>
+        )}
 
         {opened && (
           <section aria-label="Páginas do diário" className="space-y-6">

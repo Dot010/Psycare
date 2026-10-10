@@ -433,6 +433,8 @@
 }
 .book-face {
   position: absolute;
+  top: 0;
+  left: 0;
   box-sizing: border-box;
   backface-visibility: hidden;
 }
