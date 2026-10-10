@@ -9,6 +9,7 @@ import { useMood } from "@/features/mood/hooks/useMood";
 import { ConsultDialog } from "@/features/health/components/ConsultDialog";
 import { DoseTimeline } from "@/features/health/components/DoseTimeline";
 import { ExameDialog } from "@/features/health/components/ExameDialog";
+import { ReferralSection } from "@/features/referral/components/ReferralSection";
 import { MedicineFicha } from "@/features/health/components/MedicineFicha";
 import { SintomaDialog } from "@/features/health/components/SintomaDialog";
 import { SymptomLogger } from "@/features/health/components/SymptomLogger";
@@ -158,6 +159,8 @@ export default function HealthView() {
           O PsyCare não substitui seu médico e nunca muda sua dose. Dúvidas sobre o remédio são com ele.
         </p>
       </section>
+
+      <ReferralSection />
 
       <section aria-labelledby="sym-title" className={sectionClass}>
         <div className="flex items-center justify-between gap-3">

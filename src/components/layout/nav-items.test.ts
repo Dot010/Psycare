@@ -6,7 +6,7 @@ const titles = (variant: Parameters<typeof navItemsFor>[0]) => navItemsFor(varia
 describe("navItemsFor", () => {
   it("o psiquiatra tem Receitas, Exames e Medicação, e não tem Atividades", () => {
     const t = titles("psychiatrist");
-    expect(t).toEqual(expect.arrayContaining(["Receitas", "Exames", "Medicação"]));
+    expect(t).toEqual(expect.arrayContaining(["Receitas", "Encaminhamentos", "Exames", "Medicação"]));
     expect(t).not.toContain("Atividades");
   });
 
@@ -14,6 +14,7 @@ describe("navItemsFor", () => {
     const t = titles("psychologist");
     expect(t).toContain("Atividades");
     expect(t).not.toContain("Receitas");
+    expect(t).not.toContain("Encaminhamentos");
     expect(t).not.toContain("Exames");
   });
 

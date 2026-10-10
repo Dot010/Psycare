@@ -7,6 +7,8 @@ import { addDays } from "@/features/health/logic";
 import { toISODate } from "@/lib/dates";
 import { insertAt, removeById } from "@/lib/list";
 import { useLocalStorage } from "@/lib/useLocalStorage";
+import { referralTasks } from "@/features/referral/logic";
+import { useReferrals } from "@/features/referral/hooks/useReferrals";
 import { LIVE_PATIENT_ID } from "@/features/pro/data";
 import { usePrescriptions } from "@/features/pro/hooks/usePrescriptions";
 import { latestPerMedicine, pendingPrescription } from "@/features/pro/prescriptionRules";
@@ -47,6 +49,7 @@ export function usePlanner() {
   const { showUndo } = useUndo();
   const rx = usePrescriptions();
   const { appointments } = useAppointments();
+  const referral = useReferrals();
   const today = toISODate(new Date());
 
   /** Tarefas que a pessoa criou, mais as que nascem da receita pronta e das consultas confirmadas. */
@@ -57,10 +60,14 @@ export function usePlanner() {
       return found ? [found] : [];
     });
     return applyOverrides(
-      [...receitaTasks(pending, rx.steps, today), ...consultaTasks(appointments, today)],
+      [
+        ...receitaTasks(pending, rx.steps, today),
+        ...consultaTasks(appointments, today),
+        ...referralTasks(referral.referrals, LIVE_PATIENT_ID, today),
+      ],
       overrides,
     );
-  }, [rx.prescriptions, rx.steps, appointments, overrides, today]);
+  }, [rx.prescriptions, rx.steps, appointments, referral.referrals, overrides, today]);
 
   const tasks = useMemo(() => [...own, ...linked], [own, linked]);
   const isLinked = (id: string) => linked.some((t) => t.id === id);
@@ -120,7 +127,8 @@ export function usePlanner() {
         message: "Adiado para amanhã. Sem problema.",
         onUndo: () =>
           setOverrides((current) => {
-            const { [id]: _drop, ...rest } = current;
+            const rest = { ...current };
+            delete rest[id];
             return before ? { ...rest, [id]: before } : rest;
           }),
       });
