@@ -5,9 +5,7 @@ import {
   CircleHelp,
   ClipboardList,
   CreditCard,
-  FileCheck,
   FileText,
-  FlaskConical,
   House,
   LayoutDashboard,
   MessageCircle,
@@ -81,10 +79,7 @@ const PRO_TAIL: NavItem[] = [
 ];
 
 const PSYCHIATRIST_ONLY: NavItem[] = [
-  { title: "Receitas", href: "/dashboard/pro/prescriptions", icon: FileText, inMobileBar: true },
-  { title: "Encaminhamentos", href: "/dashboard/pro/referrals", icon: FileCheck },
-  { title: "Exames", href: "/dashboard/pro/exams", icon: FlaskConical },
-  { title: "Medicação", href: "/dashboard/pro/medication", icon: Pill },
+  { title: "Clínico", href: "/dashboard/pro/clinical", icon: FileText, inMobileBar: true },
 ];
 
 export function navItemsFor(variant: NavVariant): NavItem[] {

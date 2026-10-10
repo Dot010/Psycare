@@ -33,7 +33,7 @@ interface Opening {
   request?: PrescriptionRequest;
 }
 
-export default function PrescriptionsView() {
+export default function PrescriptionsView({ embedded = false }: { embedded?: boolean }) {
   const {
     today,
     prescriptions,
@@ -65,6 +65,7 @@ export default function PrescriptionsView() {
 
   return (
     <Page
+      embedded={embedded}
       title="Receitas"
       description={
         toAttend > 0

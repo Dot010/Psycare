@@ -12,7 +12,7 @@ import { useExams } from "../hooks/useExams";
 
 const control = "h-11 w-full rounded-lg border border-border bg-card px-3 text-base";
 
-export default function ExamsView() {
+export default function ExamsView({ embedded = false }: { embedded?: boolean }) {
   const { exams, requestExam, advanceExam } = useExams();
   const [open, setOpen] = useState(false);
   const [patient, setPatient] = useState(PATIENTS[0].id);
@@ -23,6 +23,7 @@ export default function ExamsView() {
 
   return (
     <Page
+      embedded={embedded}
       title="Exames"
       description={
         newResults > 0 ? `${newResults} com resultado para ler.` : "Acompanhe cada pedido até o resultado."

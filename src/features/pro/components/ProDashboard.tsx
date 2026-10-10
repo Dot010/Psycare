@@ -8,6 +8,7 @@ import { formatDateBR } from "@/lib/format";
 import { daysSinceLastMood, moodTrend, trendSentence } from "../logic";
 import { LIVE_PATIENT_ID, patientById } from "../data";
 import { usePro } from "../hooks/usePro";
+import { ClinicalInbox } from "./ClinicalInbox";
 import { SessionLine } from "./SessionLine";
 
 const h2 = "text-2xl font-semibold text-brand-ink";
@@ -19,7 +20,7 @@ function todayLabel(): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-export default function ProDashboard() {
+export default function ProDashboard({ specialty }: { specialty?: "psychiatrist" | "psychologist" }) {
   const pro = usePro();
   const todays = pro.sessions
     .filter((s) => s.data === pro.today && s.status !== "cancelado")
@@ -70,6 +71,8 @@ export default function ProDashboard() {
           </ul>
         )}
       </section>
+
+      {specialty === "psychiatrist" && <ClinicalInbox />}
 
       {pro.patientRequests.length > 0 && (
         <section aria-labelledby="req-title" className="space-y-2 border-t border-border pt-8">
