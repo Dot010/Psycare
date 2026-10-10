@@ -1,6 +1,7 @@
 "use client";
 
 import { CalendarPlus, ChevronLeft, ChevronRight, Download, Plus } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { ItemMenu } from "@/components/feedback/ItemMenu";
 import { Page } from "@/components/layout/Page";
@@ -176,6 +177,8 @@ function TaskRow({
         type="button"
         role="checkbox"
         aria-checked={task.done}
+        aria-disabled={task.readonly || undefined}
+        disabled={task.readonly}
         aria-label={`${task.done ? "Desmarcar" : "Marcar como feita"}: ${task.title}`}
         onClick={onToggle}
         className={cn(
@@ -199,10 +202,23 @@ function TaskRow({
           Importância {IMPORTANCE_LABEL[task.importance].toLowerCase()}
           {task.time && <span>· {task.time}</span>}
           {task.date && task.date !== today && <span>· {dayLabel(task.date, today)}</span>}
-          {task.source !== "free" && <span>· vem do seu cuidado</span>}
+          {task.source === "habito" ? (
+            <span>· hábito de todo dia</span>
+          ) : (
+            task.source !== "free" && <span>· vem do seu cuidado</span>
+          )}
+          {task.readonly && <span>· marque a compra no card do remédio</span>}
         </p>
       </div>
-      {!task.done && task.date && task.date <= today && (
+      {task.href && !task.done && (
+        <Link
+          href={task.href}
+          className="shrink-0 text-sm font-medium text-brand-ink underline focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
+        >
+          Abrir
+        </Link>
+      )}
+      {!task.done && task.source !== "habito" && task.date && task.date <= today && (
         <Button
           variant="ghost"
           className="min-h-11"
@@ -212,7 +228,9 @@ function TaskRow({
           Adiar
         </Button>
       )}
-      <ItemMenu label={`tarefa ${task.title}`} onEdit={onEdit} onDelete={onDelete} />
+      {task.source !== "habito" && (
+        <ItemMenu label={`tarefa ${task.title}`} onEdit={onEdit} onDelete={onDelete} />
+      )}
     </li>
   );
 }

@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { CrisisButton } from "@/components/feedback/CrisisButton";
 import { PageSkeleton } from "@/components/feedback/PageSkeleton";
+import { TaskReminder } from "@/features/planner/components/TaskReminder";
 import type { NavVariant } from "@/components/layout/nav-items";
 
 const Nav = dynamic(() => import("@/components/layout/Nav"), {
@@ -24,6 +25,7 @@ export function DashboardShell({ variant, children }: { variant: NavVariant; chi
       <Nav variant={variant} />
       <NavMobile variant={variant} />
       {variant === "patient" && <CrisisButton />}
+      {variant === "patient" && <TaskReminder />}
 
       <main className="flex-1 overflow-y-auto bg-sunken pb-28 md:pb-8">
         <Suspense fallback={<PageSkeleton />}>{children}</Suspense>

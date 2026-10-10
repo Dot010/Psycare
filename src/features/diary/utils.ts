@@ -1,5 +1,6 @@
 import type { DiaryEntry } from "@/features/diary/types";
-import { entryLevel, levelFromLabel, MOOD_LABELS, MOOD_LEVELS } from "@/features/mood/logic";
+import { entryLevel, levelFromLabel, mean, MOOD_LABELS, MOOD_LEVELS, shiftDate } from "@/features/mood/logic";
+import type { MoodLevel } from "@/features/mood/types";
 import { daysBetween, fromISODate, toISODate } from "@/lib/dates";
 
 /** Os cinco humores para filtrar a lista (registros antigos entram pelo rosto mais próximo). */
@@ -120,4 +121,55 @@ export function titleFromContent(content: string): string {
   const cut = firstLine.slice(0, TITLE_LENGTH);
   const lastSpace = cut.lastIndexOf(" ");
   return `${(lastSpace > 15 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+}
+
+/** Sugestões para quem prefere um ponto de partida. */
+export const SUGGESTIONS = [
+  "Como foi o meu dia?",
+  "O que me incomodou hoje?",
+  "Uma coisa boa de hoje",
+  "O que aprendi sobre mim esta semana?",
+  "O que eu gostaria de contar na próxima consulta?",
+];
+
+export interface WeekDay {
+  date: string;
+  /** Quantas páginas foram escritas no dia. */
+  count: number;
+  /** Humor médio do dia (1 a 5), arredondado, se houve páginas com humor. */
+  level?: MoodLevel;
+}
+
+/** Os últimos 7 dias (hoje incluso), do mais antigo ao mais novo. */
+export function weekDays(entries: DiaryEntry[], today: string): WeekDay[] {
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = shiftDate(today, i - 6);
+    const ofDay = entries.filter((e) => e.date === date);
+    const avg = mean(ofDay.flatMap((e) => entryLevel(e) ?? []));
+    return { date, count: ofDay.length, level: avg === null ? undefined : (Math.round(avg) as MoodLevel) };
+  });
+}
+
+/** Tamanho máximo do desenho guardado (texto da imagem), para não encher o armazenamento do navegador. */
+export const MAX_DRAWING_LENGTH = 600_000;
+
+/** Monta a página de um desenho. Devolve `null` se a imagem não for válida ou for grande demais. */
+export function drawingEntry(input: {
+  id: string;
+  dataUrl: string;
+  title: string;
+  today: string;
+}): DiaryEntry | null {
+  if (!/^data:image\/(png|webp|jpeg);base64,/.test(input.dataUrl)) return null;
+  if (input.dataUrl.length > MAX_DRAWING_LENGTH) return null;
+  const title = input.title.replace(/\s+/g, " ").trim().slice(0, 80) || "Meu desenho";
+  return {
+    id: input.id,
+    date: input.today,
+    mood: "",
+    title,
+    content: "",
+    kind: "drawing",
+    drawing: input.dataUrl,
+  };
 }

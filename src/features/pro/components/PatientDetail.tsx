@@ -10,6 +10,7 @@ import { ACTIVITIES } from "@/features/activities/catalog";
 import { compareWheel, formatDay, previousOfKind, recordSummary } from "@/features/activities/logic";
 import type { ActivityRecord } from "@/features/activities/types";
 import { intensityLabel } from "@/features/health/logic";
+import { ProReferralBox } from "@/features/referral/components/ProReferralBox";
 import { WeekChart } from "@/features/mood/components/WeekChart";
 import { formatDateBR } from "@/lib/format";
 import { patientById } from "../data";
@@ -175,6 +176,15 @@ export default function PatientDetail({ id }: { id: string }) {
           </div>
         )}
       </section>
+
+      {me.specialty === "psychologist" && (
+        <section aria-labelledby="enc-title" className={section}>
+          <h2 id="enc-title" className={h2}>
+            Encaminhamento
+          </h2>
+          <ProReferralBox patientId={id} firstName={patient.name.split(" ")[0]} />
+        </section>
+      )}
 
       <section aria-labelledby="health-title" className={section}>
         <h2 id="health-title" className={h2}>

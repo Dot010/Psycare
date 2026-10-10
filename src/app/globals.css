@@ -416,3 +416,25 @@
   overflow: hidden;
   backface-visibility: hidden;
 }
+
+/* Capa do diário em 3D: um livro que se inclina devagar. Para com "reduzir movimento". */
+.book-scene {
+  perspective: 900px;
+}
+.book {
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(6deg) rotateY(-26deg);
+  transition: transform 500ms ease-out;
+}
+.book:hover,
+.book:focus-visible {
+  transform: rotateX(4deg) rotateY(-12deg);
+}
+.book-face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  backface-visibility: hidden;
+}

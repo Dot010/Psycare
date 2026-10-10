@@ -44,8 +44,9 @@ export function upcoming(tasks: Task[], today: string): [string, Task[]][] {
   return dates.map((date) => [date, tasksOn(tasks, date)]);
 }
 
+/** Quantas tarefas abertas o dia tem. Os hábitos de todo dia não pesam: o aviso de "dia cheio" é para o que é extra. */
 export const openCount = (tasks: Task[], date: string): number =>
-  tasks.filter((t) => t.date === date && !t.done).length;
+  tasks.filter((t) => t.date === date && !t.done && t.source !== "habito").length;
 
 export const isFullDay = (tasks: Task[], date: string): boolean => openCount(tasks, date) >= FULL_DAY;
 
@@ -127,4 +128,25 @@ export function toICS(tasks: Task[], stamp: string): string {
     ...events,
     "END:VCALENDAR",
   ].join("\r\n");
+}
+
+/** Tarefas abertas de hoje cuja hora chegou (ou passou há pouco) e que ainda não foram avisadas. */
+export function dueTasks(tasks: Task[], today: string, now: string, announced: ReadonlySet<string>): Task[] {
+  return tasks.filter(
+    (t) =>
+      t.date === today &&
+      !t.done &&
+      !!t.time &&
+      t.time <= now &&
+      minutesBetween(t.time, now) <= 10 &&
+      !announced.has(`${today}:${t.id}:${t.time}`),
+  );
+}
+
+export const reminderKey = (today: string, task: Task): string => `${today}:${task.id}:${task.time}`;
+
+function minutesBetween(from: string, to: string): number {
+  const [fh, fm] = from.split(":").map(Number);
+  const [th, tm] = to.split(":").map(Number);
+  return th * 60 + tm - (fh * 60 + fm);
 }

@@ -16,4 +16,10 @@ export interface DiaryEntry {
   anxietyLevel?: number;
   /** Marcado para levar à próxima consulta. */
   discussInSession?: boolean;
+  /** "drawing" quando a página é um desenho. Sem isso, é texto. */
+  kind?: "text" | "drawing";
+  /** O desenho, como imagem em data URL. Fica só neste navegador. */
+  drawing?: string;
+  /** A sugestão que a pessoa escolheu para escrever, se escolheu. */
+  prompt?: string;
 }
