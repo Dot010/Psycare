@@ -36,31 +36,16 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { title: "Início", href: "/dashboard/home", icon: House, inMobileBar: true },
   { title: "Meu dia", href: "/dashboard/planner", icon: CalendarDays, inMobileBar: true },
-  { title: "Meu Diário", shortTitle: "Diário", href: "/dashboard/diary", icon: BookText, inMobileBar: true },
-  {
-    title: "Atividades",
-    href: "/dashboard/diary/activities",
-    icon: ClipboardList,
-    inMobileBar: true,
-  },
-  { title: "Gestão de Saúde", shortTitle: "Saúde", href: "/dashboard/health", icon: Pill, inMobileBar: true },
-  {
-    title: "Agendar Consulta",
-    shortTitle: "Agenda",
-    href: "/dashboard/appointments",
-    icon: CalendarCheck,
-    startsGroup: true,
-  },
+  { title: "Diário", href: "/dashboard/diary", icon: BookText, inMobileBar: true },
+  { title: "Atividades", href: "/dashboard/activities", icon: ClipboardList, inMobileBar: true },
+  { title: "Saúde", href: "/dashboard/health", icon: Pill, inMobileBar: true },
+  // Cuidado: quem me acompanha e o que fazer se eu não estiver bem.
+  { title: "Consultas", href: "/dashboard/appointments", icon: CalendarCheck, startsGroup: true },
   { title: "Meus Hábitos", shortTitle: "Hábitos", href: "/dashboard/habits", icon: SquareCheckBig },
-  { title: "Mensagens", shortTitle: "Chat", href: "/dashboard/messages", icon: MessageCircle },
-  {
-    title: "Meus Pagamentos",
-    shortTitle: "Pagamentos",
-    href: "/dashboard/payments",
-    icon: CreditCard,
-    startsGroup: true,
-  },
+  { title: "Mensagens", href: "/dashboard/messages", icon: MessageCircle },
   { title: "Plano de segurança", shortTitle: "Segurança", href: "/dashboard/safety", icon: ShieldCheck },
+  // Conta.
+  { title: "Pagamentos", href: "/dashboard/payments", icon: CreditCard, startsGroup: true },
   { title: "Ajuda", href: "/dashboard/help", icon: CircleHelp },
   { title: "Configurações", shortTitle: "Ajustes", href: "/dashboard/settings", icon: Settings },
 ];

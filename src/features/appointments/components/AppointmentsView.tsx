@@ -96,7 +96,7 @@ export function AppointmentsView() {
   return (
     <Page
       width="narrow"
-      title="Meus Agendamentos"
+      title="Consultas"
       description="Suas próximas sessões e o histórico de atendimentos."
       actions={
         <MagneticButton

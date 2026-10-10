@@ -27,6 +27,14 @@ describe("navItemsFor", () => {
 
   it("os atalhos antigos continuam no menu, fora da barra", () => {
     const titles = navItemsFor("patient").map((i) => i.title);
-    expect(titles).toEqual(expect.arrayContaining(["Meus Hábitos", "Agendar Consulta"]));
+    expect(titles).toEqual(expect.arrayContaining(["Meus Hábitos", "Consultas"]));
+  });
+
+  it("o menu do paciente usa um nome por tela e Atividades fica em /dashboard/activities", () => {
+    const items = navItemsFor("patient");
+    expect(items.map((i) => i.title)).toEqual(
+      expect.arrayContaining(["Diário", "Saúde", "Consultas", "Pagamentos", "Plano de segurança"]),
+    );
+    expect(items.find((i) => i.title === "Atividades")?.href).toBe("/dashboard/activities");
   });
 });

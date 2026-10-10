@@ -69,11 +69,7 @@ export default function HelpView() {
   };
 
   return (
-    <Page
-      title="Central de Ajuda e Suporte"
-      description="Tire suas dúvidas ou entre em contato com a equipe."
-      width="narrow"
-    >
+    <Page title="Ajuda" description="Tire suas dúvidas ou entre em contato com a equipe." width="narrow">
       <DemoNotice>Os contatos e o formulário abaixo são de exemplo: nada é enviado a ninguém.</DemoNotice>
       <p className="rounded-xl bg-brand-50 p-4 text-sm text-brand-ink">
         Precisa de ajuda agora? Ligue{" "}

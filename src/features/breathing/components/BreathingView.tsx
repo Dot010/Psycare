@@ -46,7 +46,7 @@ export default function BreathingView() {
 
   return (
     <Page
-      title="Respiração Guiada"
+      title="Respirar"
       description="Acompanhe o círculo: ele cresce quando você inspira e encolhe quando você expira."
       width="narrow"
     >
