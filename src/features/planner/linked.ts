@@ -1,6 +1,7 @@
 import { addDays } from "@/features/health/logic";
 import type { Agendamento } from "@/features/appointments/types";
 import type { PatientStep, Prescription } from "@/features/pro/types";
+import type { Habit } from "@/features/habits/types";
 import type { Task, TaskOverride } from "./types";
 
 export const LINKED_PREFIX = { receita: "rx:", consulta: "consulta:" } as const;
@@ -74,4 +75,22 @@ export function applyOverrides(tasks: Task[], overrides: Record<string, TaskOver
       done: o.done ?? t.done,
     };
   });
+}
+
+/** Cada hábito vira uma tarefa que se repete todo dia: marcar aqui é marcar o hábito. */
+export function habitTasks(habits: Habit[], today: string): Task[] {
+  return habits.map((h) => ({
+    id: `habit:${h.id}`,
+    title: h.title,
+    date: today,
+    importance: "medium" as const,
+    done: h.lastCompleted === today,
+    source: "habito" as const,
+    href: "/dashboard/habits",
+  }));
+}
+
+/** "habit:<id>" → id do hábito. */
+export function parseHabitTask(id: string): string | undefined {
+  return /^habit:(.+)$/.exec(id)?.[1];
 }

@@ -1,7 +1,7 @@
 export type Importance = "high" | "medium" | "low";
 
 /** De onde a tarefa veio. As que não são "free" vêm de um profissional e só mudam de dia, hora e importância. */
-export type TaskSource = "free" | "consulta" | "receita" | "encaminhamento";
+export type TaskSource = "free" | "consulta" | "receita" | "encaminhamento" | "habito";
 
 export interface Task {
   id: string;

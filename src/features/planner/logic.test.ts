@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   buildTask,
+  dueTasks,
   FULL_DAY,
   inbox,
   isFullDay,
   isLocked,
   monthWeeks,
   nextUp,
+  openCount,
   overdue,
   postponedDate,
   tasksOn,
@@ -146,5 +148,35 @@ describe("toICS", () => {
     expect(ics).toContain("SUMMARY:Beber\\, água");
     expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(2);
     expect(ics.startsWith("BEGIN:VCALENDAR")).toBe(true);
+  });
+});
+
+describe("dueTasks", () => {
+  const t = (id: string, time: string | undefined, done = false): Task => ({
+    id,
+    title: id,
+    date: "2026-10-09",
+    time,
+    importance: "medium",
+    done,
+    source: "free",
+  });
+  it("avisa as abertas cuja hora chegou há até 10 minutos e ainda não foram avisadas", () => {
+    const list = [
+      t("a", "09:00"),
+      t("b", "09:30"),
+      t("c", "08:00"),
+      t("d", "09:05", true),
+      t("e", undefined),
+    ];
+    expect(dueTasks(list, "2026-10-09", "09:03", new Set()).map((x) => x.id)).toEqual(["a"]);
+    expect(dueTasks(list, "2026-10-09", "09:03", new Set(["2026-10-09:a:09:00"]))).toEqual([]);
+  });
+  it("hábitos não contam para o dia cheio", () => {
+    const habits: Task[] = Array.from({ length: 8 }, (_, i) => ({
+      ...t(`h${i}`, undefined),
+      source: "habito" as const,
+    }));
+    expect(openCount(habits, "2026-10-09")).toBe(0);
   });
 });

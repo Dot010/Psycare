@@ -97,3 +97,23 @@ export function startAmbient(): void {
 export function stopAmbient(): void {
   ambient?.stop();
 }
+
+/** Sininho suave de dois toques, para avisar que chegou a hora de uma tarefa. */
+export function playChime(): void {
+  const ctx = getContext();
+  if (!ctx || ctx.state !== "running") return;
+  const now = ctx.currentTime;
+  [660, 880].forEach((freq, i) => {
+    const start = now + i * 0.22;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(0.18, start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.6);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + 0.65);
+  });
+}

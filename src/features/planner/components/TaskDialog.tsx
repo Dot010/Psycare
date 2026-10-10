@@ -24,6 +24,7 @@ const SOURCE_TEXT: Record<Exclude<Task["source"], "free">, string> = {
   consulta: "da sua consulta",
   receita: "da sua receita",
   encaminhamento: "do seu encaminhamento",
+  habito: "dos seus hábitos",
 };
 
 export function TaskDialog({ open, onOpenChange, ...rest }: Props) {

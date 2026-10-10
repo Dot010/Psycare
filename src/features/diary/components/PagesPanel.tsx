@@ -123,6 +123,7 @@ export function PagesPanel({ entries, today, onSave, onDelete }: Props) {
               aria-hidden
             />
             <input
+              name="busca"
               type="search"
               aria-label="Buscar no diário"
               placeholder="Buscar no diário"
@@ -132,6 +133,7 @@ export function PagesPanel({ entries, today, onSave, onDelete }: Props) {
             />
           </div>
           <select
+            name="filtro-humor"
             aria-label="Filtrar por humor"
             value={mood}
             onChange={(e) => setMood(e.target.value)}

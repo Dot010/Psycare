@@ -17,6 +17,7 @@ import { ActionSheet, type SheetSnap } from "@/components/layout/ActionSheet";
 import { CountUp } from "@/components/motion/CountUp";
 import { Stagger } from "@/components/motion/Stagger";
 import { NextSessionCard } from "@/features/appointments/components/NextSessionCard";
+import { NowCard } from "@/features/planner/components/NowCard";
 import { Missions } from "@/features/missions/components/Missions";
 import { Onboarding } from "@/features/onboarding/components/Onboarding";
 import { useAppointments } from "@/features/appointments/hooks/useAppointments";
@@ -162,6 +163,8 @@ export default function HomeView() {
               toNext={garden.toNext}
               onPour={garden.pour}
             />
+
+            <NowCard />
 
             <CheckIn today={garden.todayCheckIn} onSelect={garden.checkIn} onTagsChange={garden.setTags} />
 

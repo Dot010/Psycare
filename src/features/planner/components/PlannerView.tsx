@@ -202,7 +202,11 @@ function TaskRow({
           Importância {IMPORTANCE_LABEL[task.importance].toLowerCase()}
           {task.time && <span>· {task.time}</span>}
           {task.date && task.date !== today && <span>· {dayLabel(task.date, today)}</span>}
-          {task.source !== "free" && <span>· vem do seu cuidado</span>}
+          {task.source === "habito" ? (
+            <span>· hábito de todo dia</span>
+          ) : (
+            task.source !== "free" && <span>· vem do seu cuidado</span>
+          )}
           {task.readonly && <span>· marque a compra no card do remédio</span>}
         </p>
       </div>
@@ -214,7 +218,7 @@ function TaskRow({
           Abrir
         </Link>
       )}
-      {!task.done && task.date && task.date <= today && (
+      {!task.done && task.source !== "habito" && task.date && task.date <= today && (
         <Button
           variant="ghost"
           className="min-h-11"
@@ -224,7 +228,9 @@ function TaskRow({
           Adiar
         </Button>
       )}
-      <ItemMenu label={`tarefa ${task.title}`} onEdit={onEdit} onDelete={onDelete} />
+      {task.source !== "habito" && (
+        <ItemMenu label={`tarefa ${task.title}`} onEdit={onEdit} onDelete={onDelete} />
+      )}
     </li>
   );
 }

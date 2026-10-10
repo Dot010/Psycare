@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { applyOverrides, consultaTasks, parseRxTask, receitaTasks } from "./linked";
+import {
+  applyOverrides,
+  consultaTasks,
+  habitTasks,
+  parseHabitTask,
+  parseRxTask,
+  receitaTasks,
+} from "./linked";
 import type { Prescription } from "@/features/pro/types";
 
 const rx: Prescription = {
@@ -77,5 +84,23 @@ describe("applyOverrides", () => {
   it("sem ajuste devolve a tarefa como está", () => {
     const [t] = receitaTasks([rx], {}, "2026-10-09");
     expect(applyOverrides([t], {})[0]).toBe(t);
+  });
+});
+
+describe("habitTasks", () => {
+  it("cada hábito vira uma tarefa de hoje, feita só se foi concluído hoje", () => {
+    const tasks = habitTasks(
+      [
+        { id: "1", title: "Treinar", category: "Saúde", streak: 2, lastCompleted: "2026-10-09" },
+        { id: "2", title: "Passear", category: "Saúde", streak: 0 },
+      ],
+      "2026-10-09",
+    );
+    expect(tasks.map((t) => [t.id, t.done, t.date, t.source])).toEqual([
+      ["habit:1", true, "2026-10-09", "habito"],
+      ["habit:2", false, "2026-10-09", "habito"],
+    ]);
+    expect(parseHabitTask("habit:2")).toBe("2");
+    expect(parseHabitTask("rx:1:retirar")).toBeUndefined();
   });
 });

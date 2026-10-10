@@ -12,7 +12,16 @@ import { useReferrals } from "@/features/referral/hooks/useReferrals";
 import { LIVE_PATIENT_ID } from "@/features/pro/data";
 import { usePrescriptions } from "@/features/pro/hooks/usePrescriptions";
 import { latestPerMedicine, pendingPrescription } from "@/features/pro/prescriptionRules";
-import { applyOverrides, consultaTasks, parseRxTask, receitaTasks } from "../linked";
+import { grantWater } from "@/features/garden/water";
+import { useHabits } from "@/features/habits/hooks/useHabits";
+import {
+  applyOverrides,
+  consultaTasks,
+  habitTasks,
+  parseHabitTask,
+  parseRxTask,
+  receitaTasks,
+} from "../linked";
 import { isLocked, postponedDate } from "../logic";
 import type { Task, TaskOverride } from "../types";
 
@@ -50,6 +59,7 @@ export function usePlanner() {
   const rx = usePrescriptions();
   const { appointments } = useAppointments();
   const referral = useReferrals();
+  const { habits, toggleHabit } = useHabits();
   const today = toISODate(new Date());
 
   /** Tarefas que a pessoa criou, mais as que nascem da receita pronta e das consultas confirmadas. */
@@ -69,7 +79,9 @@ export function usePlanner() {
     );
   }, [rx.prescriptions, rx.steps, appointments, referral.referrals, overrides, today]);
 
-  const tasks = useMemo(() => [...own, ...linked], [own, linked]);
+  const habitList = useMemo(() => habitTasks(habits, today), [habits, today]);
+
+  const tasks = useMemo(() => [...own, ...linked, ...habitList], [own, linked, habitList]);
   const isLinked = (id: string) => linked.some((t) => t.id === id);
 
   const patchLinked = (id: string, patch: TaskOverride) =>
@@ -89,9 +101,15 @@ export function usePlanner() {
   };
 
   const toggleDone = (id: string) => {
+    const habitId = parseHabitTask(id);
+    if (habitId) {
+      toggleHabit(habitId);
+      return;
+    }
     const linkedTask = linked.find((t) => t.id === id);
     if (linkedTask) {
       if (linkedTask.readonly) return;
+      if (!linkedTask.done) grantWater("habit", `task-${id}`);
       const rxTask = parseRxTask(id);
       // Retirar a receita é um passo da receita: quem guarda é o passo "retirei", só do paciente.
       if (rxTask?.kind === "retirar") {
@@ -101,6 +119,9 @@ export function usePlanner() {
       patchLinked(id, { done: !linkedTask.done });
       return;
     }
+    // Terminar uma tarefa rega o jardim; desmarcar não tira a água.
+    const own1 = own.find((t) => t.id === id);
+    if (own1 && !own1.done) grantWater("habit", `task-${id}`);
     setOwn((current) => current.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
   };
 
