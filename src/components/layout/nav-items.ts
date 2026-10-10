@@ -1,5 +1,6 @@
 import {
   BookText,
+  CalendarDays,
   CalendarCheck,
   CircleHelp,
   ClipboardList,
@@ -34,24 +35,24 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { title: "Início", href: "/dashboard/home", icon: House, inMobileBar: true },
+  { title: "Meu dia", href: "/dashboard/planner", icon: CalendarDays, inMobileBar: true },
   { title: "Meu Diário", shortTitle: "Diário", href: "/dashboard/diary", icon: BookText, inMobileBar: true },
   {
-    title: "Meus Hábitos",
-    shortTitle: "Hábitos",
-    href: "/dashboard/habits",
-    icon: SquareCheckBig,
+    title: "Atividades",
+    href: "/dashboard/diary/activities",
+    icon: ClipboardList,
     inMobileBar: true,
   },
-  { title: "Respirar", href: "/dashboard/breathing", icon: Wind },
+  { title: "Gestão de Saúde", shortTitle: "Saúde", href: "/dashboard/health", icon: Pill, inMobileBar: true },
   {
     title: "Agendar Consulta",
     shortTitle: "Agenda",
     href: "/dashboard/appointments",
     icon: CalendarCheck,
-    inMobileBar: true,
     startsGroup: true,
   },
-  { title: "Gestão de Saúde", shortTitle: "Saúde", href: "/dashboard/health", icon: Pill },
+  { title: "Meus Hábitos", shortTitle: "Hábitos", href: "/dashboard/habits", icon: SquareCheckBig },
+  { title: "Respirar", href: "/dashboard/breathing", icon: Wind },
   { title: "Mensagens", shortTitle: "Chat", href: "/dashboard/messages", icon: MessageCircle },
   {
     title: "Meus Pagamentos",
