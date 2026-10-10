@@ -9,35 +9,45 @@ import { cn } from "@/lib/utils";
 import { PATIENTS } from "../data";
 import { usePrescriptions } from "../hooks/usePrescriptions";
 import {
-  draftFrom,
   KIND_INFO,
   latestPerMedicine,
   lifecycle,
   needsAttention,
   type Lifecycle,
-  type PrescriptionDraft,
 } from "../prescriptionRules";
-import type { Prescription } from "../types";
+import type { Prescription, PrescriptionRequest } from "../types";
 import { NewPrescriptionDialog } from "./NewPrescriptionDialog";
 
 const LIFECYCLE_CHIP: Record<Lifecycle, { text: string; className: string }> = {
-  issued: { text: "Emitida", className: "bg-brand-100 text-brand-ink" },
-  used: { text: "Usada", className: "bg-sunken text-muted-foreground" },
+  ready: { text: "Pronta", className: "bg-brand-100 text-brand-ink" },
   expired: { text: "Vencida", className: "bg-sun-200 text-ink" },
   stopped: { text: "Suspensa", className: "bg-sunken text-muted-foreground" },
 };
+
+const NO_REASONS = ["Ainda tem receita válida", "Vamos conversar na consulta"];
 
 type Filter = "attention" | "all";
 
 interface Opening {
   last: Prescription;
-  requestId?: string;
+  request?: PrescriptionRequest;
 }
 
 export default function PrescriptionsView() {
-  const { today, prescriptions, requests, lastOf, issue, stop, patientName } = usePrescriptions();
+  const {
+    today,
+    prescriptions,
+    pendingRequests,
+    lastOf,
+    consultationsFor,
+    register,
+    stop,
+    answerRequest,
+    patientName,
+  } = usePrescriptions();
   const [filter, setFilter] = useState<Filter>("attention");
   const [opening, setOpening] = useState<Opening | null>(null);
+  const [declining, setDeclining] = useState<string | null>(null);
 
   const latest = latestPerMedicine(prescriptions);
   const latestIds = new Set(latest.map((p) => p.id));
@@ -46,17 +56,12 @@ export default function PrescriptionsView() {
   const groups = PATIENTS.map((patient) => {
     const all = prescriptions
       .filter((p) => p.patientId === patient.id)
-      .sort((a, b) => b.consultationDate.localeCompare(a.consultationDate));
+      .sort((a, b) => b.preparedAt.localeCompare(a.preparedAt));
     const shown = filter === "all" ? all : all.filter((p) => attentionIds.has(p.id));
     return { patient, shown };
   }).filter((g) => g.shown.length > 0);
 
-  const toAttend = requests.length + attentionIds.size;
-
-  const openFromRequest = (patientId: string, nome: string, requestId: string) => {
-    const last = lastOf(patientId, nome);
-    if (last) setOpening({ last, requestId });
-  };
+  const toAttend = pendingRequests.length + attentionIds.size;
 
   return (
     <Page
@@ -69,35 +74,74 @@ export default function PrescriptionsView() {
       width="narrow"
     >
       <DemoNotice>
-        Nenhuma receita é emitida de verdade e nenhum paciente é avisado. Cada receita é de um paciente e sai
-        depois de uma consulta.
+        O app não emite nem envia receita: você a entrega em mãos e aqui só registra o que preparou. Nada é
+        enviado de verdade.
       </DemoNotice>
 
-      {requests.length > 0 && (
+      {pendingRequests.length > 0 && (
         <section aria-label="Pedidos de nova receita" className="space-y-3">
           <h2 className="text-lg font-semibold text-brand-ink">Pedidos dos pacientes</h2>
           <ul className="space-y-2">
-            {requests.map((r) => (
-              <li
-                key={r.id}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4"
-              >
-                <div className="min-w-0">
-                  <p className="font-medium text-foreground">{patientName(r.patientId)}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {r.nome}
-                    {r.note ? ` · ${r.note}` : ""}
-                  </p>
-                </div>
-                <Button
-                  className="min-h-11"
-                  aria-label={`Atender pedido de ${patientName(r.patientId)}: ${r.nome}`}
-                  onClick={() => openFromRequest(r.patientId, r.nome, r.id)}
-                >
-                  Atender
-                </Button>
-              </li>
-            ))}
+            {pendingRequests.map((r) => {
+              const last = lastOf(r.patientId, r.nome);
+              return (
+                <li key={r.id} className="space-y-3 rounded-2xl border border-border bg-card p-4">
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground">{patientName(r.patientId)}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {r.nome}
+                      {r.note ? ` · ${r.note}` : ""}
+                      {last ? ` · ${KIND_INFO[last.kind].label} (${KIND_INFO[last.kind].paper})` : ""}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {last && (
+                      <Button
+                        className="min-h-11"
+                        aria-label={`Deixei pronta: ${patientName(r.patientId)}, ${r.nome}`}
+                        onClick={() => setOpening({ last, request: r })}
+                      >
+                        Deixei pronta
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      className="min-h-11"
+                      aria-label={`Precisa de consulta: ${patientName(r.patientId)}, ${r.nome}`}
+                      onClick={() => answerRequest(r, "consult")}
+                    >
+                      Precisa de consulta
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="min-h-11"
+                      aria-expanded={declining === r.id}
+                      aria-label={`Não por agora: ${patientName(r.patientId)}, ${r.nome}`}
+                      onClick={() => setDeclining(declining === r.id ? null : r.id)}
+                    >
+                      Não por agora
+                    </Button>
+                  </div>
+                  {declining === r.id && (
+                    <div className="flex flex-wrap gap-2" role="group" aria-label="Motivo (opcional)">
+                      {[...NO_REASONS, ""].map((reason) => (
+                        <button
+                          key={reason || "none"}
+                          type="button"
+                          onClick={() => {
+                            answerRequest(r, "no", reason || undefined);
+                            setDeclining(null);
+                          }}
+                          className="min-h-11 rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground"
+                        >
+                          {reason || "Sem motivo"}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}
@@ -164,7 +208,7 @@ export default function PrescriptionsView() {
                       >
                         {KIND_INFO[p.kind].label} · {KIND_INFO[p.kind].paper}
                       </span>
-                      <span>Consulta de {formatDateBR(p.consultationDate)}</span>
+                      <span>Registrada em {formatDateBR(p.preparedAt)}</span>
                       <span>
                         Use de {formatDateBR(p.useFrom)} a {formatDateBR(p.useUntil)}
                       </span>
@@ -174,10 +218,10 @@ export default function PrescriptionsView() {
                       <Button
                         className="min-h-11"
                         variant={attentionIds.has(p.id) ? "default" : "outline"}
-                        aria-label={`Nova receita de ${p.nome} para ${patient.name}`}
+                        aria-label={`Registrar nova receita de ${p.nome} para ${patient.name}`}
                         onClick={() => setOpening({ last: p })}
                       >
-                        Nova receita
+                        Registrar nova receita
                       </Button>
                     )}
                   </li>
@@ -191,15 +235,17 @@ export default function PrescriptionsView() {
       {opening && (
         <NewPrescriptionDialog
           patientName={patientName(opening.last.patientId)}
+          today={today}
           last={opening.last}
-          initial={draftFrom(opening.last, today)}
+          request={opening.request}
+          consultations={consultationsFor(opening.last)}
           onClose={() => setOpening(null)}
-          onIssue={(draft: PrescriptionDraft, change, note) => {
-            issue({ draft, change, changeNote: note, requestId: opening.requestId });
+          onRegister={(draft, origin, change, note) => {
+            register({ draft, origin, change, changeNote: note });
             setOpening(null);
           }}
           onStop={(note) => {
-            stop(opening.last, note, opening.requestId);
+            stop(opening.last, note, opening.request?.id);
             setOpening(null);
           }}
         />

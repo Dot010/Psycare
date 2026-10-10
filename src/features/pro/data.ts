@@ -2,6 +2,7 @@ import type { ActivityRecord } from "@/features/activities/types";
 import { WHEEL_AREAS } from "@/features/activities/catalog";
 import { addDays } from "@/features/health/logic";
 import type {
+  Consultation,
   ExamRequest,
   Patient,
   PatientSnapshot,
@@ -142,18 +143,36 @@ export function demoSessions(today: string): ProSession[] {
   ];
 }
 
+/** Consultas já feitas, de onde saíram as receitas de exemplo. */
+export function demoConsultations(today: string): Consultation[] {
+  const done = (id: string, patientId: string, daysAgo: number, hora: string): Consultation => ({
+    id,
+    patientId,
+    date: addDays(today, -daysAgo),
+    hora,
+    status: "realizada",
+  });
+  return [
+    done("c_u1", LIVE_PATIENT_ID, 35, "10:00"),
+    done("c_u2", LIVE_PATIENT_ID, 28, "10:00"),
+    done("c_u3", LIVE_PATIENT_ID, 9, "10:00"),
+    done("c_m1", "pac_marina", 20, "09:00"),
+    done("c_p1", "pac_pedro", 34, "14:00"),
+    done("c_l1", "pac_lucia", 60, "16:30"),
+  ];
+}
+
 /** Receitas de exemplo, no estado em que estariam hoje. */
 export function demoPrescriptions(today: string): Prescription[] {
   const rx = (
     id: string,
     patientId: string,
+    consultationId: string,
     nome: string,
     dosagem: string,
     kind: Prescription["kind"],
-    consultaHa: number,
-    usoDe: number,
-    usoAte: number,
-    status: Prescription["status"] = "issued",
+    preparedAgo: number,
+    useUntilIn: number,
     extra: Partial<Prescription> = {},
   ): Prescription => ({
     id,
@@ -161,56 +180,36 @@ export function demoPrescriptions(today: string): Prescription[] {
     nome,
     dosagem,
     kind,
-    consultationDate: addDays(today, consultaHa),
-    useFrom: addDays(today, usoDe),
-    useUntil: addDays(today, usoAte),
-    status,
+    origin: { type: "consultation", consultationId },
+    preparedAt: addDays(today, -preparedAgo),
+    useFrom: addDays(today, -preparedAgo),
+    useUntil: addDays(today, useUntilIn),
+    status: "ready",
     change: "none",
     ...extra,
   });
   return [
-    rx("rec_1", LIVE_PATIENT_ID, "Sertralina", "50 mg, 1 comprimido pela manhã", "common", -28, -28, 2),
-    rx("rec_2", LIVE_PATIENT_ID, "Clonazepam", "0,5 mg, à noite se necessário", "B", -9, -9, 51),
-    rx(
-      "rec_3",
-      LIVE_PATIENT_ID,
-      "Metilfenidato",
-      "10 mg, 1 comprimido ao acordar",
-      "A",
-      -35,
-      -35,
-      -5,
-      "used",
-    ),
-    rx("rec_4", "pac_marina", "Escitalopram", "10 mg, 1 comprimido pela manhã", "common", -20, -20, 40),
-    rx("rec_5", "pac_pedro", "Amitriptilina", "25 mg, 1 comprimido à noite", "C1", -34, -34, -2),
-    rx(
-      "rec_6",
-      "pac_lucia",
-      "Sertralina",
-      "50 mg, 1 comprimido pela manhã",
-      "common",
-      -60,
-      -60,
-      -30,
-      "stopped",
-      {
-        change: "stop",
-        changeNote: "Suspensa para troca de medicação.",
-      },
-    ),
+    rx("rec_1", LIVE_PATIENT_ID, "c_u2", "Lyberdia", "70 mg, 1 cápsula pela manhã", "A", 28, 2),
+    rx("rec_2", LIVE_PATIENT_ID, "c_u3", "Topiramato", "100 mg, 1 comprimido à noite", "common", 9, 51),
+    rx("rec_4", "pac_marina", "c_m1", "Escitalopram", "10 mg, 1 comprimido pela manhã", "common", 20, 40),
+    rx("rec_5", "pac_pedro", "c_p1", "Amitriptilina", "25 mg, 1 comprimido à noite", "C1", 34, -2),
+    rx("rec_6", "pac_lucia", "c_l1", "Sertralina", "50 mg, 1 comprimido pela manhã", "common", 60, -30, {
+      status: "stopped",
+      change: "stop",
+      changeNote: "Suspensa para troca de medicação.",
+    }),
   ];
 }
 
-/** Pedidos de nova receita que os pacientes já fizeram. */
+/** Pedidos de nova receita que os pacientes já fizeram e ainda não foram respondidos. */
 export function demoRequests(today: string): PrescriptionRequest[] {
   return [
     {
       id: "ped_1",
       patientId: LIVE_PATIENT_ID,
-      nome: "Sertralina",
+      nome: "Lyberdia",
       requestedAt: addDays(today, -1),
-      note: "Acaba em 2 dias.",
+      note: "Está acabando.",
     },
     { id: "ped_2", patientId: "pac_pedro", nome: "Amitriptilina", requestedAt: today },
   ];
@@ -231,3 +230,15 @@ export function demoExams(today: string): ExamRequest[] {
     { id: "exa_3", patientId: "pac_pedro", nome: "Glicemia", requestedAt: addDays(today, -1), step: 1 },
   ];
 }
+
+/** Receitas de exemplo que o paciente já usou (retirou e comprou). Só ele sabe, e elas não aparecem mais para ele. */
+export const DEMO_STEPS: Record<string, "retirei" | "comprei"> = {
+  rec_1: "comprei",
+  rec_2: "comprei",
+};
+
+/** Estoque de exemplo: o Lyberdia está perto de acabar, o Topiramato tem folga. */
+export const DEMO_STOCK: Record<string, { count: number; since: string }> = {
+  lyberdia: { count: 9, since: "2026-10-01" },
+  topiramato: { count: 40, since: "2026-10-01" },
+};

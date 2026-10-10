@@ -11,9 +11,17 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
+import { addDays } from "@/features/health/logic";
+import { formatDateBR } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { detectChange, KIND_INFO, KINDS, type PrescriptionDraft } from "../prescriptionRules";
-import type { Prescription, PrescriptionChange } from "../types";
+import { detectChange, draftFrom, KIND_INFO, KINDS, type PrescriptionDraft } from "../prescriptionRules";
+import type {
+  Consultation,
+  Prescription,
+  PrescriptionChange,
+  PrescriptionOrigin,
+  PrescriptionRequest,
+} from "../types";
 
 const CHANGE_LABEL: Record<PrescriptionChange, string> = {
   none: "Sem mudança",
@@ -25,32 +33,87 @@ const CHANGES: PrescriptionChange[] = ["none", "dose", "switch", "stop"];
 
 interface Props {
   patientName: string;
-  /** Receita anterior do mesmo remédio, usada para comparar a dose. */
-  last?: Prescription;
-  initial: PrescriptionDraft;
+  today: string;
+  /** Receita anterior do mesmo remédio: serve para preencher e para comparar a dose. */
+  last: Prescription;
+  /** Se veio de um pedido do paciente, a receita nasce dele e não precisa de consulta. */
+  request?: PrescriptionRequest;
+  /** Consultas em que a receita pode sair (quando não vem de um pedido). */
+  consultations: Consultation[];
   onClose: () => void;
-  onIssue: (draft: PrescriptionDraft, change: PrescriptionChange, note: string) => void;
+  onRegister: (
+    draft: PrescriptionDraft,
+    origin: PrescriptionOrigin,
+    change: PrescriptionChange,
+    note: string,
+  ) => void;
   onStop: (note: string) => void;
 }
 
-/** Nova receita em 2 toques: tudo já vem da última; o psiquiatra só confere e emite. */
-export function NewPrescriptionDialog({ patientName, last, initial, onClose, onIssue, onStop }: Props) {
-  const [draft, setDraft] = useState(initial);
+/**
+ * Registrar receita em 2 toques. O app não emite nem envia nada: o psiquiatra entrega o papel em mãos
+ * e aqui registra o que preparou, para o paciente saber que está pronto e até quando vale.
+ */
+export function NewPrescriptionDialog({
+  patientName,
+  today,
+  last,
+  request,
+  consultations,
+  onClose,
+  onRegister,
+  onStop,
+}: Props) {
+  const fromRequest = Boolean(request);
+  const [consultationId, setConsultationId] = useState(consultations[0]?.id ?? "");
+  const [draft, setDraft] = useState<PrescriptionDraft>(() =>
+    draftFrom(last, request ? today : (consultations[0]?.date ?? today)),
+  );
   const [manual, setManual] = useState<PrescriptionChange | null>(null);
   const [note, setNote] = useState("");
+
+  if (!fromRequest && consultations.length === 0) {
+    return (
+      <Dialog open onOpenChange={(open) => !open && onClose()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sem consulta para esta receita</DialogTitle>
+            <DialogDescription>
+              {patientName} não teve consulta depois da última receita de {last.nome}. A receita sai de uma
+              consulta ou de um pedido do paciente que você avaliou. Marque a consulta na Agenda e volte aqui.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" className="min-h-11" onClick={onClose}>
+              Entendi
+            </Button>
+            <Button asChild className="min-h-11">
+              <a href="/dashboard/pro/agenda">Abrir a agenda</a>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   const detected = detectChange(last, draft);
   const change = manual ?? detected;
   const set = <K extends keyof PrescriptionDraft>(key: K, value: PrescriptionDraft[K]) =>
     setDraft((current) => ({ ...current, [key]: value }));
+  const label = (c: Consultation) =>
+    `${c.date === today ? "Hoje" : c.date === addDays(today, -1) ? "Ontem" : formatDateBR(c.date)}, ${c.hora}`;
+  const origin: PrescriptionOrigin = request
+    ? { type: "request", requestId: request.id }
+    : { type: "consultation", consultationId };
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Nova receita</DialogTitle>
+          <DialogTitle>Registrar receita</DialogTitle>
           <DialogDescription>
-            {patientName}. Já vem preenchida com a última receita deste remédio.
+            {patientName}. {request ? "Do pedido do paciente." : "De uma consulta."} Já vem preenchida com a
+            última receita. O app não envia a receita: você a entrega em mãos e aqui só registra.
           </DialogDescription>
         </DialogHeader>
 
@@ -83,13 +146,35 @@ export function NewPrescriptionDialog({ patientName, last, initial, onClose, onI
             </div>
           </fieldset>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <Field
-              label="Consulta"
-              type="date"
-              value={draft.consultationDate}
-              onChange={(e) => set("consultationDate", e.target.value)}
-            />
+          {!fromRequest && (
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-medium text-foreground">Consulta em que ela sai</legend>
+              <div className="flex flex-wrap gap-2">
+                {consultations.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    aria-pressed={consultationId === c.id}
+                    onClick={() => {
+                      setConsultationId(c.id);
+                      const base = draftFrom(last, c.date);
+                      setDraft((current) => ({ ...current, useFrom: base.useFrom, useUntil: base.useUntil }));
+                    }}
+                    className={cn(
+                      "min-h-11 rounded-full border px-4 text-sm font-medium",
+                      consultationId === c.id
+                        ? "border-brand-600 bg-brand-600 text-white"
+                        : "border-border bg-card text-foreground",
+                    )}
+                  >
+                    {label(c)}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          )}
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field
               label="Usar de"
               type="date"
@@ -148,8 +233,8 @@ export function NewPrescriptionDialog({ patientName, last, initial, onClose, onI
               Registrar suspensão
             </Button>
           ) : (
-            <Button className="min-h-11" onClick={() => onIssue(draft, change, note)}>
-              Emitir receita
+            <Button className="min-h-11" onClick={() => onRegister(draft, origin, change, note)}>
+              Registrar receita
             </Button>
           )}
         </DialogFooter>

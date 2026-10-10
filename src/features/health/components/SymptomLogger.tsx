@@ -7,9 +7,11 @@ import { cn } from "@/lib/utils";
 
 interface SymptomLoggerProps {
   onLog: (names: string[], intensity: number) => void;
+  /** Prefixo dos ids, para poder ter dois registradores na mesma tela. */
+  idPrefix?: string;
 }
 
-export function SymptomLogger({ onLog }: SymptomLoggerProps) {
+export function SymptomLogger({ onLog, idPrefix = "sintoma" }: SymptomLoggerProps) {
   const [chosen, setChosen] = useState<string[]>([]);
   const [intensity, setIntensity] = useState(3);
   const [custom, setCustom] = useState("");
@@ -61,11 +63,11 @@ export function SymptomLogger({ onLog }: SymptomLoggerProps) {
       </div>
 
       <div className="flex gap-2">
-        <label className="sr-only" htmlFor="sintoma-outro">
+        <label className="sr-only" htmlFor={`${idPrefix}-outro`}>
           Outro sintoma
         </label>
         <input
-          id="sintoma-outro"
+          id={`${idPrefix}-outro`}
           value={custom}
           maxLength={30}
           onChange={(e) => setCustom(e.target.value)}

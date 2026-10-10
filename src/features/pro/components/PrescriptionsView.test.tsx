@@ -17,13 +17,12 @@ describe("PrescriptionsView", () => {
 
   it("agrupa por paciente e mostra só o que precisa de atenção", () => {
     setup();
-    const patients = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
-    expect(patients).toContain("Pedidos dos pacientes");
-    expect(patients).toContain("Usuário Demonstração");
-    expect(patients).toContain("Pedro Alves");
-    // Marina tem receita com folga e Lúcia está suspensa: não aparecem no filtro padrão.
-    expect(patients).not.toContain("Marina Costa");
-    expect(patients).not.toContain("Lúcia Fernandes");
+    const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
+    expect(headings).toContain("Pedidos dos pacientes");
+    expect(headings).toContain("Usuário Demonstração");
+    expect(headings).toContain("Pedro Alves");
+    expect(headings).not.toContain("Marina Costa");
+    expect(headings).not.toContain("Lúcia Fernandes");
   });
 
   it("'Todas' mostra também as receitas em dia", async () => {
@@ -32,59 +31,73 @@ describe("PrescriptionsView", () => {
     expect(screen.getByRole("heading", { name: "Marina Costa", level: 2 })).toBeInTheDocument();
   });
 
-  it("cada receita mostra tipo, consulta e período de uso", () => {
+  it("cada receita mostra tipo, quando foi registrada e o período de uso", () => {
     setup();
     const section = screen.getByRole("region", { name: "Usuário Demonstração" });
-    expect(within(section).getByText(/Notificação A · amarela/)).toBeInTheDocument();
-    expect(within(section).getAllByText(/Consulta de/).length).toBeGreaterThan(0);
+    expect(within(section).getByText(/Controle especial|Notificação A · amarela/)).toBeInTheDocument();
+    expect(within(section).getAllByText(/Registrada em/).length).toBeGreaterThan(0);
     expect(within(section).getAllByText(/Use de/).length).toBeGreaterThan(0);
   });
 
-  it("Nova receita abre já preenchida e emite sem mudança em 2 toques", async () => {
+  it("'Deixei pronta' registra a partir do pedido, sem pedir consulta, e tira o pedido da caixa", async () => {
+    setup();
+    await userEvent.click(screen.getByRole("button", { name: /Deixei pronta: Pedro Alves/ }));
+    expect(screen.getByRole("heading", { name: "Registrar receita" })).toBeInTheDocument();
+    expect(screen.queryByText("Consulta em que ela sai")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Registrar receita" }));
+    expect(screen.queryByRole("button", { name: /Deixei pronta: Pedro Alves/ })).not.toBeInTheDocument();
+    expect(screen.getByText("Receita registrada (simulado).")).toBeInTheDocument();
+  });
+
+  it("'Precisa de consulta' responde o pedido sem registrar receita", async () => {
+    setup();
+    await userEvent.click(screen.getByRole("button", { name: /Precisa de consulta: Pedro Alves/ }));
+    expect(screen.queryByRole("button", { name: /Deixei pronta: Pedro Alves/ })).not.toBeInTheDocument();
+    expect(screen.getByText("Resposta enviada ao paciente (simulado).")).toBeInTheDocument();
+  });
+
+  it("'Não por agora' oferece motivos curtos e opcionais", async () => {
+    setup();
+    await userEvent.click(screen.getByRole("button", { name: /Não por agora: Pedro Alves/ }));
+    expect(screen.getByRole("button", { name: "Sem motivo" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Ainda tem receita válida" }));
+    expect(screen.queryByRole("button", { name: /Deixei pronta: Pedro Alves/ })).not.toBeInTheDocument();
+  });
+
+  it("registrar nova receita sem pedido exige uma consulta e já vem preenchida", async () => {
     setup();
     await userEvent.click(
-      screen.getByRole("button", { name: "Nova receita de Sertralina para Usuário Demonstração" }),
+      screen.getByRole("button", { name: "Registrar nova receita de Lyberdia para Usuário Demonstração" }),
     );
-    expect(screen.getByLabelText("Remédio")).toHaveValue("Sertralina");
+    expect(screen.getByLabelText("Remédio")).toHaveValue("Lyberdia");
+    expect(screen.getByText("Consulta em que ela sai")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Sem mudança" })).toHaveAttribute("aria-pressed", "true");
-    await userEvent.click(screen.getByRole("button", { name: "Emitir receita" }));
+    await userEvent.click(screen.getByRole("button", { name: "Registrar receita" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    // Emitida, ela já não precisa de atenção; em "Todas" aparece a nova e a antiga.
-    await userEvent.click(screen.getByRole("button", { name: "Todas" }));
-    const section = screen.getByRole("region", { name: "Usuário Demonstração" });
-    expect(within(section).getAllByRole("heading", { name: "Sertralina" })).toHaveLength(2);
-    expect(screen.queryByText("Receita emitida (simulado).")).toBeInTheDocument();
   });
 
   it("mudar a dose marca 'Dose mudou' sozinho", async () => {
     setup();
     await userEvent.click(
-      screen.getByRole("button", { name: "Nova receita de Sertralina para Usuário Demonstração" }),
+      screen.getByRole("button", { name: "Registrar nova receita de Lyberdia para Usuário Demonstração" }),
     );
     const dose = screen.getByLabelText("Dose e como usar");
     await userEvent.clear(dose);
-    await userEvent.type(dose, "100 mg, 1 comprimido pela manhã");
+    await userEvent.type(dose, "140 mg, 1 cápsula pela manhã");
     expect(screen.getByRole("button", { name: "Dose mudou" })).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("atender um pedido o tira da caixa de pedidos", async () => {
-    setup();
-    await userEvent.click(screen.getByRole("button", { name: /Atender pedido de Pedro Alves/ }));
-    await userEvent.click(screen.getByRole("button", { name: "Emitir receita" }));
-    expect(screen.queryByRole("button", { name: /Atender pedido de Pedro Alves/ })).not.toBeInTheDocument();
-  });
-
-  it("suspender não emite receita nova e marca a última como suspensa", async () => {
+  it("suspender não registra receita nova e marca a última como suspensa", async () => {
     setup();
     await userEvent.click(
-      screen.getByRole("button", { name: "Nova receita de Sertralina para Usuário Demonstração" }),
+      screen.getByRole("button", { name: "Registrar nova receita de Lyberdia para Usuário Demonstração" }),
     );
     await userEvent.click(screen.getByRole("button", { name: "Suspendeu" }));
-    expect(screen.queryByRole("button", { name: "Emitir receita" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Registrar receita" })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Registrar suspensão" }));
     await userEvent.click(screen.getByRole("button", { name: "Todas" }));
     const section = screen.getByRole("region", { name: "Usuário Demonstração" });
-    expect(within(section).getAllByText("Suspensa").length).toBe(1);
-    expect(within(section).getAllByRole("heading", { name: "Sertralina" })).toHaveLength(1);
+    expect(within(section).getAllByText("Suspensa")).toHaveLength(1);
+    expect(within(section).getAllByRole("heading", { name: "Lyberdia" })).toHaveLength(1);
   });
 });
