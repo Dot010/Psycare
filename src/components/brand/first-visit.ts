@@ -1,19 +1,17 @@
-export const FIRST_VISIT_KEY = "psycare:first-visit:v1";
+/** Cookie de sessão (some ao fechar o navegador): marca que a abertura já foi mostrada. Sem dado pessoal. */
+export const SEEN_COOKIE = "psycare_splash";
 
-/** Só mostra se a página ainda está carregando depois disto: carregamento rápido não pisca. */
-export const SHOW_AFTER_MS = 200;
-/** Depois de aparecer, fica pelo menos isto, para a marca não surgir e sumir num lampejo. */
-export const MIN_VISIBLE_MS = 400;
-/** Teto: mesmo que a página demore, a tela de abertura sai depois disto. */
-export const MAX_VISIBLE_MS = 1000;
+/** Fica ao menos isto na tela, para a marca ser vista e não piscar. */
+export const MIN_VISIBLE_MS = 900;
+/** Teto: mesmo que a página demore, a abertura sai depois disto. */
+export const MAX_VISIBLE_MS = 1600;
+/** Duração do esmaecer ao sair. */
+export const FADE_MS = 300;
 
-/** Verdadeiro uma vez por sessão do navegador. Sem sessionStorage, nunca mostra. */
-export function claimFirstVisit(): boolean {
+export function markSeen(): void {
   try {
-    if (window.sessionStorage.getItem(FIRST_VISIT_KEY)) return false;
-    window.sessionStorage.setItem(FIRST_VISIT_KEY, "1");
-    return true;
+    document.cookie = `${SEEN_COOKIE}=1; path=/; SameSite=Lax`;
   } catch {
-    return false;
+    // Cookies bloqueados: só deixa de lembrar que já mostrou.
   }
 }

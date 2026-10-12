@@ -6,9 +6,12 @@ export function greeting(profile: Profile): string {
   return name ? `Olá, ${name}` : "Olá!";
 }
 
-/** Idade aproximada pelo ano de nascimento (sem mês e dia, pode errar por 1). */
-export function approxAge(profile: Profile, currentYear: number): number | undefined {
-  return profile.birthYear === undefined ? undefined : currentYear - profile.birthYear;
+/** Idade completa em anos na data de hoje (AAAA-MM-DD), ou undefined sem data de nascimento. */
+export function ageOn(profile: Profile, todayISO: string): number | undefined {
+  if (!profile.birthDate) return undefined;
+  const [by, bm, bd] = profile.birthDate.split("-").map(Number);
+  const [ty, tm, td] = todayISO.split("-").map(Number);
+  return ty - by - (tm < bm || (tm === bm && td < bd) ? 1 : 0);
 }
 
 /** Nome do paciente de demonstração na área do profissional quando a pessoa não informou o seu. */

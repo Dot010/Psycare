@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { PROFILE_KEY } from "@/features/profile/schema";
@@ -14,13 +14,13 @@ async function goToProfileStep() {
   await userEvent.click(await screen.findByRole("button", { name: "Continuar" }));
 }
 
-describe("Onboarding: nome e ano", () => {
+describe("Onboarding: nome e data de nascimento", () => {
   beforeEach(() => window.localStorage.clear());
 
   it("os campos começam vazios e avisam que podem ser fictícios", async () => {
     await goToProfileStep();
     expect(screen.getByLabelText("Nome ou apelido")).toHaveValue("");
-    expect(screen.getByLabelText("Ano de nascimento")).toHaveValue("");
+    expect(screen.getByLabelText("Data de nascimento")).toHaveValue("");
     expect(screen.getByText(/Pode ser fictício na demonstração/)).toBeInTheDocument();
   });
 
@@ -31,19 +31,19 @@ describe("Onboarding: nome e ano", () => {
     expect(saved()).toBeNull();
   });
 
-  it("guarda nome e ano quando preenchidos", async () => {
+  it("guarda nome e data quando preenchidos", async () => {
     await goToProfileStep();
     await userEvent.type(screen.getByLabelText("Nome ou apelido"), "Mari");
-    await userEvent.type(screen.getByLabelText("Ano de nascimento"), "1990");
+    fireEvent.change(screen.getByLabelText("Data de nascimento"), { target: { value: "1990-05-17" } });
     await userEvent.click(screen.getByRole("button", { name: "Continuar" }));
-    expect(saved()).toEqual({ name: "Mari", birthYear: 1990 });
+    expect(saved()).toEqual({ name: "Mari", birthDate: "1990-05-17" });
   });
 
-  it("avisa em português quando o ano não vale e não avança", async () => {
+  it("avisa em português quando a data não vale e não avança", async () => {
     await goToProfileStep();
-    await userEvent.type(screen.getByLabelText("Ano de nascimento"), "199");
+    fireEvent.change(screen.getByLabelText("Data de nascimento"), { target: { value: "2999-01-01" } });
     await userEvent.click(screen.getByRole("button", { name: "Continuar" }));
-    expect(screen.getByRole("alert")).toHaveTextContent("Use 4 dígitos, por exemplo 1990");
+    expect(screen.getByRole("alert")).toHaveTextContent("A data não pode ser no futuro");
     expect(screen.queryByText("O que você quer cuidar primeiro?")).toBeNull();
   });
 });
