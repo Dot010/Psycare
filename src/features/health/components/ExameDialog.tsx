@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
 import { ATTACHMENT_TYPES, MAX_ATTACHMENT_BYTES } from "@/features/health/logic";
+import { exameSchema, HEALTH_LIMITS } from "@/features/health/schema";
 import type { Exame, ExameAnexo } from "@/features/health/types";
 import { toISODate } from "@/lib/dates";
 
@@ -72,14 +73,13 @@ function ExameForm({
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    const name = titulo.trim();
-    if (name.length < 2) return setError("Dê um nome ao exame.");
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) return setError("Escolha a data do exame.");
+    const parsed = exameSchema.safeParse({ titulo, data, resultado });
+    if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? "Dados inválidos");
     onSave({
       id: item?.id ?? crypto.randomUUID(),
-      titulo: name.slice(0, 80),
-      data,
-      resultado: resultado.trim().slice(0, 300) || undefined,
+      titulo: parsed.data.titulo,
+      data: parsed.data.data,
+      resultado: parsed.data.resultado || undefined,
       anexo,
     });
     onClose();
@@ -90,6 +90,7 @@ function ExameForm({
       <Field
         label="Nome do exame"
         required
+        maxLength={HEALTH_LIMITS.exameTitulo}
         value={titulo}
         onChange={(e) => setTitulo(e.target.value)}
         placeholder="Ex: Hemograma"
@@ -104,6 +105,7 @@ function ExameForm({
       />
       <Field
         label="O que o exame mostrou (opcional)"
+        maxLength={HEALTH_LIMITS.exameResultado}
         value={resultado}
         onChange={(e) => setResultado(e.target.value)}
         placeholder="Com as suas palavras ou as do laudo"
