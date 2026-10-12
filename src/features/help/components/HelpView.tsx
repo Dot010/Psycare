@@ -158,6 +158,7 @@ export default function HelpView() {
                   id="ticket-message"
                   rows={4}
                   required
+                  maxLength={1000}
                   placeholder="Descreva o que está acontecendo..."
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
