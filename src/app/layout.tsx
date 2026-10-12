@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { connection } from "next/server";
 import { Poppins } from "next/font/google";
 import { UserProvider } from "@/components/providers/UserProvider";
+import { FirstVisitLoader } from "@/components/brand/FirstVisitLoader";
 import { DemoBanner } from "@/components/feedback/DemoBanner";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { parseTheme, THEME_COOKIE } from "@/lib/theme-cookie";
@@ -27,6 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="pt-br" className={`${poppins.variable} h-full antialiased${theme === "dark" ? " dark" : ""}`}>
       <body className={`${poppins.className} min-h-full antialiased`}>
+        <FirstVisitLoader />
         <DemoBanner />
         <AppProviders>
           <UserProvider>{children}</UserProvider>

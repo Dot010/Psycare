@@ -40,7 +40,7 @@ describe("Encaminhamento: paciente", () => {
     await userEvent.click(screen.getByRole("button", { name: "Pedir encaminhamento" }));
 
     // O psiquiatra deixa pronto: vê o pedido do usuário e do exemplo (Marina).
-    await userEvent.click(screen.getByRole("button", { name: /Deixei pronto: Ana Lima/ }));
+    await userEvent.click(screen.getByRole("button", { name: /Deixei pronto: Paciente demo/ }));
     expect(step("Emitido pelo psiquiatra")).toHaveAttribute("aria-current", "step");
 
     // O paciente registra o convênio. Sem dados, não avança.
@@ -69,7 +69,7 @@ describe("Encaminhamento: paciente", () => {
     );
     expect(screen.queryByText("Levar o encaminhamento ao convênio")).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Pedir encaminhamento" }));
-    await userEvent.click(screen.getByRole("button", { name: /Deixei pronto: Ana Lima/ }));
+    await userEvent.click(screen.getByRole("button", { name: /Deixei pronto: Paciente demo/ }));
     const today = screen.getByRole("region", { name: "Tarefas de hoje" });
     expect(within(today).getByText("Levar o encaminhamento ao convênio")).toBeInTheDocument();
   });

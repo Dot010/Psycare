@@ -19,7 +19,7 @@ describe("PrescriptionsView", () => {
     setup();
     const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
     expect(headings).toContain("Pedidos dos pacientes");
-    expect(headings).toContain("Ana Lima");
+    expect(headings).toContain("Paciente demo");
     expect(headings).toContain("Pedro Alves");
     expect(headings).not.toContain("Marina Costa");
     expect(headings).not.toContain("Lúcia Fernandes");
@@ -33,7 +33,7 @@ describe("PrescriptionsView", () => {
 
   it("cada receita mostra tipo, quando foi registrada e o período de uso", () => {
     setup();
-    const section = screen.getByRole("region", { name: "Ana Lima" });
+    const section = screen.getByRole("region", { name: "Paciente demo" });
     expect(within(section).getByText(/Controle especial|Notificação A · amarela/)).toBeInTheDocument();
     expect(within(section).getAllByText(/Registrada em/).length).toBeGreaterThan(0);
     expect(within(section).getAllByText(/Use de/).length).toBeGreaterThan(0);
@@ -67,7 +67,7 @@ describe("PrescriptionsView", () => {
   it("registrar nova receita sem pedido exige uma consulta e já vem preenchida", async () => {
     setup();
     await userEvent.click(
-      screen.getByRole("button", { name: "Registrar nova receita de Lyberdia para Ana Lima" }),
+      screen.getByRole("button", { name: "Registrar nova receita de Lyberdia para Paciente demo" }),
     );
     expect(screen.getByLabelText("Remédio")).toHaveValue("Lyberdia");
     expect(screen.getByText("Consulta em que ela sai")).toBeInTheDocument();
@@ -79,7 +79,7 @@ describe("PrescriptionsView", () => {
   it("mudar a dose marca 'Dose mudou' sozinho", async () => {
     setup();
     await userEvent.click(
-      screen.getByRole("button", { name: "Registrar nova receita de Lyberdia para Ana Lima" }),
+      screen.getByRole("button", { name: "Registrar nova receita de Lyberdia para Paciente demo" }),
     );
     const dose = screen.getByLabelText("Dose e como usar");
     await userEvent.clear(dose);
@@ -90,13 +90,13 @@ describe("PrescriptionsView", () => {
   it("suspender não registra receita nova e marca a última como suspensa", async () => {
     setup();
     await userEvent.click(
-      screen.getByRole("button", { name: "Registrar nova receita de Lyberdia para Ana Lima" }),
+      screen.getByRole("button", { name: "Registrar nova receita de Lyberdia para Paciente demo" }),
     );
     await userEvent.click(screen.getByRole("button", { name: "Suspendeu" }));
     expect(screen.queryByRole("button", { name: "Registrar receita" })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Registrar suspensão" }));
     await userEvent.click(screen.getByRole("button", { name: "Todas" }));
-    const section = screen.getByRole("region", { name: "Ana Lima" });
+    const section = screen.getByRole("region", { name: "Paciente demo" });
     expect(within(section).getAllByText("Suspensa")).toHaveLength(1);
     expect(within(section).getAllByRole("heading", { name: "Lyberdia" })).toHaveLength(1);
   });

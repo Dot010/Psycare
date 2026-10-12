@@ -33,14 +33,13 @@ const FAQS = [
       "Em Saúde, na aba Encaminhamento, toque em “Pedir encaminhamento”. O papel é entregue em mãos pelo psiquiatra, e você anota cada etapa até entregar à psicóloga.",
   },
   {
-    question: "Como funciona a renovação da assinatura?",
+    question: "Como pago minhas consultas?",
     answer:
-      "A renovação ocorre automaticamente no dia do vencimento do seu plano. Caso utilize PIX, um código de pagamento e QR Code serão enviados por e-mail.",
+      "Em Pagamentos, cada profissional tem a sua lista de cobranças. Toque em Pagar e use o PIX daquele profissional. O PsyCare não tem assinatura: você paga só o que for atendimento.",
   },
   {
-    question: "Posso cancelar minha assinatura a qualquer momento?",
-    answer:
-      "Sim. Você pode cancelar na página de Pagamentos. O acesso continua ativo até o fim do período já pago.",
+    question: "Posso pagar a mais de um profissional?",
+    answer: "Sim. Cada profissional aparece separado em Pagamentos, e cada pagamento vai só para ele.",
   },
 ];
 

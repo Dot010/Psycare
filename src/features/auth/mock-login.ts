@@ -24,7 +24,7 @@ export async function loginMock(email: string): Promise<UserSession> {
 const DEMO_USERS: Record<DemoProfile, UserSession> = {
   patient: {
     id: "usr_01",
-    name: "Ana Lima",
+    name: "Paciente demo",
     email: "usuario@psycare.com.br",
     role: "patient",
   },

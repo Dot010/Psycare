@@ -15,7 +15,7 @@ import type {
 export const LIVE_PATIENT_ID = "usr_01";
 
 export const PATIENTS: Patient[] = [
-  { id: LIVE_PATIENT_ID, name: "Ana Lima", age: 32, since: "2026-06-10", live: true, fee: 180 },
+  { id: LIVE_PATIENT_ID, name: "Paciente demo", age: 32, since: "2026-06-10", live: true, fee: 180 },
   { id: "pac_marina", name: "Marina Costa", age: 28, since: "2026-03-02", fee: 180 },
   { id: "pac_pedro", name: "Pedro Alves", age: 41, since: "2025-11-18", fee: 220 },
   { id: "pac_lucia", name: "Lúcia Fernandes", age: 35, since: "2026-08-25", fee: 180 },

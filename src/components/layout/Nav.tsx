@@ -52,7 +52,10 @@ export default function Nav({ variant = "patient" }: { variant?: NavVariant }) {
           </span>
         </div>
 
-        <nav aria-label="Principal" className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto pt-10">
+        <nav
+          aria-label="Principal"
+          className="no-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto pt-10"
+        >
           <ul>
             {items.map(({ title, href, icon: Icon, startsGroup }) => {
               const isActive =

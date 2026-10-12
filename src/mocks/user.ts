@@ -3,55 +3,8 @@ import type { Chat } from "@/features/messages/types";
 import type { DiaryEntry } from "@/features/diary/types";
 import type { Medicamento, Sintoma } from "@/features/health/types";
 import type { Habit } from "@/features/habits/types";
-import type { Invoice, PaymentMethod, Subscription } from "@/features/payments/types";
 
 export const mockUser = {
-  name: "Ana Lima",
-
-  subscription: {
-    planName: "Plano PsyCare Premium",
-    price: 49.9,
-    billingCycle: "mensal",
-    nextBillingDate: "08/10/2026",
-    status: "active",
-  } as Subscription,
-
-  paymentMethods: [
-    {
-      id: "1",
-      type: "credit_card",
-      brand: "Visa",
-      last4: "1234",
-      expiry: "12/26",
-      isDefault: true,
-    },
-    {
-      id: "2",
-      type: "pix",
-      pixKey: "meu-pix@exemplo.com",
-      isDefault: false,
-    },
-  ] as PaymentMethod[],
-
-  invoices: [
-    {
-      id: "1",
-      description: "Assinatura Mensal - Setembro",
-      amount: 49.9,
-      date: "01/09/2026",
-      status: "paid",
-      pdfUrl: "https://example.com/invoice-september.pdf",
-    },
-    {
-      id: "2",
-      description: "Assinatura Mensal - Outubro",
-      amount: 49.9,
-      date: "01/10/2026",
-      status: "pending",
-      pdfUrl: "https://example.com/invoice-october.pdf",
-    },
-  ] as Invoice[],
-
   habits: [
     {
       id: "1",
@@ -112,7 +65,7 @@ export const mockUser = {
     },
     {
       id: "2",
-      profissional: "Dr. Carlos Pereira",
+      profissional: "Dr. Rafael Nunes",
       data: "2026-10-20",
       hora: "10:00",
       status: "pendente",

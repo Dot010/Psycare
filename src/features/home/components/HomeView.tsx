@@ -27,7 +27,8 @@ import { useHabits } from "@/features/habits/hooks/useHabits";
 import { toISODate } from "@/lib/dates";
 import { useMediaQuery } from "@/lib/motion";
 import { useLocalStorage } from "@/lib/useLocalStorage";
-import { mockUser } from "@/mocks/user";
+import { greeting } from "@/features/profile/logic";
+import { useProfile } from "@/features/profile/useProfile";
 
 const SHEET_KEY = "psycare:home-sheet:v1";
 
@@ -42,6 +43,7 @@ export default function HomeView() {
   const { appointments } = useAppointments();
   const { entries } = useDiary();
   const garden = useGarden();
+  const [profile] = useProfile();
   const compact = useMediaQuery("(max-width: 767px)");
   const sound = useGardenSound();
   const [selected, setSelected] = useState<string | null>(null);
@@ -78,7 +80,7 @@ export default function HomeView() {
       <header className="pointer-events-none absolute inset-x-0 top-0 z-[11] flex items-start justify-between gap-3 bg-gradient-to-b from-canvas/80 via-canvas/40 to-transparent p-4 pb-8 md:p-8 md:pb-10">
         <div className="flex min-w-0 flex-col gap-2">
           <h1 className="line-clamp-2 break-words text-xl leading-tight font-bold text-ink md:text-2xl">
-            Olá, {mockUser.name}
+            {greeting(profile)}
           </h1>
           <WaterHelp poured={garden.poured} toNext={garden.toNext}>
             <button
