@@ -7,6 +7,7 @@ import { Field } from "@/components/ui/field";
 import { addDays } from "@/features/health/logic";
 import { cn } from "@/lib/utils";
 import { buildTask, IMPORTANCE_LABEL, IMPORTANCES, isLocked } from "../logic";
+import { TASK_TITLE_MAX, taskTitleSchema } from "../schema";
 import type { Importance, Task } from "../types";
 
 interface Props {
@@ -56,6 +57,11 @@ function TaskForm({
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    const checked = taskTitleSchema.safeParse(title);
+    if (!checked.success) {
+      setError(checked.error.issues[0]?.message ?? "Escreva o que precisa ser feito");
+      return;
+    }
     const built = buildTask({
       id: task?.id ?? crypto.randomUUID(),
       title,
@@ -86,7 +92,7 @@ function TaskForm({
       <Field
         label="O que fazer"
         value={title}
-        maxLength={80}
+        maxLength={TASK_TITLE_MAX}
         disabled={locked}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Ex: Comprar o remédio"

@@ -1,4 +1,6 @@
 import { addDays } from "@/features/health/logic";
+import { isClockTime, isRealDate } from "@/lib/validation";
+import { taskTitleSchema } from "./schema";
 import type { Importance, Task } from "./types";
 
 export const IMPORTANCES: Importance[] = ["high", "medium", "low"];
@@ -8,11 +10,8 @@ const RANK: Record<Importance, number> = { high: 0, medium: 1, low: 2 };
 /** Com este número de tarefas abertas num dia, o app avisa que o dia está cheio. */
 export const FULL_DAY = 6;
 
-const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
-
-export const isValidTime = (value: string) => TIME.test(value);
-export const isValidDate = (value: string) => DATE.test(value);
+export const isValidTime = isClockTime;
+export const isValidDate = isRealDate;
 
 /** Abertas primeiro; as com hora por hora; as sem hora por importância. */
 export function sortDay(tasks: Task[]): Task[] {
@@ -87,11 +86,11 @@ export interface TaskInput {
 
 /** Monta uma tarefa limpando os dados. Devolve `null` se não tiver título. */
 export function buildTask(input: TaskInput): Task | null {
-  const title = input.title.replace(/\s+/g, " ").trim().slice(0, 80);
-  if (title.length < 1) return null;
+  const parsedTitle = taskTitleSchema.safeParse(input.title);
+  if (!parsedTitle.success) return null;
   return {
     id: input.id,
-    title,
+    title: parsedTitle.data,
     date: input.date && isValidDate(input.date) ? input.date : undefined,
     time: input.time && isValidTime(input.time) ? input.time : undefined,
     importance: input.importance,

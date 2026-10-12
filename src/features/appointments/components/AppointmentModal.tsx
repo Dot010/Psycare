@@ -5,7 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Field, SelectField } from "@/components/ui/field";
 import { toISODate } from "@/lib/dates";
-import type { Agendamento, AppointmentType, CreateAppointmentInput } from "@/features/appointments/types";
+import {
+  PROFISSIONAL_MAX,
+  type Agendamento,
+  type AppointmentType,
+  type CreateAppointmentInput,
+} from "@/features/appointments/types";
 
 interface AppointmentModalProps {
   open: boolean;
@@ -61,6 +66,7 @@ function AppointmentForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <Field
         label="Profissional"
+        maxLength={PROFISSIONAL_MAX}
         value={profissional}
         onChange={(e) => setProfissional(e.target.value)}
         placeholder="Ex: Dra. Ana Silva"
