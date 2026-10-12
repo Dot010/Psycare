@@ -1,4 +1,5 @@
 import type { Agendamento } from "@/features/appointments/types";
+import { isClockTime, isRealDate } from "@/lib/validation";
 
 /** AAAA-MM-DDTHH:mm: dá para comparar como texto. */
 function stamp(item: Agendamento): string {
@@ -40,7 +41,7 @@ export function validateSlot(
   now: string,
   ignoreId?: string,
 ): string | null {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(slot.data) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(slot.hora)) {
+  if (!isRealDate(slot.data) || !isClockTime(slot.hora)) {
     return "Escolha uma data e um horário válidos.";
   }
   if (`${slot.data}T${slot.hora}` < now) return "Essa data e horário já passaram. Escolha um horário futuro.";

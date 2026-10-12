@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isRealDate, tooLong } from "@/lib/validation";
 
 /** Tamanhos máximos dos campos de texto da Saúde. Os formulários usam os mesmos números no `maxLength`. */
 export const HEALTH_LIMITS = {
@@ -11,16 +12,7 @@ export const HEALTH_LIMITS = {
   exameResultado: 300,
 } as const;
 
-/** AAAA-MM-DD que existe de verdade no calendário (recusa 2026-02-31, por exemplo). */
-function isRealDate(value: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const date = new Date(`${value}T00:00:00Z`);
-  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
-}
-
 const isoDate = (message: string) => z.string().refine(isRealDate, message);
-
-const tooLong = (max: number) => `Use até ${max} caracteres`;
 
 export const medicamentoSchema = z.object({
   nome: z
