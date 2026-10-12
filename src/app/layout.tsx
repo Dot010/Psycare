@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { Poppins } from "next/font/google";
 import { UserProvider } from "@/components/providers/UserProvider";
 import { FirstVisitLoader } from "@/components/brand/FirstVisitLoader";
+import { SEEN_COOKIE } from "@/components/brand/first-visit";
 import { DemoBanner } from "@/components/feedback/DemoBanner";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { parseTheme, THEME_COOKIE } from "@/lib/theme-cookie";
@@ -23,12 +24,14 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // O CSP usa um nonce por requisição, então as páginas precisam ser renderizadas a cada request.
   await connection();
-  const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
+  const cookieStore = await cookies();
+  const theme = parseTheme(cookieStore.get(THEME_COOKIE)?.value);
+  const showSplash = !cookieStore.has(SEEN_COOKIE);
 
   return (
     <html lang="pt-br" className={`${poppins.variable} h-full antialiased${theme === "dark" ? " dark" : ""}`}>
       <body className={`${poppins.className} min-h-full antialiased`}>
-        <FirstVisitLoader />
+        <FirstVisitLoader show={showSplash} />
         <DemoBanner />
         <AppProviders>
           <UserProvider>{children}</UserProvider>

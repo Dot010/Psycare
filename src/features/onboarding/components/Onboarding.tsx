@@ -4,8 +4,9 @@ import { Droplets, Sprout } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
-import { NAME_MAX, parseProfile } from "@/features/profile/schema";
+import { MIN_BIRTH_DATE, NAME_MAX, parseProfile } from "@/features/profile/schema";
 import { useProfile } from "@/features/profile/useProfile";
+import { toISODate } from "@/lib/dates";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { grantWater } from "@/features/garden/water";
 import { usePrefs } from "@/features/settings/prefs";
@@ -31,8 +32,8 @@ export function Onboarding() {
   const [time, setTime] = useState("20:00");
   const [, setProfile] = useProfile();
   const [name, setName] = useState("");
-  const [birthYear, setBirthYear] = useState("");
-  const [profileErrors, setProfileErrors] = useState<{ name?: string; birthYear?: string }>({});
+  const [birthDate, setBirthDate] = useState("");
+  const [profileErrors, setProfileErrors] = useState<{ name?: string; birthDate?: string }>({});
 
   if (!hydrated || state.done) return null;
 
@@ -44,7 +45,7 @@ export function Onboarding() {
 
   // Os dois campos são opcionais: vazio passa. Só avisa se algo foi digitado de um jeito que não vale.
   const saveProfileAndContinue = () => {
-    const result = parseProfile({ name, birthYear }, new Date().getFullYear());
+    const result = parseProfile({ name, birthDate }, toISODate(new Date()));
     if (!result.ok) {
       setProfileErrors(result.errors);
       return;
@@ -84,6 +85,7 @@ export function Onboarding() {
         {step === 1 && (
           <form
             id="onboarding-profile"
+            noValidate
             className="space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
@@ -107,14 +109,14 @@ export function Onboarding() {
               onChange={(e) => setName(e.target.value)}
             />
             <Field
-              label="Ano de nascimento"
-              inputMode="numeric"
+              label="Data de nascimento"
+              type="date"
+              min={MIN_BIRTH_DATE}
+              max={toISODate(new Date())}
               autoComplete="off"
-              maxLength={4}
-              placeholder="Ex.: 1990"
-              value={birthYear}
-              error={profileErrors.birthYear}
-              onChange={(e) => setBirthYear(e.target.value.replace(/\D/g, ""))}
+              value={birthDate}
+              error={profileErrors.birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
             />
           </form>
         )}

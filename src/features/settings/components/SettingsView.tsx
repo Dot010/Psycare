@@ -7,8 +7,9 @@ import { Page } from "@/components/layout/Page";
 import { useUser } from "@/components/providers/UserProvider";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
-import { NAME_MAX, parseProfile } from "@/features/profile/schema";
+import { MIN_BIRTH_DATE, NAME_MAX, parseProfile } from "@/features/profile/schema";
 import { useProfile } from "@/features/profile/useProfile";
+import { toISODate } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import { DataPanel } from "./DataPanel";
 import { SharingPanel } from "./SharingPanel";
@@ -40,13 +41,13 @@ function ProfileForm({
 }) {
   const [profile, setProfile] = useProfile();
   const [name, setName] = useState(profile.name);
-  const [birthYear, setBirthYear] = useState(profile.birthYear ? String(profile.birthYear) : "");
+  const [birthDate, setBirthDate] = useState(profile.birthDate ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
-  const [errors, setErrors] = useState<{ name?: string; birthYear?: string; email?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; birthDate?: string; email?: string }>({});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const result = parseProfile({ name, birthYear }, new Date().getFullYear());
+    const result = parseProfile({ name, birthDate }, toISODate(new Date()));
     const emailResult = emailSchema.safeParse(email);
     if (!result.ok || !emailResult.success) {
       setErrors({
@@ -62,10 +63,10 @@ function ProfileForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className={panelClass}>
+    <form onSubmit={handleSubmit} noValidate className={panelClass}>
       <h2 className={cn(panelTitleClass, "border-b border-border pb-3")}>Informações do perfil</h2>
       <p className="text-xs text-muted-foreground">
-        Nome e ano de nascimento são opcionais. Pode ser fictício na demonstração. Sem nome, o app só diz
+        Nome e data de nascimento são opcionais. Pode ser fictício na demonstração. Sem nome, o app só diz
         “Olá!”.
       </p>
 
@@ -79,14 +80,14 @@ function ProfileForm({
           onChange={(e) => setName(e.target.value)}
         />
         <Field
-          label="Ano de nascimento"
-          inputMode="numeric"
+          label="Data de nascimento"
+          type="date"
+          min={MIN_BIRTH_DATE}
+          max={toISODate(new Date())}
           autoComplete="off"
-          maxLength={4}
-          placeholder="Ex.: 1990"
-          value={birthYear}
-          error={errors.birthYear}
-          onChange={(e) => setBirthYear(e.target.value.replace(/\D/g, ""))}
+          value={birthDate}
+          error={errors.birthDate}
+          onChange={(e) => setBirthDate(e.target.value)}
         />
         <Field
           label="E-mail"
@@ -197,7 +198,7 @@ export default function SettingsView() {
         {activeTab === "general" && (
           <ProfileForm
             // Recria o formulário quando o perfil carrega do navegador ou é salvo, para os campos refletirem o salvo.
-            key={`${user?.email ?? "loading"}|${profile.name}|${profile.birthYear ?? ""}`}
+            key={`${user?.email ?? "loading"}|${profile.name}|${profile.birthDate ?? ""}`}
             user={user}
             updateUser={updateUser}
             onSaved={handleSaved}
