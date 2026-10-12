@@ -6,7 +6,7 @@ import { DemoNotice } from "@/components/feedback/DemoNotice";
 import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/ui/button";
 import { CHATS_KEY } from "@/features/messages/hooks/useMessages";
-import { sendMessageSchema, type Chat } from "@/features/messages/types";
+import { MESSAGE_MAX, sendMessageSchema, type Chat } from "@/features/messages/types";
 import { useLocalStorage } from "@/lib/useLocalStorage";
 import { cn } from "@/lib/utils";
 import { mockUser } from "@/mocks/user";
@@ -69,7 +69,7 @@ export default function ProMessages() {
               onChange={(e) => setText(e.target.value)}
               aria-label="Mensagem"
               placeholder="Escreva sua mensagem..."
-              maxLength={1200}
+              maxLength={MESSAGE_MAX}
               className="h-11 flex-1 rounded-lg border border-border bg-card px-3"
             />
             <Button type="submit" disabled={!text.trim()}>

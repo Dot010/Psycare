@@ -8,6 +8,7 @@ import { useState } from "react";
 import { ThemeToggle } from "@/components/feedback/ThemeToggle";
 import { navItemsFor, type NavVariant } from "@/components/layout/nav-items";
 import { logoutAction } from "@/features/auth/actions";
+import { clearUserData } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
 export default function NavMobile({ variant = "patient" }: { variant?: NavVariant }) {
@@ -29,7 +30,7 @@ export default function NavMobile({ variant = "patient" }: { variant?: NavVarian
             href={href}
             aria-current={pathname === href ? "page" : undefined}
             className={cn(
-              "flex flex-col items-center gap-1 transition-colors",
+              "flex min-h-14 min-w-12 flex-col items-center justify-center gap-1 transition-colors",
               pathname === href ? "text-brand-accent" : "text-muted-foreground active:text-brand-accent",
             )}
           >
@@ -43,7 +44,7 @@ export default function NavMobile({ variant = "patient" }: { variant?: NavVarian
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen(!menuOpen)}
           className={cn(
-            "flex flex-col items-center gap-1 transition-colors",
+            "flex min-h-14 min-w-12 flex-col items-center justify-center gap-1 transition-colors",
             menuOpen ? "text-brand-accent" : "text-muted-foreground",
           )}
         >
@@ -93,7 +94,7 @@ export default function NavMobile({ variant = "patient" }: { variant?: NavVarian
                 ))}
 
                 {/* Encerra a sessão no servidor; um simples router.push("/login") deixava o cookie ativo. */}
-                <form action={logoutAction} className="contents">
+                <form action={logoutAction} onSubmit={clearUserData} className="contents">
                   <button type="submit" className="flex flex-col items-center gap-2">
                     <span className="flex size-14 items-center justify-center rounded-2xl bg-danger-50 text-danger-500">
                       <LogOut className="size-6" />

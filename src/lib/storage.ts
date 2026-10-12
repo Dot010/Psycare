@@ -87,3 +87,32 @@ export function subscribeStored(key: string, listener: Listener): () => void {
     window.removeEventListener("storage", onStorage);
   };
 }
+
+/** Preferências de tela, sem dado pessoal: ficam quando a pessoa sai. */
+const KEEP_ON_LOGOUT = new Set(["psycare:sound:v1", "psycare:home-sheet:v1", "psycare:garden-intro:v1"]);
+
+/**
+ * Apaga do navegador os dados pessoais do app (diário, saúde, consultas, mensagens...).
+ * Chamado ao sair, para que a próxima pessoa que usar este aparelho não veja nada.
+ */
+export function clearUserData(): void {
+  if (!storageAvailable()) return;
+
+  const removed: string[] = [];
+  try {
+    for (let i = window.localStorage.length - 1; i >= 0; i--) {
+      const key = window.localStorage.key(i);
+      if (key?.startsWith("psycare:") && !KEEP_ON_LOGOUT.has(key)) {
+        window.localStorage.removeItem(key);
+        removed.push(key);
+      }
+    }
+  } catch {
+    // Armazenamento bloqueado: não há o que apagar.
+  }
+
+  for (const key of removed) {
+    cache.delete(key);
+    listeners.get(key)?.forEach((listener) => listener());
+  }
+}

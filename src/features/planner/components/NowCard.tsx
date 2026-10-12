@@ -37,7 +37,10 @@ export function NowCard() {
       ) : (
         <p className="text-base text-foreground">Nada pendente agora. Respire e aproveite.</p>
       )}
-      <Link href="/dashboard/planner" className="text-sm font-semibold text-brand-ink hover:underline">
+      <Link
+        href="/dashboard/planner"
+        className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-ink hover:underline"
+      >
         Ver meu dia
       </Link>
     </section>

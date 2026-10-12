@@ -33,7 +33,7 @@ export function ItemMenu({
           type="button"
           aria-label={`Opções de ${label}`}
           className={cn(
-            "flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-sunken hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none",
+            "flex size-8 pointer-coarse:size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-sunken hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none",
             className,
           )}
         >

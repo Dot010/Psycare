@@ -16,7 +16,7 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
       type={type}
       data-slot="input"
       maxLength={TEXT_TYPES.has(type) ? DEFAULT_MAX_LENGTH : undefined}
-      className={cn("h-10", fieldControlClass, className)}
+      className={cn("h-10 pointer-coarse:h-11", fieldControlClass, className)}
       {...props}
     />
   );

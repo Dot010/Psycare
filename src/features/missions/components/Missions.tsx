@@ -69,7 +69,7 @@ export function Missions({
                   role="img"
                   aria-label={done ? "Cumprida" : "Ainda não"}
                   className={cn(
-                    "flex size-7 shrink-0 items-center justify-center rounded-full border-2",
+                    "flex size-7 pointer-coarse:size-11 shrink-0 items-center justify-center rounded-full border-2",
                     done ? "border-brand-600 bg-brand-600 text-white" : "border-brand-300",
                   )}
                 >
@@ -82,7 +82,7 @@ export function Missions({
                   aria-label={`${done ? "Desmarcar" : "Marcar como feita"}: ${mission.text}`}
                   onClick={() => setState((current) => toggleManual(current, mission.id, today))}
                   className={cn(
-                    "flex size-7 shrink-0 items-center justify-center rounded-full border-2 focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none",
+                    "flex size-7 pointer-coarse:size-11 shrink-0 items-center justify-center rounded-full border-2 focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none",
                     done
                       ? "border-brand-600 bg-brand-600 text-white"
                       : "border-brand-300 hover:border-brand-600",
@@ -92,7 +92,10 @@ export function Missions({
                 </button>
               )}
               {mission.href && !done ? (
-                <Link href={mission.href} className="underline-offset-2 hover:underline">
+                <Link
+                  href={mission.href}
+                  className="inline-flex min-h-11 items-center underline-offset-2 hover:underline"
+                >
                   {body}
                 </Link>
               ) : (

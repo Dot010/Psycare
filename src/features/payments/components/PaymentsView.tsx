@@ -98,7 +98,7 @@ export default function PaymentsView() {
             type="button"
             onClick={() => (isActive ? setCancelingPlan(true) : toggleSubscription())}
             className={cn(
-              "mt-3 rounded-xl px-4 py-2 text-xs font-semibold transition-colors",
+              "mt-3 rounded-xl px-4 py-2 pointer-coarse:min-h-11 text-xs font-semibold transition-colors",
               isActive
                 ? "bg-danger-500/10 text-danger-300 hover:bg-danger-500/20"
                 : "bg-brand-500/10 text-brand-400 hover:bg-brand-500/20",
@@ -172,7 +172,7 @@ export default function PaymentsView() {
                       <button
                         type="button"
                         onClick={() => makeDefault(method.id)}
-                        className="text-xs text-muted-foreground transition-colors hover:text-brand-accent"
+                        className="text-xs text-muted-foreground transition-colors hover:text-brand-accent pointer-coarse:min-h-11"
                       >
                         Tornar principal
                       </button>
@@ -181,7 +181,7 @@ export default function PaymentsView() {
                       type="button"
                       onClick={() => setRemoving(method)}
                       aria-label="Remover método de pagamento"
-                      className="rounded p-1 text-muted-foreground transition-colors hover:text-danger-500"
+                      className="inline-flex items-center justify-center rounded p-1 pointer-coarse:size-11 text-muted-foreground transition-colors hover:text-danger-500"
                     >
                       <X className="size-4" />
                     </button>

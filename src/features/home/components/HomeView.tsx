@@ -69,7 +69,7 @@ export default function HomeView() {
 
   return (
     // Ocupa a tela toda (o -mb anula o espaço reservado do layout): o jardim é o fundo da página.
-    <div className="relative -mb-28 h-screen overflow-hidden bg-gradient-to-b from-sun-50 via-brand-50 to-brand-100 md:-mb-8">
+    <div className="relative -mb-28 h-dvh overflow-hidden bg-gradient-to-b from-sun-50 via-brand-50 to-brand-100 md:-mb-8">
       <Onboarding />
       <div className="absolute inset-0">
         <GardenScene plants={garden.plants} lift={lift} onSelect={selectPlant} />
@@ -83,7 +83,7 @@ export default function HomeView() {
           <WaterHelp poured={garden.poured} toNext={garden.toNext}>
             <button
               type="button"
-              className="pointer-events-auto flex w-fit items-center gap-2 rounded-full bg-card/85 px-3 py-1.5 text-xs font-medium text-foreground backdrop-blur transition-colors hover:bg-card focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
+              className="pointer-events-auto flex w-fit items-center gap-2 rounded-full bg-card/85 px-3 py-1.5 pointer-coarse:min-h-11 text-xs font-medium text-foreground backdrop-blur transition-colors hover:bg-card focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
             >
               <Droplets className="size-3.5 text-brand-accent" aria-hidden />
               <span>
@@ -114,7 +114,7 @@ export default function HomeView() {
             aria-checked={sound.enabled}
             aria-label="Som do jardim"
             onClick={sound.toggle}
-            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-card/85 text-foreground backdrop-blur transition-colors hover:bg-card focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
+            className="flex size-9 pointer-coarse:size-11 shrink-0 items-center justify-center rounded-full bg-card/85 text-foreground backdrop-blur transition-colors hover:bg-card focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
           >
             {sound.enabled ? (
               <Volume2 className="size-5" aria-hidden />

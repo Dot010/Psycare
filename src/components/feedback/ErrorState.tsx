@@ -24,7 +24,7 @@ export function ErrorState({ error, reset, title, description, actionLabel, full
     <div
       className={cn(
         "flex items-center justify-center p-6",
-        fullScreen ? "min-h-screen bg-canvas" : "mx-auto max-w-3xl md:p-8",
+        fullScreen ? "min-h-dvh bg-canvas" : "mx-auto max-w-3xl md:p-8",
       )}
     >
       <div

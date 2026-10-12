@@ -24,7 +24,7 @@ export function MedicineArt({
 }: Props) {
   const tarja = info.tarja === "preta" ? "#1a1a1a" : "#c0392b";
   const tarjaText = info.tarja === "preta" ? "Venda sob prescrição · uso controlado" : "Venda sob prescrição";
-  const face = "border border-[#cfc7b8] bg-white";
+  const face = "border border-[#b5a994] bg-white";
   const scene = (
     <div
       className={
@@ -104,7 +104,12 @@ export function MedicineArt({
       </div>
     </div>
   );
-  if (compact) return <div className="h-[76px] w-[100px] shrink-0 overflow-hidden">{scene}</div>;
+  if (compact)
+    return (
+      <div className="h-[76px] w-[100px] shrink-0 overflow-hidden rounded-xl bg-sunken ring-1 ring-border">
+        {scene}
+      </div>
+    );
   return (
     <figure className="m-0 flex flex-col items-center gap-2">
       {scene}

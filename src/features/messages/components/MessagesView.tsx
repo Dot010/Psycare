@@ -7,6 +7,7 @@ import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/ui/button";
 import { fieldControlClass } from "@/components/ui/input";
 import { useMessages } from "@/features/messages/hooks/useMessages";
+import { MESSAGE_MAX } from "@/features/messages/types";
 import { cn } from "@/lib/utils";
 
 const QUICK_REPLIES = [
@@ -166,6 +167,7 @@ export function MessagesView() {
               <input
                 name="mensagem"
                 type="text"
+                maxLength={MESSAGE_MAX}
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 aria-label="Mensagem"

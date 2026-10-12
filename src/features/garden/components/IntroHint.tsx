@@ -30,7 +30,7 @@ export function IntroHint() {
         type="button"
         aria-label="Fechar dica"
         onClick={() => setSeen(true)}
-        className="absolute top-1 right-1 flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
+        className="absolute top-1 right-1 flex size-9 pointer-coarse:size-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
       >
         <X className="size-4" aria-hidden />
       </button>

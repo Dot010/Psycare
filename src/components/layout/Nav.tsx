@@ -7,6 +7,7 @@ import { useState } from "react";
 import { ThemeToggle } from "@/components/feedback/ThemeToggle";
 import { navItemsFor, type NavVariant } from "@/components/layout/nav-items";
 import { logoutAction } from "@/features/auth/actions";
+import { clearUserData } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
 const itemClass =
@@ -18,10 +19,10 @@ export default function Nav({ variant = "patient" }: { variant?: NavVariant }) {
   const pathname = usePathname();
 
   return (
-    <aside className="sticky top-0 z-40 hidden h-screen md:flex">
+    <aside className="sticky top-0 z-40 hidden h-full md:flex">
       <div
         className={cn(
-          "relative h-screen bg-primary p-5 pt-8 text-primary-foreground shadow-xl transition-all duration-300",
+          "relative flex h-full flex-col bg-primary p-5 pt-8 text-primary-foreground shadow-xl transition-all duration-300",
           open ? "w-72" : "w-20",
         )}
       >
@@ -37,7 +38,7 @@ export default function Nav({ variant = "patient" }: { variant?: NavVariant }) {
           <ChevronLeft className="size-6" />
         </button>
 
-        <div className={cn("flex items-center", open ? "ml-1" : "justify-center")}>
+        <div className={cn("flex shrink-0 items-center", open ? "ml-1" : "justify-center")}>
           <div className="rounded-xl bg-card p-2 shadow-md">
             <Brain className="size-7 text-brand-accent" />
           </div>
@@ -51,7 +52,7 @@ export default function Nav({ variant = "patient" }: { variant?: NavVariant }) {
           </span>
         </div>
 
-        <nav aria-label="Principal" className="pt-10">
+        <nav aria-label="Principal" className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto pt-10">
           <ul>
             {items.map(({ title, href, icon: Icon, startsGroup }) => {
               const isActive =
@@ -70,29 +71,30 @@ export default function Nav({ variant = "patient" }: { variant?: NavVariant }) {
                 </li>
               );
             })}
-
-            {open && (
-              <li className="mt-8 flex items-center gap-4 p-3">
-                <ThemeToggle />
-                <span className="text-sm font-medium text-primary-foreground/90">Modo escuro</span>
-              </li>
-            )}
-
-            <li className="mt-2">
-              <form action={logoutAction}>
-                <button
-                  type="submit"
-                  className={cn(itemClass, "text-danger-300 hover:bg-destructive/20 hover:text-white")}
-                >
-                  <LogOut className={cn("size-6 shrink-0", !open && "mx-auto")} />
-                  <span className={cn("flex-1 text-left text-base font-medium", !open && "hidden")}>
-                    Sair
-                  </span>
-                </button>
-              </form>
-            </li>
           </ul>
         </nav>
+
+        {/* Fora da rolagem: em telas baixas o Sair continua sempre à vista. */}
+        <ul className="shrink-0 pt-2">
+          {open && (
+            <li className="mt-2 flex items-center gap-4 p-3">
+              <ThemeToggle />
+              <span className="text-sm font-medium text-primary-foreground/90">Modo escuro</span>
+            </li>
+          )}
+
+          <li className="mt-2">
+            <form action={logoutAction} onSubmit={clearUserData}>
+              <button
+                type="submit"
+                className={cn(itemClass, "text-danger-300 hover:bg-destructive/20 hover:text-white")}
+              >
+                <LogOut className={cn("size-6 shrink-0", !open && "mx-auto")} />
+                <span className={cn("flex-1 text-left text-base font-medium", !open && "hidden")}>Sair</span>
+              </button>
+            </form>
+          </li>
+        </ul>
       </div>
     </aside>
   );

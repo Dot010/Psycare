@@ -111,7 +111,7 @@ export function WritePanel({ onSave }: { onSave: (entry: DiaryEntry) => void }) 
           max={5}
           value={anxietyLevel}
           onChange={(e) => setAnxietyLevel(Number(e.target.value))}
-          className="h-2 w-full cursor-pointer accent-brand-600"
+          className="h-2 w-full cursor-pointer accent-brand-600 pointer-coarse:h-8"
         />
       </div>
 
