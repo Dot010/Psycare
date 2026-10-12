@@ -203,6 +203,14 @@
 }
 
 @layer utilities {
+  /* Rolagem sem barra visível (o conteúdo continua rolando com roda, toque e teclado). */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
   .animate-enter {
     animation: enter var(--motion-duration-slow) var(--motion-ease-emphasis) both;
   }

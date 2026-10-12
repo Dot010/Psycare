@@ -7,15 +7,14 @@ import { Page } from "@/components/layout/Page";
 import { useUser } from "@/components/providers/UserProvider";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
+import { NAME_MAX, parseProfile } from "@/features/profile/schema";
+import { useProfile } from "@/features/profile/useProfile";
 import { cn } from "@/lib/utils";
 import { DataPanel } from "./DataPanel";
 import { SharingPanel } from "./SharingPanel";
 import { ReminderPanel } from "./ReminderPanel";
 
-const profileSchema = z.object({
-  name: z.string().trim().min(3, "Nome deve ter ao menos 3 caracteres"),
-  email: z.string().trim().email("E-mail inválido"),
-});
+const emailSchema = z.string().trim().max(120, "O e-mail passa de 120 caracteres").email("E-mail inválido");
 
 const TABS = [
   { id: "general", label: "Perfil" },
@@ -35,37 +34,59 @@ function ProfileForm({
   updateUser,
   onSaved,
 }: {
-  user: { name: string; email: string } | null;
-  updateUser: (data: { name: string; email: string }) => void;
+  user: { email: string } | null;
+  updateUser: (data: { email: string }) => void;
   onSaved: () => void;
 }) {
-  const [name, setName] = useState(user?.name ?? "");
+  const [profile, setProfile] = useProfile();
+  const [name, setName] = useState(profile.name);
+  const [birthYear, setBirthYear] = useState(profile.birthYear ? String(profile.birthYear) : "");
   const [email, setEmail] = useState(user?.email ?? "");
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<{ name?: string; birthYear?: string; email?: string }>({});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const parsed = profileSchema.safeParse({ name, email });
-    if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Dados inválidos");
+    const result = parseProfile({ name, birthYear }, new Date().getFullYear());
+    const emailResult = emailSchema.safeParse(email);
+    if (!result.ok || !emailResult.success) {
+      setErrors({
+        ...(result.ok ? {} : result.errors),
+        ...(emailResult.success ? {} : { email: emailResult.error.issues[0]?.message }),
+      });
       return;
     }
-    setError("");
-    updateUser(parsed.data);
+    setErrors({});
+    setProfile(result.profile);
+    updateUser({ email: emailResult.data });
     onSaved();
   };
 
   return (
     <form onSubmit={handleSubmit} className={panelClass}>
       <h2 className={cn(panelTitleClass, "border-b border-border pb-3")}>Informações do perfil</h2>
+      <p className="text-xs text-muted-foreground">
+        Nome e ano de nascimento são opcionais. Pode ser fictício na demonstração. Sem nome, o app só diz
+        “Olá!”.
+      </p>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Field
-          label="Nome completo"
-          required
-          autoComplete="name"
+          label="Nome ou apelido"
+          autoComplete="off"
+          maxLength={NAME_MAX}
           value={name}
+          error={errors.name}
           onChange={(e) => setName(e.target.value)}
+        />
+        <Field
+          label="Ano de nascimento"
+          inputMode="numeric"
+          autoComplete="off"
+          maxLength={4}
+          placeholder="Ex.: 1990"
+          value={birthYear}
+          error={errors.birthYear}
+          onChange={(e) => setBirthYear(e.target.value.replace(/\D/g, ""))}
         />
         <Field
           label="E-mail"
@@ -73,15 +94,10 @@ function ProfileForm({
           required
           autoComplete="email"
           value={email}
+          error={errors.email}
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
-
-      {error && (
-        <p role="alert" className="text-xs text-danger-600">
-          {error}
-        </p>
-      )}
 
       <div className="flex justify-end">
         <Button type="submit">Salvar alterações</Button>
@@ -127,6 +143,7 @@ function ToggleRow({
 
 export default function SettingsView() {
   const { user, updateUser } = useUser();
+  const [profile] = useProfile();
   const [activeTab, setActiveTab] = useState<TabId>("general");
   const [saved, setSaved] = useState(false);
 
@@ -179,7 +196,8 @@ export default function SettingsView() {
       <div role="tabpanel" id={`settings-panel-${activeTab}`} aria-labelledby={`settings-tab-${activeTab}`}>
         {activeTab === "general" && (
           <ProfileForm
-            key={user?.email ?? "loading"}
+            // Recria o formulário quando o perfil carrega do navegador ou é salvo, para os campos refletirem o salvo.
+            key={`${user?.email ?? "loading"}|${profile.name}|${profile.birthYear ?? ""}`}
             user={user}
             updateUser={updateUser}
             onSaved={handleSaved}

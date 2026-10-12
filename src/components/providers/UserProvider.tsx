@@ -3,7 +3,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 export interface UserProfile {
-  name: string;
   email: string;
   isCustomUser: boolean;
 }
@@ -15,7 +14,6 @@ interface UserContextType {
 }
 
 const defaultUser: UserProfile = {
-  name: "Ana Lima",
   email: "usuario@psycare.com.br",
   isCustomUser: false,
 };
@@ -49,11 +47,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  return (
-    <UserContext.Provider value={{ user, updateUser, isLoading }}>
-      {children}
-    </UserContext.Provider>
-  );
+  return <UserContext.Provider value={{ user, updateUser, isLoading }}>{children}</UserContext.Provider>;
 }
 
 export function useUser() {

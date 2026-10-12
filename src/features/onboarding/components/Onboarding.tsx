@@ -3,6 +3,9 @@
 import { Droplets, Sprout } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
+import { NAME_MAX, parseProfile } from "@/features/profile/schema";
+import { useProfile } from "@/features/profile/useProfile";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { grantWater } from "@/features/garden/water";
 import { usePrefs } from "@/features/settings/prefs";
@@ -26,6 +29,10 @@ export function Onboarding() {
   const [goal, setGoal] = useState<string>();
   const [remind, setRemind] = useState(false);
   const [time, setTime] = useState("20:00");
+  const [, setProfile] = useProfile();
+  const [name, setName] = useState("");
+  const [birthYear, setBirthYear] = useState("");
+  const [profileErrors, setProfileErrors] = useState<{ name?: string; birthYear?: string }>({});
 
   if (!hydrated || state.done) return null;
 
@@ -33,6 +40,18 @@ export function Onboarding() {
     if (remind) update({ reminderOn: true, reminderTime: time });
     if (withSeed) grantWater("mission", "primeira-semente");
     setState(finish(goal));
+  };
+
+  // Os dois campos são opcionais: vazio passa. Só avisa se algo foi digitado de um jeito que não vale.
+  const saveProfileAndContinue = () => {
+    const result = parseProfile({ name, birthYear }, new Date().getFullYear());
+    if (!result.ok) {
+      setProfileErrors(result.errors);
+      return;
+    }
+    setProfileErrors({});
+    setProfile(result.profile);
+    setStep(2);
   };
 
   return (
@@ -63,6 +82,44 @@ export function Onboarding() {
         )}
 
         {step === 1 && (
+          <form
+            id="onboarding-profile"
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              saveProfileAndContinue();
+            }}
+          >
+            <DialogTitle className="text-2xl leading-tight font-semibold text-brand-ink">
+              Como você quer ser chamado(a)?
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Só para o app falar com você. Os dois campos são opcionais e você muda quando quiser em
+              Configurações. Pode ser fictício na demonstração.
+            </DialogDescription>
+            <button type="submit" hidden aria-hidden tabIndex={-1} />
+            <Field
+              label="Nome ou apelido"
+              autoComplete="off"
+              maxLength={NAME_MAX}
+              value={name}
+              error={profileErrors.name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <Field
+              label="Ano de nascimento"
+              inputMode="numeric"
+              autoComplete="off"
+              maxLength={4}
+              placeholder="Ex.: 1990"
+              value={birthYear}
+              error={profileErrors.birthYear}
+              onChange={(e) => setBirthYear(e.target.value.replace(/\D/g, ""))}
+            />
+          </form>
+        )}
+
+        {step === 2 && (
           <div className="space-y-4">
             <DialogTitle className="text-2xl leading-tight font-semibold text-brand-ink">
               O que você quer cuidar primeiro?
@@ -115,7 +172,7 @@ export function Onboarding() {
           </div>
         )}
 
-        {step === 2 && (
+        {step === 3 && (
           <div className="space-y-3">
             <Sprout className="size-10 text-brand-accent" aria-hidden />
             <DialogTitle className="text-3xl leading-tight font-semibold text-brand-ink">
@@ -133,7 +190,16 @@ export function Onboarding() {
         )}
 
         <div className="flex items-center justify-between gap-3">
-          {step < STEP_COUNT - 1 ? (
+          {step === 1 ? (
+            <>
+              <Button variant="ghost" onClick={() => setStep(2)}>
+                Pular
+              </Button>
+              {/* onClick (não type="submit"): o botão é reaproveitado do passo anterior e um submit trocado
+                  no meio do clique pularia esta tela. Enter nos campos usa o botão escondido do formulário. */}
+              <Button onClick={saveProfileAndContinue}>Continuar</Button>
+            </>
+          ) : step < STEP_COUNT - 1 ? (
             <>
               <Button variant="ghost" onClick={() => close(false)}>
                 Pular
