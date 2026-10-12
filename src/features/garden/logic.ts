@@ -19,7 +19,7 @@ export const PLANT_NAMES: Record<PlantKind, string> = {
 /** As quatro ações de cuidado que enchem o regador, na ordem em que aparecem na tela. */
 export const CARE_ACTIONS: { source: WaterSource; label: string; href?: string }[] = [
   { source: "checkin", label: "Check-in" },
-  { source: "habit", label: "Hábito", href: "/dashboard/habits" },
+  { source: "habit", label: "Hábito", href: "/dashboard/planner?aba=habitos" },
   { source: "diary", label: "Diário", href: "/dashboard/diary" },
   { source: "breathing", label: "Respirar", href: "/dashboard/breathing" },
 ];

@@ -15,7 +15,7 @@ export const MISSION_POOL: readonly Mission[] = [
   { id: "checkin", text: "Contar como você está", auto: "checkin" },
   { id: "diario", text: "Escrever uma linha no diário", auto: "diary", href: "/dashboard/diary" },
   { id: "respirar", text: "Respirar por um minuto", auto: "breathing", href: "/dashboard/breathing" },
-  { id: "habito", text: "Concluir um hábito", auto: "habit", href: "/dashboard/habits" },
+  { id: "habito", text: "Concluir um hábito", auto: "habit", href: "/dashboard/planner?aba=habitos" },
   { id: "agua", text: "Beber um copo de água" },
   { id: "caminhar", text: "Dar uma volta de cinco minutos" },
   { id: "pessoa", text: "Mandar uma mensagem para alguém de quem gosta" },
@@ -64,4 +64,11 @@ export function missionSentence(done: number, total: number): string {
   if (done === 0) return "Três pequenos gestos para hoje. Faça os que couberem.";
   if (done >= total) return "Tudo feito por hoje. O jardim agradece.";
   return `${done} de ${total}. Cada um já conta.`;
+}
+
+/** Uma frase só sobre o regador, para o cartão "Para hoje" (o botão Regar fica no topo do Início). */
+export function waterSentence(available: number, toNext: number | null): string {
+  if (available > 0) return `${available} ${available === 1 ? "gota pronta" : "gotas prontas"} para regar.`;
+  if (toNext !== null) return `Faltam ${toNext} ${toNext === 1 ? "gota" : "gotas"} para uma planta nova.`;
+  return "";
 }

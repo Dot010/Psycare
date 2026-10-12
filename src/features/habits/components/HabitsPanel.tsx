@@ -5,7 +5,6 @@ import { AnimatedCheck } from "@/components/motion/AnimatedCheck";
 import { useState } from "react";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ItemMenu } from "@/components/feedback/ItemMenu";
-import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/ui/button";
 import { HabitModal } from "@/features/habits/components/HabitModal";
 import { useHabits } from "@/features/habits/hooks/useHabits";
@@ -17,7 +16,8 @@ import { cn } from "@/lib/utils";
 
 const statLabel = "text-xs font-bold uppercase text-muted-foreground";
 
-export default function HabitsView() {
+/** Os hábitos, dentro do Meu dia: resumo, lista, e criar/editar/excluir. */
+export function HabitsPanel() {
   const { habits, saveHabit, toggleHabit, deleteHabit } = useHabits();
   const [editing, setEditing] = useState<Habit | undefined>();
   const [modalOpen, setModalOpen] = useState(false);
@@ -31,16 +31,15 @@ export default function HabitsView() {
   };
 
   return (
-    <Page
-      title="Meus Hábitos"
-      description="Registre seus hábitos e acompanhe sua evolução."
-      actions={
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-base text-muted-foreground">Hábitos se repetem todo dia e aparecem em Hoje.</p>
         <Button onClick={openNew}>
           <Plus />
           Novo hábito
         </Button>
-      }
-    >
+      </div>
+
       <dl className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <dt className={statLabel}>Concluídos hoje</dt>
@@ -136,6 +135,6 @@ export default function HabitsView() {
       )}
 
       <HabitModal open={modalOpen} onOpenChange={setModalOpen} habit={editing} onSave={saveHabit} />
-    </Page>
+    </div>
   );
 }

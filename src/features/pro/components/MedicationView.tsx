@@ -6,12 +6,13 @@ import { Page } from "@/components/layout/Page";
 import { usePro } from "../hooks/usePro";
 import { adherence } from "../prescriptions";
 
-export default function MedicationView() {
+export default function MedicationView({ embedded = false }: { embedded?: boolean }) {
   const pro = usePro();
   const rows = pro.patients.map((patient) => ({ patient, snap: pro.snapshotOf(patient.id) }));
 
   return (
     <Page
+      embedded={embedded}
       title="Medicação"
       description="Remédios, adesão e efeitos que os pacientes relatam. Só o que foi compartilhado."
       width="narrow"

@@ -81,4 +81,11 @@ describe("Diário novo", () => {
     await user.click(screen.getByRole("tab", { name: "Semana" }));
     expect(screen.getAllByRole("button", { name: /\d\d\/\d\d, \d+ página/ })).toHaveLength(7);
   });
+
+  it("a aba Humor mostra o humor dentro do Diário", async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole("tab", { name: "Humor" }));
+    expect(screen.getByText("Seu humor, sem pressa")).toBeInTheDocument();
+  });
 });

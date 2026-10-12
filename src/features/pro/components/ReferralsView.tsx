@@ -8,7 +8,7 @@ import { formatDateBR } from "@/lib/format";
 import { patientById } from "../data";
 
 /** O psiquiatra vê os pedidos de encaminhamento e registra quando deixa o papel pronto (entregue em mãos). */
-export default function ReferralsView() {
+export default function ReferralsView({ embedded = false }: { embedded?: boolean }) {
   const { referrals, issue } = useReferrals();
   const open = referrals.filter((r) => isOpen(r));
   const waiting = open.filter((r) => stageOf(r) === "requested");
@@ -17,6 +17,7 @@ export default function ReferralsView() {
 
   return (
     <Page
+      embedded={embedded}
       title="Encaminhamentos"
       description="Pedidos dos pacientes para a psicóloga. O papel é entregue em mãos; aqui você só registra."
       width="narrow"

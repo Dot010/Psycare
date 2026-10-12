@@ -39,7 +39,7 @@ export function receitaTasks(
         importance: "high" as const,
         done: false,
         source: "receita" as const,
-        href: "/dashboard/health",
+        href: "/dashboard/health?aba=remedios",
         readonly: true,
       },
     ];
@@ -86,7 +86,7 @@ export function habitTasks(habits: Habit[], today: string): Task[] {
     importance: "medium" as const,
     done: h.lastCompleted === today,
     source: "habito" as const,
-    href: "/dashboard/habits",
+    href: "/dashboard/planner?aba=habitos",
   }));
 }
 

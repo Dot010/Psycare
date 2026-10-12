@@ -15,7 +15,7 @@ interface UserContextType {
 }
 
 const defaultUser: UserProfile = {
-  name: "Usuário Demonstração",
+  name: "Ana Lima",
   email: "usuario@psycare.com.br",
   isCustomUser: false,
 };

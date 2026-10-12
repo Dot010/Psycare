@@ -4,10 +4,17 @@ import { navItemsFor } from "./nav-items";
 const titles = (variant: Parameters<typeof navItemsFor>[0]) => navItemsFor(variant).map((i) => i.title);
 
 describe("navItemsFor", () => {
-  it("o psiquiatra tem Receitas, Exames e Medicação, e não tem Atividades", () => {
+  it("o psiquiatra tem uma tela Clínico no lugar de Receitas, Exames, Encaminhamentos e Medicação", () => {
     const t = titles("psychiatrist");
-    expect(t).toEqual(expect.arrayContaining(["Receitas", "Encaminhamentos", "Exames", "Medicação"]));
-    expect(t).not.toContain("Atividades");
+    expect(t).toEqual([
+      "Painel do dia",
+      "Pacientes",
+      "Agenda",
+      "Clínico",
+      "Mensagens",
+      "Financeiro",
+      "Configurações",
+    ]);
   });
 
   it("a psicóloga tem Atividades, e não tem Receitas nem Exames", () => {
@@ -27,6 +34,14 @@ describe("navItemsFor", () => {
 
   it("os atalhos antigos continuam no menu, fora da barra", () => {
     const titles = navItemsFor("patient").map((i) => i.title);
-    expect(titles).toEqual(expect.arrayContaining(["Meus Hábitos", "Agendar Consulta"]));
+    expect(titles).toEqual(expect.arrayContaining(["Consultas", "Mensagens"]));
+  });
+
+  it("o menu do paciente usa um nome por tela e Atividades fica em /dashboard/activities", () => {
+    const items = navItemsFor("patient");
+    expect(items.map((i) => i.title)).toEqual(
+      expect.arrayContaining(["Diário", "Saúde", "Consultas", "Pagamentos", "Plano de segurança"]),
+    );
+    expect(items.find((i) => i.title === "Atividades")?.href).toBe("/dashboard/activities");
   });
 });

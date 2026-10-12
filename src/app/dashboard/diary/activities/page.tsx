@@ -1,5 +1,6 @@
-import ActivitiesView from "@/features/activities/components/ActivitiesView";
+import { redirect } from "next/navigation";
 
-export default function ActivitiesPage() {
-  return <ActivitiesView />;
+/** O endereço antigo de Atividades: quem guardou o link continua chegando. */
+export default function OldActivitiesPage() {
+  redirect("/dashboard/activities");
 }

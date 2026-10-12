@@ -15,10 +15,21 @@ import {
   missionSentence,
   NO_MISSIONS,
   toggleManual,
+  waterSentence,
 } from "../logic";
 
 /** Três pequenas missões do dia. Cumprir rende uma gota extra; deixar de cumprir não tira nada. */
-export function Missions({ doneToday }: { doneToday: Set<WaterSource> }) {
+export function Missions({
+  doneToday,
+  available,
+  toNext,
+}: {
+  doneToday: Set<WaterSource>;
+  /** Gotas já ganhas e prontas para regar. */
+  available: number;
+  /** Quantas gotas faltam para nascer uma planta nova (null se o jardim está completo). */
+  toNext: number | null;
+}) {
   const [state, setState] = useLocalStorage(MISSIONS_KEY, NO_MISSIONS);
   const today = toISODate(new Date());
   const missions = missionsForDay(today);
@@ -38,9 +49,11 @@ export function Missions({ doneToday }: { doneToday: Set<WaterSource> }) {
   return (
     <section aria-labelledby="missions-title" className="space-y-2">
       <h2 id="missions-title" className="text-base font-bold text-foreground">
-        Missões de hoje
+        Para hoje
       </h2>
-      <p className="text-xs text-muted-foreground">{missionSentence(doneCount, missions.length)}</p>
+      <p className="text-xs text-muted-foreground">
+        {missionSentence(doneCount, missions.length)} {waterSentence(available, toNext)}
+      </p>
       <ul>
         {missions.map((mission, i) => {
           const done = statuses[i];

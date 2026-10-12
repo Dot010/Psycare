@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleCheck, Mail, MessageCircle, BookOpen, ChevronDown } from "lucide-react";
+import { CircleCheck, Mail, ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import Link from "next/link";
@@ -13,14 +13,29 @@ import { cn } from "@/lib/utils";
 
 const FAQS = [
   {
+    question: "Quem lê o meu diário?",
+    answer:
+      "Só você lê o texto. Se você ativar o compartilhamento em Configurações, o seu profissional vê apenas o título das páginas que você marcar como “Para a próxima consulta”. Você muda isso quando quiser.",
+  },
+  {
+    question: "Como o jardim cresce?",
+    answer:
+      "Cada gesto de cuidado (contar como está, escrever no diário, respirar, concluir um hábito ou uma tarefa) enche o regador. Toque em Regar no Início e as plantas crescem. O jardim nunca murcha.",
+  },
+  {
+    question: "Como peço uma nova receita?",
+    answer:
+      "Em Saúde, abra a ficha do remédio e toque em “Pedir nova receita”. Seu psiquiatra responde, e a receita é entregue em mãos. O app só registra o que ele preparou.",
+  },
+  {
+    question: "Como peço um encaminhamento para a psicóloga?",
+    answer:
+      "Em Saúde, na aba Encaminhamento, toque em “Pedir encaminhamento”. O papel é entregue em mãos pelo psiquiatra, e você anota cada etapa até entregar à psicóloga.",
+  },
+  {
     question: "Como funciona a renovação da assinatura?",
     answer:
       "A renovação ocorre automaticamente no dia do vencimento do seu plano. Caso utilize PIX, um código de pagamento e QR Code serão enviados por e-mail.",
-  },
-  {
-    question: "Como alterar meu método de pagamento principal?",
-    answer:
-      "Acesse a página de Pagamentos, escolha o cartão ou a chave PIX desejada e clique em “Tornar principal”.",
   },
   {
     question: "Posso cancelar minha assinatura a qualquer momento?",
@@ -30,9 +45,7 @@ const FAQS = [
 ];
 
 const CONTACTS = [
-  { Icon: MessageCircle, title: "Chat de suporte", text: "Atendimento em tempo real (em breve)." },
   { Icon: Mail, title: "E-mail de suporte", text: "suporte@exemplo.com (endereço de exemplo)." },
-  { Icon: BookOpen, title: "Base de conhecimento", text: "Artigos e tutoriais (em breve)." },
 ];
 
 const ticketSchema = z.object({
@@ -69,11 +82,7 @@ export default function HelpView() {
   };
 
   return (
-    <Page
-      title="Central de Ajuda e Suporte"
-      description="Tire suas dúvidas ou entre em contato com a equipe."
-      width="narrow"
-    >
+    <Page title="Ajuda" description="Tire suas dúvidas ou entre em contato com a equipe." width="narrow">
       <DemoNotice>Os contatos e o formulário abaixo são de exemplo: nada é enviado a ninguém.</DemoNotice>
       <p className="rounded-xl bg-brand-50 p-4 text-sm text-brand-ink">
         Precisa de ajuda agora? Ligue{" "}
@@ -90,7 +99,7 @@ export default function HelpView() {
         </Link>{" "}
         está a um toque.
       </p>
-      <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <ul className="grid grid-cols-1 gap-4">
         {CONTACTS.map(({ Icon, title, text }) => (
           <li key={title} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
             <Icon className="mb-2 size-5 text-brand-accent" aria-hidden />

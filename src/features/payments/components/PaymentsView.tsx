@@ -59,7 +59,7 @@ export default function PaymentsView() {
 
   return (
     <Page
-      title="Meus Pagamentos"
+      title="Pagamentos"
       description="Gerencie suas faturas, métodos de pagamento e assinatura."
       width="wide"
     >

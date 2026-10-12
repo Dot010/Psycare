@@ -71,9 +71,11 @@ describe("Meu dia", () => {
     setup();
     await userEvent.click(screen.getByRole("button", { name: "Opções de tarefa Caminhar 15 minutos" }));
     await userEvent.click(await screen.findByRole("menuitem", { name: /Excluir/ }));
-    expect(screen.queryByText("Caminhar 15 minutos")).not.toBeInTheDocument();
+    // O cartão "Agora" também mostra a próxima tarefa (depende da hora), então olhamos só a lista do dia.
+    const today = () => within(screen.getByRole("region", { name: "Tarefas de hoje" }));
+    expect(today().queryByText("Caminhar 15 minutos")).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: /Desfazer/ }));
-    expect(screen.getByText("Caminhar 15 minutos")).toBeInTheDocument();
+    expect(today().getByText("Caminhar 15 minutos")).toBeInTheDocument();
   });
 
   it("adiar sem culpa leva a tarefa para amanhã", async () => {

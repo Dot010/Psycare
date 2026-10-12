@@ -14,11 +14,35 @@ interface PageProps {
   actions?: ReactNode;
   width?: keyof typeof WIDTHS;
   className?: string;
+  /** Dentro de uma tela com abas: sem o espaçamento da página e com o título menor (h2). */
+  embedded?: boolean;
   children: ReactNode;
 }
 
 /** Estrutura comum das telas do dashboard: espaçamento, largura máxima e cabeçalho. */
-export function Page({ title, description, actions, width = "default", className, children }: PageProps) {
+export function Page({
+  title,
+  description,
+  actions,
+  width = "default",
+  className,
+  embedded = false,
+  children,
+}: PageProps) {
+  if (embedded) {
+    return (
+      <div className={cn("space-y-6", className)}>
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold text-brand-ink">{title}</h2>
+            {description && <p className="text-sm text-muted-foreground">{description}</p>}
+          </div>
+          {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+        </header>
+        {children}
+      </div>
+    );
+  }
   return (
     <div className={cn("mx-auto w-full space-y-8 p-4 md:p-8", WIDTHS[width], className)}>
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
