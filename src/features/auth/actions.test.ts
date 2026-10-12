@@ -4,9 +4,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const set = vi.fn();
 vi.mock("next/headers", () => ({
   cookies: async () => ({ set, delete: vi.fn() }),
+  headers: async () => new Headers({ "x-forwarded-for": "203.0.113.7" }),
 }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
 
+import { checkRateLimit, resetRateLimits } from "@/lib/security/rate-limit";
 import { demoLoginAction, loginAction, registerAction } from "./actions";
 
 const validLogin = { email: "ana@example.com", password: "123456" };
@@ -14,6 +16,7 @@ const validLogin = { email: "ana@example.com", password: "123456" };
 describe("auth actions", () => {
   beforeEach(() => {
     set.mockClear();
+    resetRateLimits();
     process.env.SESSION_SECRET = "x".repeat(40);
     delete process.env.DEMO_MODE;
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -95,5 +98,22 @@ describe("auth actions", () => {
       expect(result.success).toBe(false);
       expect(set).not.toHaveBeenCalled();
     });
+  });
+
+  it("bloqueia depois de muitas tentativas seguidas do mesmo visitante", async () => {
+    process.env.DEMO_MODE = "true";
+    for (let i = 0; i < 10; i++) checkRateLimit("login:203.0.113.7", { limit: 10, windowMs: 60_000 });
+    set.mockClear();
+    const result = await loginAction(validLogin);
+    expect(result.success).toBe(false);
+    expect(result).toMatchObject({ error: expect.stringContaining("Muitas tentativas") });
+    expect(set).not.toHaveBeenCalled();
+  });
+
+  it("recusa e-mail e senha absurdamente longos", async () => {
+    process.env.DEMO_MODE = "true";
+    const longo = "a".repeat(300);
+    expect((await loginAction({ email: `${longo}@example.com`, password: "123456" })).success).toBe(false);
+    expect((await loginAction({ email: "ana@example.com", password: longo })).success).toBe(false);
   });
 });

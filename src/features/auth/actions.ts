@@ -1,6 +1,6 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { ZodError } from "zod";
 import { isDemoMode } from "@/lib/demo";
@@ -8,6 +8,7 @@ import { demoUser, loginMock } from "./mock-login";
 import { demoProfileSchema, loginSchema, registerSchema } from "./schema";
 
 import { homeFor } from "@/lib/roles";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 import { COOKIE_NAME, SESSION_MAX_AGE, signSession, type Role, type Specialty } from "@/lib/session";
 
 async function createSession(user: { id: string; role: Role; specialty?: Specialty }) {
@@ -24,6 +25,16 @@ async function createSession(user: { id: string; role: Role; specialty?: Special
 
 const DEMO_DISABLED_ERROR = "Autenticação ainda não está disponível neste ambiente.";
 
+const AUTH_LIMIT = { limit: 10, windowMs: 60_000 };
+
+/** Barra rajadas de tentativas vindas do mesmo visitante. Devolve a mensagem de erro, ou null se pode seguir. */
+async function tooManyAttempts(scope: string): Promise<string | null> {
+  const h = await headers();
+  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "desconhecido";
+  const { allowed, retryAfter } = checkRateLimit(`${scope}:${ip}`, AUTH_LIMIT);
+  return allowed ? null : `Muitas tentativas. Tente de novo em ${retryAfter} segundos.`;
+}
+
 function toErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof ZodError) {
     return error.issues[0]?.message ?? fallback;
@@ -37,6 +48,9 @@ export async function loginAction(formData: { email: string; password: string })
   if (!isDemoMode()) {
     return { success: false, error: DEMO_DISABLED_ERROR };
   }
+
+  const blocked = await tooManyAttempts("login");
+  if (blocked) return { success: false, error: blocked };
 
   try {
     const validated = loginSchema.parse(formData);
@@ -63,6 +77,9 @@ export async function demoLoginAction(profile: string) {
     return { success: false as const, error: DEMO_DISABLED_ERROR };
   }
 
+  const blocked = await tooManyAttempts("demo");
+  if (blocked) return { success: false as const, error: blocked };
+
   try {
     const user = demoUser(demoProfileSchema.parse(profile));
     await createSession(user);
@@ -84,6 +101,9 @@ export async function registerAction(formData: {
   if (!isDemoMode()) {
     return { success: false, error: DEMO_DISABLED_ERROR };
   }
+
+  const blocked = await tooManyAttempts("register");
+  if (blocked) return { success: false, error: blocked };
 
   try {
     const validated = registerSchema.parse(formData);

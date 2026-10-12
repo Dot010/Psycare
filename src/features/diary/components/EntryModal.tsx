@@ -131,6 +131,7 @@ function EntryForm({
           id="entry-content"
           rows={7}
           required
+          maxLength={10000}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder={entry ? undefined : dailyPrompt(toISODate(new Date()))}
