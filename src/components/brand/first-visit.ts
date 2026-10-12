@@ -1,17 +1,11 @@
-/** Cookie de sessão (some ao fechar o navegador): marca que a abertura já foi mostrada. Sem dado pessoal. */
-export const SEEN_COOKIE = "psycare_splash";
+/** Telas de entrada, onde a abertura funciona como apresentação do app. */
+const PRESENTATION_PATHS = new Set(["/", "/login", "/register"]);
 
-/** Fica ao menos isto na tela, para a marca ser vista e não piscar. */
-export const MIN_VISIBLE_MS = 900;
-/** Teto: mesmo que a página demore, a abertura sai depois disto. */
-export const MAX_VISIBLE_MS = 1600;
-/** Duração do esmaecer ao sair. */
-export const FADE_MS = 300;
-
-export function markSeen(): void {
-  try {
-    document.cookie = `${SEEN_COOKIE}=1; path=/; SameSite=Lax`;
-  } catch {
-    // Cookies bloqueados: só deixa de lembrar que já mostrou.
-  }
+export function isPresentationPath(pathname: string | null): boolean {
+  return pathname !== null && PRESENTATION_PATHS.has(pathname);
 }
+
+/** Sem movimento: a marca fica parada por este tempo e some. */
+export const STILL_MS = 900;
+/** Teto: se a página demorar, a abertura sai depois disto, mesmo sem ela terminar de carregar. */
+export const MAX_WAIT_MS = 3500;
