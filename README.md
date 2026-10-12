@@ -2,7 +2,7 @@
 
 Aplicativo web de acompanhamento em saúde mental: humor, diário e atividades terapêuticas, hábitos, respiração guiada, plano de segurança, saúde e remédios, consultas, mensagens e pagamentos. Tem uma área para o profissional (psicólogo ou psiquiatra) que vê apenas o que o paciente escolhe compartilhar.
 
-Ainda **não há backend**. Login, registro e todos os dados do painel são simulados (veja [Dados de demonstração](#dados-de-demonstração)).
+Ainda **não há backend**. Login, registro e todos os dados do painel são simulados (veja [Dados de demonstração](#dados-de-demonstração)). O roteiro do que o backend precisa entregar está em [BACKEND.md](BACKEND.md).
 
 Produção: [psycare-seven.vercel.app](https://psycare-seven.vercel.app)
 

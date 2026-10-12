@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { readStored, removeStored, subscribeStored, writeStored } from "./storage";
+import { clearUserData, readStored, removeStored, subscribeStored, writeStored } from "./storage";
 
 describe("storage", () => {
   beforeEach(() => {
@@ -35,5 +35,23 @@ describe("storage", () => {
     unsubscribe();
     writeStored("k", 2);
     expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it("clearUserData apaga os dados pessoais, avisa quem assinou e guarda só preferências de tela", () => {
+    writeStored("psycare:diary:v1", [{ texto: "segredo" }]);
+    writeStored("psycare:remedios:v1", [1]);
+    writeStored("psycare:sound:v1", true);
+    window.localStorage.setItem("outro-app", "fica");
+    const listener = vi.fn();
+    subscribeStored("psycare:diary:v1", listener);
+
+    clearUserData();
+
+    expect(window.localStorage.getItem("psycare:diary:v1")).toBeNull();
+    expect(window.localStorage.getItem("psycare:remedios:v1")).toBeNull();
+    expect(readStored("psycare:diary:v1", "vazio")).toBe("vazio");
+    expect(listener).toHaveBeenCalled();
+    expect(window.localStorage.getItem("psycare:sound:v1")).toBe("true");
+    expect(window.localStorage.getItem("outro-app")).toBe("fica");
   });
 });

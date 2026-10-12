@@ -11,7 +11,7 @@ export interface AuthLayoutProps {
 
 export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
   return (
-    <section className="bg-canvas min-h-screen flex items-center justify-center p-4">
+    <section className="bg-canvas min-h-dvh flex items-center justify-center p-4">
       <div className="bg-surface flex flex-col md:flex-row rounded-xl shadow-sm border border-border max-w-4xl w-full overflow-hidden min-h-137.5">
         <div className="flex w-full md:w-1/2">
           <SkyPanel />

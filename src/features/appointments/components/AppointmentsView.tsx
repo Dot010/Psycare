@@ -102,7 +102,7 @@ export function AppointmentsView() {
         <MagneticButton
           type="button"
           onClick={openNew}
-          className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-brand-700"
+          className="inline-flex h-10 pointer-coarse:h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-brand-700"
         >
           <Plus className="size-4" />
           Novo agendamento

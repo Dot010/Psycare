@@ -186,7 +186,7 @@ function TaskRow({
         aria-label={`${task.done ? "Desmarcar" : "Marcar como feita"}: ${task.title}`}
         onClick={onToggle}
         className={cn(
-          "flex size-8 shrink-0 items-center justify-center rounded-full border-2 text-sm transition-colors focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none",
+          "flex size-8 pointer-coarse:size-11 shrink-0 items-center justify-center rounded-full border-2 text-sm transition-colors focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none",
           task.done ? "border-brand-600 bg-brand-600 text-white" : "border-brand-300",
         )}
       >
@@ -195,16 +195,19 @@ function TaskRow({
       <div className="min-w-0 flex-1">
         <p
           className={cn(
-            "text-base font-medium text-foreground",
+            "text-base font-medium break-words text-foreground",
             task.done && "text-muted-foreground line-through",
           )}
         >
           {task.title}
         </p>
-        <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span className={cn("inline-block size-2 rounded-full", DOT[task.importance])} aria-hidden />
-          Importância {IMPORTANCE_LABEL[task.importance].toLowerCase()}
-          {task.time && <span>· {task.time}</span>}
+        <p className="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <span className={cn("inline-block size-2 rounded-full", DOT[task.importance])} aria-hidden />
+            <span className="sr-only">Importância {IMPORTANCE_LABEL[task.importance].toLowerCase()}</span>
+            <span aria-hidden>{IMPORTANCE_LABEL[task.importance]}</span>
+          </span>
+          {task.time && <span className="tabular-nums">· {task.time}</span>}
           {task.date && task.date !== today && <span>· {dayLabel(task.date, today)}</span>}
           {task.source === "habito" ? (
             <span>· hábito de todo dia</span>
@@ -217,7 +220,7 @@ function TaskRow({
       {task.href && !task.done && (
         <Link
           href={task.href}
-          className="shrink-0 text-sm font-medium text-brand-ink underline focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
+          className="inline-flex min-h-11 shrink-0 items-center text-sm font-medium text-brand-ink underline focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
         >
           Abrir
         </Link>
@@ -225,7 +228,7 @@ function TaskRow({
       {!task.done && task.source !== "habito" && task.date && task.date <= today && (
         <Button
           variant="ghost"
-          className="min-h-11"
+          className="min-h-11 px-2"
           onClick={onPostpone}
           aria-label={`Adiar sem culpa: ${task.title}`}
         >

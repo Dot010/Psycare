@@ -9,7 +9,7 @@ import type { NavVariant } from "@/components/layout/nav-items";
 
 const Nav = dynamic(() => import("@/components/layout/Nav"), {
   ssr: false,
-  loading: () => <aside className="hidden h-screen w-20 shrink-0 animate-pulse bg-primary/95 md:block" />,
+  loading: () => <aside className="hidden h-full w-20 shrink-0 animate-pulse bg-primary/95 md:block" />,
 });
 
 const NavMobile = dynamic(() => import("@/components/layout/NavMobile"), {
@@ -21,7 +21,7 @@ const NavMobile = dynamic(() => import("@/components/layout/NavMobile"), {
 
 export function DashboardShell({ variant, children }: { variant: NavVariant; children: React.ReactNode }) {
   return (
-    <div className="flex h-screen flex-col overflow-hidden md:flex-row">
+    <div data-app-shell className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
       <Nav variant={variant} />
       <NavMobile variant={variant} />
       {variant === "patient" && <CrisisButton />}

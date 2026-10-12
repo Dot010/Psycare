@@ -70,7 +70,7 @@ export default function DiaryView() {
                   aria-controls={`diario-panel-${item.id}`}
                   onClick={() => setTab(item.id)}
                   className={cn(
-                    "h-10 rounded-full border px-4 text-sm font-semibold transition-colors",
+                    "h-10 pointer-coarse:h-11 rounded-full border px-4 text-sm font-semibold transition-colors",
                     tab === item.id
                       ? "border-brand-ink bg-brand-ink text-white"
                       : "border-input bg-card text-muted-foreground hover:bg-sunken",

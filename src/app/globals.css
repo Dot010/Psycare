@@ -438,3 +438,36 @@
   box-sizing: border-box;
   backface-visibility: hidden;
 }
+
+/* Celular: campos com 16px (abaixo disso o iPhone dá zoom sozinho ao tocar). Vale para qualquer campo de texto. */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Toque: sem zoom por toque duplo e sem o flash cinza do navegador ao tocar. */
+a,
+button,
+[role="button"],
+[role="radio"],
+[role="tab"],
+input,
+select,
+textarea,
+label,
+summary {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Painel logado: o aviso de demonstração fica no topo e o painel ocupa o resto da altura da tela.
+   Sem isso, o painel (altura da tela inteira) passava do limite e o fim do menu, com o Sair, ficava fora da janela. */
+body:has([data-app-shell]) {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+}

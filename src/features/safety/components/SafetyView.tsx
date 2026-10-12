@@ -5,17 +5,17 @@ import { useState } from "react";
 import { EmergencyCalls } from "@/features/safety/components/EmergencyCalls";
 import { useSafetyPlan } from "@/features/safety/hooks/useSafetyPlan";
 import {
-  isValidPhone,
   MAX_CONTACTS,
   MAX_ITEM_LENGTH,
   MAX_ITEMS,
   phoneHref,
   SAFETY_SECTIONS,
 } from "@/features/safety/logic";
+import { CONTACT_NAME_MAX, CONTACT_ROLE_MAX, contactSchema } from "@/features/safety/schema";
 import type { SafetyListKey } from "@/features/safety/types";
 
 const inputClass =
-  "h-11 min-w-0 flex-1 rounded-xl border border-input bg-card px-3 text-sm text-foreground focus-visible:ring-3 focus-visible:ring-brand-600/40 focus-visible:outline-none";
+  "h-11 min-w-0 rounded-xl border border-input bg-card px-3 text-sm text-foreground focus-visible:ring-3 focus-visible:ring-brand-600/40 focus-visible:outline-none";
 const addButtonClass =
   "h-11 shrink-0 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-brand-700 focus-visible:ring-3 focus-visible:ring-brand-600/40 focus-visible:outline-none";
 
@@ -89,7 +89,7 @@ function ItemSection({
             maxLength={MAX_ITEM_LENGTH}
             onChange={(e) => setDraft(e.target.value)}
             placeholder={placeholder}
-            className={inputClass}
+            className={`${inputClass} flex-1`}
           />
           <button type="submit" className={addButtonClass}>
             Adicionar
@@ -109,8 +109,8 @@ function PeopleSection() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim().length < 2) return setError("Escreva o nome.");
-    if (!isValidPhone(phone)) return setError("Confira o telefone, com DDD.");
+    const checked = contactSchema.safeParse({ name, role, phone });
+    if (!checked.success) return setError(checked.error.issues[0]?.message ?? "Confira os dados.");
     setError("");
     addPerson({ name, role, phone });
     setName("");
@@ -167,8 +167,8 @@ function PeopleSection() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Nome"
-              maxLength={60}
-              className={inputClass}
+              maxLength={CONTACT_NAME_MAX}
+              className={`${inputClass} sm:flex-1`}
             />
             <label htmlFor="person-role" className="sr-only">
               Quem é para você
@@ -178,8 +178,8 @@ function PeopleSection() {
               value={role}
               onChange={(e) => setRole(e.target.value)}
               placeholder="Quem é (irmã, amigo…)"
-              maxLength={40}
-              className={inputClass}
+              maxLength={CONTACT_ROLE_MAX}
+              className={`${inputClass} sm:flex-1`}
             />
           </div>
           <div className="flex gap-2">
@@ -194,7 +194,7 @@ function PeopleSection() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Telefone com DDD"
-              className={inputClass}
+              className={`${inputClass} flex-1`}
             />
             <button type="submit" className={addButtonClass}>
               Adicionar
