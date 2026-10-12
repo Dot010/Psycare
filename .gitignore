@@ -26,7 +26,11 @@
 
 # misc
 .DS_Store
+desktop.ini
 *.pem
+
+# patches locais (não fazem parte do projeto)
+*.patch
 
 # debug
 npm-debug.log*
