@@ -1,20 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
 import type { Sintoma } from "@/features/health/types";
 import { INTENSITY_LABELS } from "@/features/health/logic";
+import { HEALTH_LIMITS, sintomaSchema } from "@/features/health/schema";
 import { toISODate } from "@/lib/dates";
 import { cn } from "@/lib/utils";
-
-const sintomaSchema = z.object({
-  descricao: z.string().trim().min(2, "Descreva o sintoma"),
-  nota: z.string().trim().max(200).optional(),
-  data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Escolha uma data"),
-});
 
 interface SintomaDialogProps {
   open: boolean;
@@ -78,6 +72,7 @@ function SintomaForm({
       <Field
         label="Sintoma"
         required
+        maxLength={HEALTH_LIMITS.sintomaDescricao}
         value={form.descricao}
         onChange={set("descricao")}
         placeholder="Ex: Insônia, dor de cabeça"
@@ -115,6 +110,7 @@ function SintomaForm({
       </div>
       <Field
         label="Observação (opcional)"
+        maxLength={HEALTH_LIMITS.sintomaNota}
         value={form.nota}
         onChange={set("nota")}
         placeholder="Ex: piorou à noite"

@@ -2,18 +2,12 @@
 
 import { Plus, X } from "lucide-react";
 import { useState } from "react";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
 import { isTime, MAX_TIMES, medTimes } from "@/features/health/logic";
+import { HEALTH_LIMITS, medicamentoSchema } from "@/features/health/schema";
 import type { Medicamento } from "@/features/health/types";
-
-const medicamentoSchema = z.object({
-  nome: z.string().trim().min(2, "Informe o nome do remédio").max(60),
-  dosagem: z.string().trim().min(1, "Informe a dosagem").max(40),
-  observacao: z.string().trim().max(60).optional(),
-});
 
 interface MedicamentoDialogProps {
   open: boolean;
@@ -80,6 +74,7 @@ function MedicamentoForm({
       <Field
         label="Nome do remédio"
         required
+        maxLength={HEALTH_LIMITS.medNome}
         value={form.nome}
         onChange={set("nome")}
         placeholder="Ex: Sertralina"
@@ -87,12 +82,14 @@ function MedicamentoForm({
       <Field
         label="Dosagem"
         required
+        maxLength={HEALTH_LIMITS.medDosagem}
         value={form.dosagem}
         onChange={set("dosagem")}
         placeholder="Ex: 50 mg"
       />
       <Field
         label="Observação (opcional)"
+        maxLength={HEALTH_LIMITS.medObservacao}
         value={form.observacao}
         onChange={set("observacao")}
         placeholder="Ex: com comida, antes de dormir"
