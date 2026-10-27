@@ -3,6 +3,13 @@ import type { Chat } from "@/features/messages/types";
 import type { DiaryEntry } from "@/features/diary/types";
 import type { Medicamento, Sintoma } from "@/features/health/types";
 import type { Habit } from "@/features/habits/types";
+import { toISODate } from "@/lib/dates";
+
+/** Data relativa a hoje (AAAA-MM-DD), para as consultas de exemplo não ficarem no passado. */
+function daysFromToday(days: number): string {
+  const d = new Date();
+  return toISODate(new Date(d.getFullYear(), d.getMonth(), d.getDate() + days));
+}
 
 export const mockUser = {
   habits: [
@@ -58,7 +65,7 @@ export const mockUser = {
     {
       id: "1",
       profissional: "Dra. Helena Prado",
-      data: "2026-10-15",
+      data: daysFromToday(5),
       hora: "15:30",
       status: "confirmado",
       tipo: "online",
@@ -66,7 +73,7 @@ export const mockUser = {
     {
       id: "2",
       profissional: "Dr. Rafael Nunes",
-      data: "2026-10-20",
+      data: daysFromToday(10),
       hora: "10:00",
       status: "pendente",
       tipo: "presencial",
@@ -74,7 +81,7 @@ export const mockUser = {
     {
       id: "3",
       profissional: "Dra. Helena Prado",
-      data: "2026-09-08",
+      data: daysFromToday(-40),
       hora: "15:30",
       status: "confirmado",
       tipo: "online",
