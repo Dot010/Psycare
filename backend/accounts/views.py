@@ -22,7 +22,7 @@ def auth_response(user, status_code=status.HTTP_200_OK):
 
 
 class RegisterView(APIView):
-    permission_classes = [permissions.AllowAny]  
+    permission_classes = [permissions.AllowAny]
     throttle_scope = "auth"
 
     def post(self, request):
@@ -33,7 +33,7 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
-    permission_classes = [permissions.AllowAny]  
+    permission_classes = [permissions.AllowAny]
     throttle_scope = "auth"
 
     def post(self, request):
@@ -44,7 +44,7 @@ class LoginView(APIView):
             email=serializer.validated_data["email"],
             password=serializer.validated_data["password"],
         )
-        if user is None:  
+        if user is None:
             return Response(
                 {"detail": INVALID_CREDENTIALS}, status=status.HTTP_400_BAD_REQUEST
             )
@@ -53,7 +53,7 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     def post(self, request):
-        Token.objects.filter(user=request.user).delete()  
+        Token.objects.filter(user=request.user).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -67,6 +67,7 @@ class MeView(generics.RetrieveUpdateAPIView):
 
 class ChangePasswordView(APIView):
     throttle_scope = "auth"
+
     def post(self, request):
         serializer = ChangePasswordSerializer(
             data=request.data, context={"request": request}

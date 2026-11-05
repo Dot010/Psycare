@@ -1,7 +1,7 @@
 from django.contrib.auth.models import (
     AbstractUser,
     BaseUserManager,
-) 
+)
 from django.db import models
 
 
@@ -23,9 +23,6 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
-
-
-
 class User(AbstractUser):
     class Role(models.TextChoices):
         PATIENT = "patient", "Paciente"
@@ -35,9 +32,7 @@ class User(AbstractUser):
         PSYCHOLOGIST = "psychologist", "Psicólogo(a)"
         PSYCHIATRIST = "psychiatrist", "Psiquiatra"
 
-    terms_accepted_at = models.DateTimeField(
-        "aceite dos termos", null=True, blank=True
-    )
+    terms_accepted_at = models.DateTimeField("aceite dos termos", null=True, blank=True)
 
     username = None
     email = models.EmailField("e-mail", unique=True)
@@ -52,7 +47,7 @@ class User(AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name"]
 
-    objects = UserManager()  
+    objects = UserManager()
 
     def __str__(self):
         return self.email
