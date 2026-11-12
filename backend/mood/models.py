@@ -4,7 +4,7 @@ from django.db import models
 
 
 class CheckIn(models.Model):
-    user = models.ForeignKey(  
+    user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="checkins",
@@ -12,7 +12,7 @@ class CheckIn(models.Model):
     date = models.DateField("dia")
     level = models.PositiveSmallIntegerField(
         "humor",
-        validators=[MinValueValidator(1), MaxValueValidator(5)],  
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
     )
     tags = models.JSONField("o que influenciou", default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
