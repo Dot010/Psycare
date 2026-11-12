@@ -1,7 +1,7 @@
 from django.contrib.auth.models import (
     AbstractUser,
     BaseUserManager,
-)  # 🆕 BaseUserManager
+)
 from django.db import models
 
 
@@ -23,9 +23,6 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
-# 🆕 ↑ fim do gerente
-
-
 class User(AbstractUser):
     class Role(models.TextChoices):
         PATIENT = "patient", "Paciente"
@@ -34,6 +31,8 @@ class User(AbstractUser):
     class Specialty(models.TextChoices):
         PSYCHOLOGIST = "psychologist", "Psicólogo(a)"
         PSYCHIATRIST = "psychiatrist", "Psiquiatra"
+
+    terms_accepted_at = models.DateTimeField("aceite dos termos", null=True, blank=True)
 
     username = None
     email = models.EmailField("e-mail", unique=True)
@@ -48,7 +47,7 @@ class User(AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name"]
 
-    objects = UserManager()  # 🆕 contrata o gerente
+    objects = UserManager()
 
     def __str__(self):
         return self.email
