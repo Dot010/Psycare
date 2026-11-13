@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "accounts",
     "mood",
     "diary",
+    "appointments",
 ]
 AUTH_USER_MODEL = "accounts.User"
 REST_FRAMEWORK = {
