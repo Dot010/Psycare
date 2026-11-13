@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "accounts",
     "mood",
+    "diary",
 ]
 AUTH_USER_MODEL = "accounts.User"
 REST_FRAMEWORK = {
