@@ -42,6 +42,19 @@ describe("barra do topo", () => {
     expect(screen.getByRole("menuitem", { name: "Sair" })).toBeInTheDocument();
   });
 
+  it("Sair envia o formulário de sair mesmo com o menu fechando", async () => {
+    pathname = "/dashboard/home";
+    const submit = vi.spyOn(HTMLFormElement.prototype, "requestSubmit").mockImplementation(() => {});
+    render(<TopNav variant="patient" />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Sua conta" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "Sair" }));
+
+    expect(submit).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("menuitem", { name: "Sair" })).not.toBeInTheDocument();
+    submit.mockRestore();
+  });
+
   it("o profissional não tem o botão de ajuda do paciente", () => {
     pathname = "/dashboard/pro";
     render(<TopNav variant="psychologist" />);

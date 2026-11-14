@@ -1,8 +1,9 @@
 "use client";
 
-import { Brain, ChevronDown, LogOut, Settings } from "lucide-react";
+import { Brain, ChevronDown, LogOut, Settings, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRef } from "react";
 import { DropdownMenu } from "radix-ui";
 import { CrisisButton } from "@/components/feedback/CrisisButton";
 import { ThemeToggle } from "@/components/feedback/ThemeToggle";
@@ -36,6 +37,9 @@ export default function TopNav({ variant = "patient" }: { variant?: NavVariant }
   const [profile] = useProfile();
   const name = profile.name.trim();
   const settingsHref = variant === "patient" ? "/dashboard/settings" : "/dashboard/pro/settings";
+  // O formulário de sair fica fora do menu: quando o menu fecha, o que está dentro dele some da página,
+  // e um formulário que some antes de enviar tem o envio cancelado pelo navegador.
+  const logoutForm = useRef<HTMLFormElement>(null);
 
   return (
     <header className="hidden bg-sunken md:block">
@@ -121,7 +125,7 @@ export default function TopNav({ variant = "patient" }: { variant?: NavVariant }
               aria-label="Sua conta"
               className="flex size-11 items-center justify-center rounded-full border border-border bg-brand-100 text-sm font-semibold text-brand-ink focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
             >
-              {name ? name.charAt(0).toUpperCase() : <Settings className="size-4" aria-hidden />}
+              {name ? name.charAt(0).toUpperCase() : <UserRound className="size-5" aria-hidden />}
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
               <DropdownMenu.Content align="end" sideOffset={6} className={menuPanel}>
@@ -139,17 +143,17 @@ export default function TopNav({ variant = "patient" }: { variant?: NavVariant }
                   </Link>
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator className="my-1 h-px bg-border" />
-                <form action={logoutAction} onSubmit={clearUserData}>
-                  <DropdownMenu.Item asChild>
-                    <button type="submit" className={cn(menuItem, "w-full text-danger-600")}>
-                      <LogOut className="size-4" aria-hidden />
-                      Sair
-                    </button>
-                  </DropdownMenu.Item>
-                </form>
+                <DropdownMenu.Item
+                  onSelect={() => logoutForm.current?.requestSubmit()}
+                  className={cn(menuItem, "cursor-pointer text-danger-600")}
+                >
+                  <LogOut className="size-4" aria-hidden />
+                  Sair
+                </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Portal>
           </DropdownMenu.Root>
+          <form ref={logoutForm} action={logoutAction} onSubmit={clearUserData} hidden />
         </div>
       </div>
     </header>
