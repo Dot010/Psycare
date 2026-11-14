@@ -9,21 +9,33 @@ import { useSafetyPlan } from "@/features/safety/hooks/useSafetyPlan";
 import { isPlanEmpty, phoneHref } from "@/features/safety/logic";
 
 /** Botão sempre visível no painel: leva a quem pode ajudar em uma crise, e ao plano de segurança da pessoa. */
-export function CrisisButton() {
+/**
+ * `floating`: o botão redondo no canto (celular). `header`: o botão com texto na barra do topo (computador).
+ */
+export function CrisisButton({ placement = "floating" }: { placement?: "floating" | "header" }) {
   const { plan } = useSafetyPlan();
   const hasPlan = !isPlanEmpty(plan);
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button
-          type="button"
-          aria-label="Preciso de ajuda"
-          className="fixed right-3 bottom-24 z-40 flex size-11 items-center justify-center gap-2 rounded-full bg-strong text-xs font-semibold text-white shadow-lg transition-colors hover:bg-brand-900 focus-visible:ring-3 focus-visible:ring-sun-300 focus-visible:outline-none md:right-6 md:bottom-6 md:size-auto md:px-4 md:py-2.5"
-        >
-          <LifeBuoy className="size-5 md:size-4" aria-hidden />
-          <span className="hidden md:inline">Preciso de ajuda</span>
-        </button>
+        {placement === "header" ? (
+          <button
+            type="button"
+            className="flex min-h-11 items-center gap-2 rounded-full border-[1.5px] border-danger-600 bg-card px-4 text-sm font-semibold text-danger-600 transition-colors hover:bg-danger-50 focus-visible:ring-3 focus-visible:ring-danger-300 focus-visible:outline-none"
+          >
+            <LifeBuoy className="size-4" aria-hidden />
+            Preciso de ajuda agora
+          </button>
+        ) : (
+          <button
+            type="button"
+            aria-label="Preciso de ajuda"
+            className="fixed right-3 bottom-24 z-40 flex size-11 items-center justify-center rounded-full bg-strong text-white shadow-lg transition-colors hover:bg-brand-900 focus-visible:ring-3 focus-visible:ring-sun-300 focus-visible:outline-none md:hidden"
+          >
+            <LifeBuoy className="size-5" aria-hidden />
+          </button>
+        )}
       </DialogTrigger>
 
       <DialogContent className="max-h-[92dvh] gap-4 overflow-y-auto rounded-2xl p-6 sm:max-w-md">
