@@ -7,9 +7,10 @@ import { PageSkeleton } from "@/components/feedback/PageSkeleton";
 import { TaskReminder } from "@/features/planner/components/TaskReminder";
 import type { NavVariant } from "@/components/layout/nav-items";
 
-const Nav = dynamic(() => import("@/components/layout/Nav"), {
+// No computador o menu é uma barra no topo (a barra lateral saiu).
+const TopNav = dynamic(() => import("@/components/layout/TopNav"), {
   ssr: false,
-  loading: () => <aside className="hidden h-full w-20 shrink-0 animate-pulse bg-primary/95 md:block" />,
+  loading: () => <div className="hidden h-16 shrink-0 border-b border-border bg-canvas md:block" />,
 });
 
 const NavMobile = dynamic(() => import("@/components/layout/NavMobile"), {
@@ -21,8 +22,8 @@ const NavMobile = dynamic(() => import("@/components/layout/NavMobile"), {
 
 export function DashboardShell({ variant, children }: { variant: NavVariant; children: React.ReactNode }) {
   return (
-    <div data-app-shell className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
-      <Nav variant={variant} />
+    <div data-app-shell className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <TopNav variant={variant} />
       <NavMobile variant={variant} />
       {variant === "patient" && <CrisisButton />}
       {variant === "patient" && <TaskReminder />}

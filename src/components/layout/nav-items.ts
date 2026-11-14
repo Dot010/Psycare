@@ -13,6 +13,7 @@ import {
   Settings,
   ShieldCheck,
   Smile,
+  Sprout,
   Users,
   Wallet,
   type LucideIcon,
@@ -36,6 +37,7 @@ export const NAV_ITEMS: NavItem[] = [
   { title: "Diário", href: "/dashboard/diary", icon: BookText, inMobileBar: true },
   { title: "Atividades", href: "/dashboard/activities", icon: ClipboardList, inMobileBar: true },
   { title: "Saúde", href: "/dashboard/health", icon: Pill, inMobileBar: true },
+  { title: "Jardim", href: "/dashboard/garden", icon: Sprout },
   // Cuidado: quem me acompanha e o que fazer se eu não estiver bem.
   { title: "Consultas", href: "/dashboard/appointments", icon: CalendarCheck, startsGroup: true },
   { title: "Mensagens", href: "/dashboard/messages", icon: MessageCircle },
