@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { WHEEL_AREAS } from "./catalog";
 import {
   compareWheel,
+  dueLabel,
   latestOfKind,
   pendingAssignments,
   previousOfKind,
@@ -117,5 +118,18 @@ describe("outras atividades", () => {
       { id: "2", kind: "plan" as const, by: "Dra.", assignedAt: "2026-10-01", doneRecordId: "x" },
     ];
     expect(pendingAssignments(list).map((a) => a.id)).toEqual(["1"]);
+  });
+});
+
+describe("prazo do pedido", () => {
+  it("conta os dias que faltam, sem culpa quando passou", () => {
+    expect(dueLabel(undefined, "2026-11-14")).toBeNull();
+    expect(dueLabel("2026-11-16", "2026-11-14")).toEqual({ text: "faltam 2 dias", late: false });
+    expect(dueLabel("2026-11-15", "2026-11-14")).toEqual({ text: "falta 1 dia", late: false });
+    expect(dueLabel("2026-11-14", "2026-11-14")).toEqual({ text: "para hoje", late: false });
+    expect(dueLabel("2026-11-10", "2026-11-14")).toEqual({
+      text: "o prazo passou, ainda dá para fazer",
+      late: true,
+    });
   });
 });

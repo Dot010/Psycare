@@ -175,3 +175,16 @@ export function formatDayShort(iso: string): string {
 export function makeId(prefix: string): string {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
+
+/**
+ * O prazo de um pedido, dito sem cobrança: "faltam 2 dias", "para hoje", "o prazo passou, ainda dá".
+ * `late` serve só para a cor do selo; o texto nunca culpa.
+ */
+export function dueLabel(dueDate: string | undefined, today: string): { text: string; late: boolean } | null {
+  if (!dueDate) return null;
+  const days = daysBetween(today, dueDate);
+  if (days < 0) return { text: "o prazo passou, ainda dá para fazer", late: true };
+  if (days === 0) return { text: "para hoje", late: false };
+  if (days === 1) return { text: "falta 1 dia", late: false };
+  return { text: `faltam ${days} dias`, late: false };
+}
