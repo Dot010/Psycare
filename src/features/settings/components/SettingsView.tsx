@@ -22,7 +22,6 @@ const TABS = [
   { id: "notifications", label: "Lembretes" },
   { id: "privacy", label: "Privacidade" },
   { id: "data", label: "Meus dados" },
-  { id: "security", label: "Segurança" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -107,41 +106,6 @@ function ProfileForm({
   );
 }
 
-function ToggleRow({
-  title,
-  description,
-  checked,
-  onChange,
-  disabled,
-}: {
-  title: string;
-  description: string;
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-  disabled?: boolean;
-}) {
-  return (
-    <label
-      className={cn(
-        "flex items-center justify-between gap-4 rounded-xl border border-border bg-sunken/50 p-3",
-        disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
-      )}
-    >
-      <span>
-        <span className="block text-xs font-semibold text-foreground">{title}</span>
-        <span className="block text-xs text-muted-foreground">{description}</span>
-      </span>
-      <input
-        type="checkbox"
-        checked={checked}
-        disabled={disabled}
-        onChange={(e) => onChange(e.target.checked)}
-        className="size-4 accent-brand-600"
-      />
-    </label>
-  );
-}
-
 export default function SettingsView() {
   const { user, updateUser } = useUser();
   const [profile] = useProfile();
@@ -210,32 +174,6 @@ export default function SettingsView() {
         {activeTab === "privacy" && <SharingPanel />}
 
         {activeTab === "data" && <DataPanel />}
-
-        {activeTab === "security" && (
-          <div className={panelClass}>
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <h2 className={panelTitleClass}>Segurança e autenticação</h2>
-              <span className="rounded-md bg-sun-100 px-2 py-0.5 text-xs font-semibold text-ink">
-                Em desenvolvimento
-              </span>
-            </div>
-            <div className="space-y-3">
-              <ToggleRow
-                title="Autenticação em duas etapas (2FA)"
-                description="Adiciona uma camada extra de segurança com um aplicativo autenticador."
-                checked={false}
-                onChange={() => {}}
-                disabled
-              />
-              <div className="flex items-center justify-between rounded-xl border border-dashed border-border bg-sunken p-4 text-xs">
-                <span className="text-muted-foreground">Alterar senha da conta</span>
-                <Button variant="outline" size="sm" disabled>
-                  Redefinir
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </Page>
   );

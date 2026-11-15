@@ -1,13 +1,15 @@
 "use client";
 
-import { X } from "lucide-react";
+import { FileText, X } from "lucide-react";
 import { useState } from "react";
 import { Block } from "@/components/ui/block";
 import { Button } from "@/components/ui/button";
 import { fieldControlClass } from "@/components/ui/input";
 import { useDiary } from "@/features/diary/hooks/useDiary";
 import { useHealth } from "@/features/health/hooks/useHealth";
-import { addDays } from "@/features/health/logic";
+import { ConsultDialog } from "@/features/health/components/ConsultDialog";
+import { addDays, buildConsultSummary } from "@/features/health/logic";
+import { useMood } from "@/features/mood/hooks/useMood";
 import { toISODate } from "@/lib/dates";
 import { formatDateBR } from "@/lib/format";
 import { useLocalStorage } from "@/lib/useLocalStorage";
@@ -36,13 +38,26 @@ export function symptomWeek(list: { descricao: string; data: string }[], today: 
  */
 export function SessionPrep() {
   const { entries, saveEntry } = useDiary();
-  const { sintomas } = useHealth();
   const [questions, setQuestions] = useLocalStorage<string[]>(QUESTIONS_KEY, NO_QUESTIONS);
   const [draft, setDraft] = useState("");
   const today = toISODate(new Date());
+  // O resumo que antes ficava em Saúde: remédios e doses, sintomas, humor e o que vai do diário.
+  const health = useHealth();
+  const { levels } = useMood();
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  const summary = summaryOpen
+    ? buildConsultSummary({
+        meds: health.remedios,
+        taken: health.taken,
+        sintomas: health.sintomas,
+        moodByDay: levels,
+        entries,
+        today,
+      })
+    : [];
 
   const marked = entries.filter((e) => e.discussInSession).sort((a, b) => b.date.localeCompare(a.date));
-  const symptoms = symptomWeek(sintomas, today);
+  const symptoms = symptomWeek(health.sintomas, today);
   const total = marked.length + (symptoms.length ? 1 : 0) + questions.length;
 
   const add = (event: React.FormEvent) => {
@@ -145,10 +160,16 @@ export function SessionPrep() {
           </form>
         </section>
 
+        <Button variant="outline" onClick={() => setSummaryOpen(true)}>
+          <FileText />
+          Ver resumo para mostrar
+        </Button>
+
         <p className="text-xs text-muted-foreground">
           Fica só neste aparelho. Do diário, só o título da página é mostrado ao profissional, nunca o texto.
         </p>
       </div>
+      <ConsultDialog open={summaryOpen} onOpenChange={setSummaryOpen} lines={summary} />
     </Block>
   );
 }

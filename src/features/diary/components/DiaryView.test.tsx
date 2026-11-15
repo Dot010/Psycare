@@ -82,7 +82,7 @@ describe("Diário novo", () => {
   it("guarda um desenho e mostra a imagem em Páginas", async () => {
     const user = userEvent.setup();
     setup();
-    await user.click(screen.getByRole("tab", { name: "Desenho" }));
+    await user.click(screen.getByRole("button", { name: "Desenhar" }));
     expect(screen.getByRole("button", { name: "Guardar desenho" })).toBeDisabled();
     const area = screen.getByRole("img", { name: "Área de desenho" });
     fireEvent.pointerDown(area, { clientX: 10, clientY: 10, pointerId: 1 });
@@ -97,11 +97,9 @@ describe("Diário novo", () => {
     );
   });
 
-  it("a aba Semana mostra os sete dias", async () => {
-    const user = userEvent.setup();
+  it("o Diário tem 3 abas: Escrever, Páginas e Humor", () => {
     setup();
-    await user.click(screen.getByRole("tab", { name: "Semana" }));
-    expect(screen.getAllByRole("button", { name: /\d\d\/\d\d, \d+ página/ })).toHaveLength(7);
+    expect(screen.getAllByRole("tab").map((t) => t.textContent)).toEqual(["Escrever", "Páginas", "Humor"]);
   });
 
   it("a aba Humor mostra o humor dentro do Diário", async () => {

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FileText, Paperclip, Pill, Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -12,7 +13,6 @@ import { Block } from "@/components/ui/block";
 import { Button } from "@/components/ui/button";
 import { TabPanel, UnderlineTabs } from "@/components/ui/underline-tabs";
 import { useMood } from "@/features/mood/hooks/useMood";
-import { ConsultDialog } from "@/features/health/components/ConsultDialog";
 import { DoseTimeline } from "@/features/health/components/DoseTimeline";
 import { ExameDialog } from "@/features/health/components/ExameDialog";
 import { ReferralSection } from "@/features/referral/components/ReferralSection";
@@ -26,7 +26,6 @@ import { LIVE_PATIENT_ID } from "@/features/pro/data";
 import { useExams } from "@/features/pro/hooks/useExams";
 import { usePrescriptions } from "@/features/pro/hooks/usePrescriptions";
 import {
-  buildConsultSummary,
   doseAdherence,
   doseSentence,
   dosesForDay,
@@ -67,7 +66,7 @@ export default function HealthView() {
     () => medicinesFor(health.remedios, prescriptions, LIVE_PATIENT_ID),
     [health.remedios, prescriptions],
   );
-  const { entries, levels } = useMood();
+  const { levels } = useMood();
   const today = toISODate(new Date());
 
   const [tab, setTab] = useState<Tab>(tabFrom(useSearchParams()?.get("aba")));
@@ -75,7 +74,6 @@ export default function HealthView() {
   const [editingSintoma, setEditingSintoma] = useState<Sintoma | undefined>();
   const [exameOpen, setExameOpen] = useState(false);
   const [editingExame, setEditingExame] = useState<Exame | undefined>();
-  const [consultOpen, setConsultOpen] = useState(false);
 
   const doses = dosesForDay(remedios, today);
   const takenToday = doses.filter((d) => health.taken.includes(d.key)).length;
@@ -97,17 +95,6 @@ export default function HealthView() {
     setExameOpen(true);
   };
 
-  const summary = consultOpen
-    ? buildConsultSummary({
-        meds: remedios,
-        taken: health.taken,
-        sintomas: health.sintomas,
-        moodByDay: levels,
-        entries,
-        today,
-      })
-    : [];
-
   const month = doseAdherence(remedios, health.taken, today);
   const link = symptomMoodLink(health.sintomas, levels, today);
   const pct = month.planned ? Math.round((month.taken / month.planned) * 100) : 0;
@@ -119,9 +106,12 @@ export default function HealthView() {
       description="O app só lembra. Mudança de dose, sempre com o seu médico."
       width="wide"
       actions={
-        <Button variant="outline" onClick={() => setConsultOpen(true)}>
-          <FileText />
-          Resumo para a consulta
+        // Preparar a consulta fica num lugar só (Consultas), com o diário, os sintomas e o resumo.
+        <Button asChild variant="outline">
+          <Link href="/dashboard/appointments">
+            <FileText />
+            Preparar a consulta
+          </Link>
         </Button>
       }
     >
@@ -408,7 +398,6 @@ export default function HealthView() {
         item={editingExame}
         onSave={health.saveExame}
       />
-      <ConsultDialog open={consultOpen} onOpenChange={setConsultOpen} lines={summary} />
     </Page>
   );
 }
