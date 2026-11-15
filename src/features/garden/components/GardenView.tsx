@@ -6,10 +6,10 @@ import { Page } from "@/components/layout/Page";
 import { PageColumns } from "@/components/layout/PageColumns";
 import { CountUp } from "@/components/motion/CountUp";
 import { Block } from "@/components/ui/block";
-import { GardenCard } from "@/features/garden/components/GardenCard";
 import { WaterHelp } from "@/features/garden/components/WaterHelp";
 import { WeekStrip } from "@/features/garden/components/WeekStrip";
 import { useGarden } from "@/features/garden/hooks/useGarden";
+import { IslandCard } from "@/features/garden/island/IslandCard";
 
 /** De onde vêm as gotas. Cada item leva à página onde se ganha, para o jardim ligar o app inteiro. */
 const WAYS = [
@@ -85,7 +85,7 @@ export default function GardenView() {
           </>
         }
       >
-        <GardenCard garden={garden} />
+        <IslandCard garden={garden} />
         <Block>
           <WeekStrip days={garden.week} streak={garden.streak} />
         </Block>

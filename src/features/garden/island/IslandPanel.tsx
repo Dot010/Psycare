@@ -1,0 +1,107 @@
+"use client";
+
+import { Droplets, Phone, X } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { PLANT_NAMES } from "@/features/garden/logic";
+import { foxRef, placeById, type PlaceId } from "@/features/garden/island/places";
+import type { PlantState } from "@/features/garden/types";
+
+export interface IslandPanelProps {
+  place: PlaceId;
+  foxName: string;
+  plants: PlantState[];
+  available: number;
+  pouring: boolean;
+  onPour: () => void;
+  onClose: () => void;
+}
+
+const linkClass =
+  "inline-flex min-h-11 items-center justify-center rounded-full bg-strong px-5 text-sm font-medium text-white focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none";
+
+/** O cartão do lugar: o que ele é e o caminho para a página de verdade no app. */
+export function IslandPanel({
+  place,
+  foxName,
+  plants,
+  available,
+  pouring,
+  onPour,
+  onClose,
+}: IslandPanelProps) {
+  const p = placeById(place);
+  const fox = foxRef(foxName);
+
+  return (
+    <section
+      aria-labelledby="island-place"
+      className="rounded-3xl border border-border bg-card/95 p-4 shadow-lg backdrop-blur"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 id="island-place" className="text-base font-medium">
+            {p.label}
+          </h2>
+          <p className="text-sm text-muted-foreground">{p.hint}</p>
+        </div>
+        <button
+          type="button"
+          aria-label="Fechar"
+          onClick={onClose}
+          className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-sunken focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
+        >
+          <X className="size-5" aria-hidden />
+        </button>
+      </div>
+
+      {place === "canteiros" && (
+        <div className="mt-3">
+          <ul className="flex flex-wrap gap-2" aria-label="Plantas">
+            {plants.map((plant) => (
+              <li
+                key={plant.kind}
+                className="rounded-full bg-brand-100 px-3 py-1 text-xs font-medium text-brand-ink"
+              >
+                {PLANT_NAMES[plant.kind]} · {Math.round(plant.growth * 100)}%
+              </li>
+            ))}
+          </ul>
+          <Button onClick={onPour} disabled={available === 0 || pouring} className="mt-4 w-full">
+            <Droplets aria-hidden />
+            {pouring ? "Regando..." : available > 0 ? `Regar (${available})` : "Sem gotas para regar"}
+          </Button>
+          <p className="mt-2 text-xs text-muted-foreground">
+            As gotas vêm dos seus cuidados: check-in, hábitos, diário e respiração.
+          </p>
+        </div>
+      )}
+
+      {place === "farol" && (
+        <div className="mt-3 rounded-2xl border border-danger-300 bg-danger-50 p-4 text-sm">
+          <a href="tel:188" className="flex min-h-11 items-center gap-2 font-semibold">
+            <Phone className="size-4" aria-hidden /> CVV · 188 (gratuito, 24 horas)
+          </a>
+          <a href="tel:192" className="flex min-h-11 items-center gap-2 font-semibold">
+            <Phone className="size-4" aria-hidden /> SAMU · 192
+          </a>
+          <p className="text-xs text-muted-foreground">
+            O botão de ajuda do app fica sempre visível, fora da ilha.
+          </p>
+        </div>
+      )}
+
+      {place !== "canteiros" && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link href={p.href} className={linkClass}>
+            {place === "cais"
+              ? `Respirar com ${fox}`
+              : place === "farol"
+                ? "Abrir meu plano de segurança"
+                : `Abrir ${p.label.toLowerCase()}`}
+          </Link>
+        </div>
+      )}
+    </section>
+  );
+}
