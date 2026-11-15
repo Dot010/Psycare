@@ -8,7 +8,7 @@ import { usePro } from "../hooks/usePro";
 
 export default function FinanceView() {
   const pro = usePro();
-  const summary = financeSummary(pro.sessions, pro.patients, pro.today);
+  const summary = financeSummary(pro.sessions, pro.patients, pro.today, pro.closings);
   const month = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(new Date());
 
   return (

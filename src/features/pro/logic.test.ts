@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { financeSummary, groupByDay, moodTrend, sevenDays, trendSentence } from "./logic";
-import type { Patient, ProSession } from "./types";
+import {
+  buildClosing,
+  closingError,
+  closingLine,
+  evolutionText,
+  financeSummary,
+  groupByDay,
+  moodTrend,
+  sevenDays,
+  trendSentence,
+} from "./logic";
+import type { Patient, ProSession, SessionClosing } from "./types";
 
 const today = "2026-10-08";
 const snap = {
@@ -78,5 +88,94 @@ describe("agenda e financeiro", () => {
     expect(summary.toReceive).toBe(100);
     expect(summary.count).toBe(3);
     expect(summary.byPatient[0]).toMatchObject({ sessions: 2, total: 400 });
+  });
+});
+
+describe("encerrar sessão", () => {
+  const session: ProSession = {
+    id: "s9",
+    patientId: "p1",
+    data: "2026-10-08",
+    hora: "14:00",
+    tipo: "online",
+    status: "confirmado",
+  };
+  const brl = (n: number) => `R$ ${n}`;
+
+  it("pede o resultado e, se a sessão aconteceu, a evolução", () => {
+    expect(closingError({ outcome: null, evolution: "", chargeMissed: false })).toMatch(/aconteceu/);
+    expect(closingError({ outcome: "realizada", evolution: "ok", chargeMissed: false })).toMatch(/evolução/);
+    expect(
+      closingError({ outcome: "realizada", evolution: "Trabalhamos o sono.", chargeMissed: false }),
+    ).toBeNull();
+    expect(closingError({ outcome: "faltou", evolution: "", chargeMissed: false })).toBeNull();
+  });
+
+  it("sessão realizada é cobrada com o valor do dia; pago ou pendente", () => {
+    const input = { outcome: "realizada" as const, evolution: "Trabalhamos o sono.", chargeMissed: false };
+    expect(buildClosing(session, { ...input, paid: true }, 180)).toEqual({
+      sessionId: "s9",
+      patientId: "p1",
+      date: "2026-10-08",
+      outcome: "realizada",
+      charge: 180,
+      paid: true,
+    });
+    expect(buildClosing(session, { ...input, paid: false }, 180).paid).toBe(false);
+  });
+
+  it("falta só é cobrada se escolher, e fica pendente", () => {
+    const sem = buildClosing(
+      session,
+      { outcome: "faltou", evolution: "", chargeMissed: false, paid: true },
+      180,
+    );
+    const com = buildClosing(
+      session,
+      { outcome: "faltou", evolution: "", chargeMissed: true, paid: true },
+      180,
+    );
+    expect([sem.charge, sem.paid]).toEqual([0, false]);
+    expect([com.charge, com.paid]).toEqual([180, false]);
+  });
+
+  it("a falta também vai para o prontuário, com a hora", () => {
+    expect(evolutionText(session, { outcome: "faltou", evolution: "", chargeMissed: false })).toBe(
+      "O paciente não compareceu à sessão das 14:00.",
+    );
+    expect(
+      evolutionText(session, {
+        outcome: "realizada",
+        evolution: "  Falamos do trabalho. ",
+        chargeMissed: false,
+      }),
+    ).toBe("Falamos do trabalho.");
+  });
+
+  it("resume a sessão encerrada numa linha", () => {
+    const c = (over: Partial<SessionClosing>): SessionClosing => ({
+      sessionId: "s9",
+      patientId: "p1",
+      date: "2026-10-08",
+      outcome: "realizada",
+      charge: 180,
+      paid: false,
+      ...over,
+    });
+    expect(closingLine(c({}), brl)).toBe("Evolução salva · R$ 180 pendente");
+    expect(closingLine(c({ paid: true }), brl)).toBe("Evolução salva · R$ 180 pago");
+    expect(closingLine(c({ outcome: "faltou", charge: 0 }), brl)).toBe("Falta registrada · sem cobrança");
+  });
+
+  it("no financeiro, o que foi cobrado no fechamento vale mais que a regra antiga", () => {
+    const patients: Patient[] = [{ id: "p1", name: "Ana", age: 30, since: "2026-01-01", fee: 180 }];
+    const s1: ProSession = { ...session, id: "a", status: "realizada" };
+    const s2: ProSession = { ...session, id: "b", status: "faltou" };
+    const closings: SessionClosing[] = [
+      { sessionId: "a", patientId: "p1", date: "2026-10-08", outcome: "realizada", charge: 180, paid: false },
+      { sessionId: "b", patientId: "p1", date: "2026-10-08", outcome: "faltou", charge: 0, paid: false },
+    ];
+    const summary = financeSummary([s1, s2], patients, today, closings);
+    expect([summary.received, summary.toReceive]).toEqual([0, 180]);
   });
 });

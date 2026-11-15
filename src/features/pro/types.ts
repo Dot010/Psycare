@@ -47,6 +47,8 @@ export interface SessionNote {
   date: string;
   /** Texto privado do profissional. Nunca aparece para o paciente. */
   text: string;
+  /** A sessão em que a nota foi escrita, quando veio do "Encerrar sessão". */
+  sessionId?: string;
 }
 
 export interface ProAssignment {
@@ -65,7 +67,23 @@ export interface ProSession {
   data: string;
   hora: string;
   tipo: "online" | "presencial";
-  status: "confirmado" | "pendente" | "cancelado" | "realizada";
+  status: "confirmado" | "pendente" | "cancelado" | "realizada" | "faltou";
+}
+
+/**
+ * O fechamento de uma sessão: aconteceu ou o paciente faltou, e o que foi cobrado.
+ * O valor é guardado no dia do fechamento (como o preço numa venda): mudar o valor da sessão
+ * depois não muda o que já foi cobrado.
+ */
+export interface SessionClosing {
+  sessionId: string;
+  patientId: string;
+  /** Dia da sessão (AAAA-MM-DD). */
+  date: string;
+  outcome: "realizada" | "faltou";
+  /** Valor cobrado em reais. 0 = não cobrou (falta sem cobrança). */
+  charge: number;
+  paid: boolean;
 }
 
 /**

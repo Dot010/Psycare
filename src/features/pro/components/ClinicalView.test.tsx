@@ -2,12 +2,20 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { UndoProvider } from "@/components/feedback/UndoProvider";
+import { PROFESSIONALS } from "../identity";
 import ClinicalView, { clinicalTabFrom } from "./ClinicalView";
 import ProDashboard from "./ProDashboard";
+import { ProIdentityProvider } from "./ProIdentity";
 
 beforeEach(() => localStorage.clear());
 
-const wrap = (ui: React.ReactNode) => render(<UndoProvider>{ui}</UndoProvider>);
+const [psicologa, psiquiatra] = PROFESSIONALS;
+const wrap = (ui: React.ReactNode, pro = psicologa) =>
+  render(
+    <ProIdentityProvider value={pro}>
+      <UndoProvider>{ui}</UndoProvider>
+    </ProIdentityProvider>,
+  );
 
 describe("Clínico", () => {
   it("reúne Receitas, Exames, Encaminhamentos e Adesão em abas", async () => {
@@ -33,7 +41,7 @@ describe("Clínico", () => {
 
 describe("Painel do psiquiatra: Pedidos", () => {
   it("lista os pedidos de receita e de encaminhamento em um lugar só", () => {
-    wrap(<ProDashboard specialty="psychiatrist" />);
+    wrap(<ProDashboard specialty="psychiatrist" />, psiquiatra);
     expect(screen.getByText(/pedidos esperam você/)).toBeInTheDocument();
     expect(screen.getByText(/pediu nova receita de Lyberdia/)).toBeInTheDocument();
     expect(screen.getByText(/pediu encaminhamento para a psicóloga/)).toBeInTheDocument();
