@@ -11,6 +11,7 @@ import { usePro } from "../hooks/usePro";
 import {
   anamnesisFields,
   CONDUCT_STATUS_LABEL,
+  evolutionTemplate,
   FIELD_MAX,
   GOAL_LABEL,
   GOAL_MAX,
@@ -77,6 +78,7 @@ export function Prontuario({ patientId, firstName }: { patientId: string; firstN
 
 function Evolutions({ patientId }: { patientId: string }) {
   const pro = usePro();
+  const { specialty } = useProIdentity();
   const [draft, setDraft] = useState("");
   const notes = pro.notes.filter((n) => n.patientId === patientId);
   const sessionHour = (note: SessionNote) => pro.sessions.find((s) => s.id === note.sessionId)?.hora;
@@ -103,9 +105,16 @@ function Evolutions({ patientId }: { patientId: string }) {
           placeholder="Fora do Encerrar sessão: um contato, uma intercorrência, uma observação."
           className={textarea}
         />
-        <Button type="submit" disabled={!draft.trim()}>
-          Guardar no prontuário
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="submit" disabled={!draft.trim()}>
+            Guardar no prontuário
+          </Button>
+          {!draft.trim() && (
+            <Button type="button" variant="ghost" onClick={() => setDraft(evolutionTemplate(specialty))}>
+              Usar modelo
+            </Button>
+          )}
+        </div>
       </form>
 
       {notes.length === 0 ? (

@@ -17,7 +17,7 @@ import { WeekChart } from "@/features/mood/components/WeekChart";
 import { formatDateBR } from "@/lib/format";
 import { patientById } from "../data";
 import { usePro } from "../hooks/usePro";
-import { moodTrend, sevenDays, trendSentence } from "../logic";
+import { moodTrend, sevenDays, sinceLastSession, trendSentence } from "../logic";
 import { AssignDialog } from "./AssignDialog";
 import { Prontuario } from "./Prontuario";
 import { useProIdentity } from "./ProIdentity";
@@ -78,6 +78,7 @@ export default function PatientDetail({ id }: { id: string }) {
 
   const snap = pro.snapshotOf(id);
   const trend = moodTrend(snap, pro.today);
+  const recap = sinceLastSession(snap, pro.sessions, id, pro.today);
   const first = patient.name.split(" ")[0];
   const assigned = pro.assigned.filter((a) => a.patientId === id);
 
@@ -148,6 +149,22 @@ export default function PatientDetail({ id }: { id: string }) {
           </>
         }
       >
+        {/* Para ler antes de atender: o que mudou desde a última sessão, numa tela. */}
+        <Block title="Desde a última sessão" tone="sunSoft">
+          <p className="-mt-2 mb-2 text-xs text-muted-foreground">
+            {recap.since ? `Última sessão em ${formatDateBR(recap.since)}.` : "Ainda sem sessão encerrada."}
+          </p>
+          {recap.lines.length === 0 ? (
+            <p className="text-sm">Nada novo compartilhado.</p>
+          ) : (
+            <ul className="space-y-1 text-sm">
+              {recap.lines.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          )}
+        </Block>
+
         <Prontuario patientId={id} firstName={first} />
 
         <Block title="Atividades">

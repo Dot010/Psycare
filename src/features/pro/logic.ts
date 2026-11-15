@@ -150,3 +150,63 @@ export function medicationHistory(prescriptions: Prescription[], patientId: stri
           : 1,
     );
 }
+
+/**
+ * "Desde a última sessão": o que mudou com o paciente, numa tela, para ler antes de atender.
+ * Só usa o que ele compartilha. Devolve frases curtas; lista vazia = nada novo.
+ */
+export function sinceLastSession(
+  snap: PatientSnapshot | null,
+  sessions: ProSession[],
+  patientId: string,
+  today: string,
+): { since: string | null; lines: string[] } {
+  const last = sessions
+    .filter((s) => s.patientId === patientId && s.status === "realizada" && s.data <= today)
+    .map((s) => s.data)
+    .sort()
+    .at(-1);
+  const since = last ?? null;
+  const after = (date: string) => !since || date > since;
+  const lines: string[] = [];
+  if (!snap) return { since, lines };
+
+  const moods = (snap.moodDays ?? []).filter((d) => after(d.date));
+  if (moods.length > 0) {
+    const average = moods.reduce((sum, d) => sum + d.level, 0) / moods.length;
+    const low = moods.filter((d) => d.level <= 2).length;
+    lines.push(
+      `Humor: média ${average.toFixed(1).replace(".", ",")} de 5 em ${moods.length} ${moods.length === 1 ? "dia" : "dias"}${
+        low > 0 ? `, com ${low} ${low === 1 ? "dia difícil" : "dias difíceis"}` : ""
+      }.`,
+    );
+  } else if (snap.moodDays) lines.push("Humor: nenhum registro desde então.");
+
+  const topics = (snap.topics ?? []).filter((t) => after(t.date));
+  if (topics.length > 0)
+    lines.push(
+      `Marcou ${topics.length} ${topics.length === 1 ? "página" : "páginas"} do diário para conversar: ${topics
+        .slice(0, 2)
+        .map((t) => `“${t.title}”`)
+        .join(", ")}${topics.length > 2 ? "…" : ""}.`,
+    );
+
+  const done = (snap.activities ?? []).filter((a) => after(a.date));
+  if (done.length > 0) lines.push(`Fez ${done.length} ${done.length === 1 ? "atividade" : "atividades"}.`);
+
+  if (snap.meds && snap.meds.length > 0) {
+    const taken = snap.meds.reduce((sum, m) => sum + m.taken, 0);
+    const planned = snap.meds.reduce((sum, m) => sum + m.planned, 0);
+    if (planned > 0)
+      lines.push(`Remédios: ${Math.round((taken / planned) * 100)}% das doses marcadas nos últimos 7 dias.`);
+  }
+  const symptoms = snap.symptoms ?? [];
+  if (symptoms.length > 0)
+    lines.push(
+      `Sintomas no mês: ${symptoms
+        .slice(0, 3)
+        .map((s) => `${s.nome.toLowerCase()} (${s.vezes}x)`)
+        .join(", ")}.`,
+    );
+  return { since, lines };
+}

@@ -157,3 +157,10 @@ export function newGoal(
 export function setGoalStatus(goal: Goal, status: Goal["status"], at: string): Goal {
   return goal.status === status ? goal : { ...goal, status, updatedAt: at };
 }
+
+/** Esqueleto para escrever a evolução mais rápido. O profissional preenche e apaga o que não usar. */
+export function evolutionTemplate(specialty: "psychologist" | "psychiatrist"): string {
+  return specialty === "psychiatrist"
+    ? "Queixa:\nEvolução desde a última consulta:\nExame do estado mental:\nPlano:"
+    : "Como chegou:\nO que foi trabalhado:\nCombinados:";
+}
