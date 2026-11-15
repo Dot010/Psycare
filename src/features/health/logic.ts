@@ -240,3 +240,73 @@ export function buildConsultSummary({
   lines.push("Registro feito pelo próprio paciente no PsyCare. Não é um laudo nem uma avaliação clínica.");
   return lines;
 }
+
+export interface Adherence {
+  /** Doses que estavam marcadas para os dias contados. */
+  planned: number;
+  /** Quantas dessas foram marcadas como tomadas. */
+  taken: number;
+}
+
+/**
+ * Quantas doses foram tomadas nos últimos `days` dias. Hoje só conta o que já foi marcado:
+ * de manhã a dose da noite ainda não "escapou", então não pode puxar o número para baixo.
+ */
+export function doseAdherence(meds: Medicamento[], taken: string[], today: string, days = 30): Adherence {
+  const set = new Set(taken);
+  let planned = 0;
+  let done = 0;
+  for (let i = days - 1; i >= 1; i--) {
+    const doses = dosesForDay(meds, addDays(today, -i));
+    planned += doses.length;
+    done += doses.filter((d) => set.has(d.key)).length;
+  }
+  const todayTaken = dosesForDay(meds, today).filter((d) => set.has(d.key)).length;
+  return { planned: planned + todayTaken, taken: done + todayTaken };
+}
+
+export interface SymptomMoodLink {
+  symptom: string;
+  /** Humor médio (1 a 5) nos dias em que o sintoma apareceu. */
+  withSymptom: number;
+  /** Humor médio nos outros dias com humor registrado. */
+  without: number;
+}
+
+const average = (values: number[]) => values.reduce((sum, v) => sum + v, 0) / values.length;
+
+/**
+ * Procura uma ligação simples entre o sintoma mais frequente do mês e o humor.
+ * Só responde com pelo menos 2 dias de cada lado: com menos que isso não dá para dizer nada.
+ * Não é diagnóstico; é um assunto para levar à consulta.
+ */
+export function symptomMoodLink(
+  sintomas: Sintoma[],
+  moodByDay: Map<string, number>,
+  today: string,
+  days = 30,
+): SymptomMoodLink | null {
+  const since = addDays(today, -(days - 1));
+  const recent = sintomas.filter((s) => s.data >= since && s.data <= today);
+  if (recent.length === 0) return null;
+
+  const daysBySymptom = new Map<string, Set<string>>();
+  for (const s of recent) {
+    const name = s.descricao.trim();
+    daysBySymptom.set(name, (daysBySymptom.get(name) ?? new Set()).add(s.data));
+  }
+  const [symptom, symptomDays] = [...daysBySymptom.entries()].sort((a, b) => b[1].size - a[1].size)[0];
+
+  const withMood: number[] = [];
+  const withoutMood: number[] = [];
+  for (const [date, level] of moodByDay) {
+    if (date < since || date > today) continue;
+    (symptomDays.has(date) ? withMood : withoutMood).push(level);
+  }
+  if (withMood.length < 2 || withoutMood.length < 2) return null;
+  return {
+    symptom,
+    withSymptom: Math.round(average(withMood) * 10) / 10,
+    without: Math.round(average(withoutMood) * 10) / 10,
+  };
+}
