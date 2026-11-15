@@ -53,6 +53,12 @@ export default function FinanceView() {
   const months = monthlyTotals(ledger, pro.today);
   const owing = debtors(ledger);
   const previous = months.at(-2)?.total ?? 0;
+  const previousMonth = months.at(-2)?.month;
+  const previousName = previousMonth
+    ? new Intl.DateTimeFormat("pt-BR", { month: "long" }).format(
+        new Date(Number(previousMonth.slice(0, 4)), Number(previousMonth.slice(5)) - 1, 1),
+      )
+    : undefined;
   const monthName = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(new Date());
   const visible = ledger.filter((c) => (filter === "todas" ? true : filter === "pagas" ? c.paid : !c.paid));
   const canMarkPaid = (c: Charge) =>
@@ -67,31 +73,15 @@ export default function FinanceView() {
     >
       <DemoNotice>Valores de exemplo. O PsyCare não recebe nem repassa pagamentos de verdade.</DemoNotice>
 
-      <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Recebido no mês" tone="brand">
-          {formatCurrencyBRL(totals.received)}
-          {months.length > 1 && (
-            <span className="mt-1 block text-xs font-normal">
-              Mês passado: {formatCurrencyBRL(previous)}. O mês ainda não acabou.
-            </span>
-          )}
-        </Stat>
-        <Stat label="A receber" tone="sun">
-          {formatCurrencyBRL(totals.pending)}
-        </Stat>
-        <Stat label="Sessões cobradas">
-          <CountUp value={totals.charged} />
-        </Stat>
-        <Stat label="Faltas no mês">
-          {totals.missRate === null ? (
-            <span className="text-base font-normal text-muted-foreground">sem sessões encerradas</span>
-          ) : (
-            <>
-              <CountUp value={totals.missRate} />%
-            </>
-          )}
-        </Stat>
-      </dl>
+      <MonthSummary
+        monthLabel={monthName.split(" ")[0]}
+        received={totals.received}
+        pending={totals.pending}
+        charged={totals.charged}
+        missRate={totals.missRate}
+        previousLabel={previousName}
+        previous={previous}
+      />
 
       <PageColumns
         aside={
@@ -269,29 +259,92 @@ export default function FinanceView() {
   );
 }
 
-function Stat({
-  label,
-  tone,
-  children,
+/**
+ * O mês como um extrato, não como um painel de cartões coloridos:
+ * o recebido em destaque, uma barra fina com o pago e o pendente, e o resto numa linha só.
+ */
+function MonthSummary({
+  monthLabel,
+  received,
+  pending,
+  charged,
+  missRate,
+  previousLabel,
+  previous,
 }: {
-  label: string;
-  tone?: "brand" | "sun";
-  children: React.ReactNode;
+  monthLabel: string;
+  received: number;
+  pending: number;
+  charged: number;
+  missRate: number | null;
+  previousLabel?: string;
+  previous: number;
 }) {
+  const total = received + pending;
   return (
-    <div
-      className={cn(
-        "animate-rise rounded-3xl p-5",
-        tone === "brand"
-          ? "bg-primary text-primary-foreground"
-          : tone === "sun"
-            ? "bg-sun-300 text-ink"
-            : "border border-border bg-card",
-      )}
+    <section
+      aria-label={`Resumo de ${monthLabel}`}
+      className="animate-rise rounded-3xl border border-border bg-card p-6 md:p-7"
     >
-      <dt className="text-sm opacity-85">{label}</dt>
-      <dd className="mt-1 text-3xl font-semibold tracking-tight">{children}</dd>
-    </div>
+      <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
+        <div className="min-w-0 space-y-3">
+          <p className="text-sm text-muted-foreground">Recebido em {monthLabel}, até hoje</p>
+          <p className="text-5xl leading-none font-light tracking-tight tabular-nums">
+            {formatCurrencyBRL(received)}
+          </p>
+          {total > 0 && (
+            <div className="w-72 max-w-full space-y-1.5">
+              <div aria-hidden className="flex h-1.5 overflow-hidden rounded-full bg-sunken">
+                <span
+                  className="animate-grow-x bg-primary"
+                  style={{ width: `${(received / total) * 100}%` }}
+                />
+                <span
+                  className="animate-grow-x bg-sun-300"
+                  style={{ width: `${(pending / total) * 100}%` }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {Math.round((received / total) * 100)}% do que foi cobrado no mês já entrou
+              </p>
+            </div>
+          )}
+        </div>
+
+        <dl className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm sm:grid-cols-4 sm:gap-y-0 sm:divide-x sm:divide-border [&>div]:sm:pl-8 [&>div:first-child]:sm:pl-0">
+          <div>
+            <dt className="text-muted-foreground">A receber</dt>
+            <dd className={cn("mt-1 text-lg font-medium tabular-nums", pending > 0 && "text-sun-700")}>
+              {formatCurrencyBRL(pending)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">Sessões cobradas</dt>
+            <dd className="mt-1 text-lg font-medium tabular-nums">
+              <CountUp value={charged} />
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">Faltas</dt>
+            <dd className="mt-1 text-lg font-medium tabular-nums">
+              {missRate === null ? (
+                <span className="text-sm font-normal text-muted-foreground">nenhuma encerrada</span>
+              ) : (
+                `${missRate}%`
+              )}
+            </dd>
+          </div>
+          {previousLabel && (
+            <div>
+              <dt className="text-muted-foreground">
+                {previousLabel.charAt(0).toUpperCase() + previousLabel.slice(1)} fechou em
+              </dt>
+              <dd className="mt-1 text-lg font-medium tabular-nums">{formatCurrencyBRL(previous)}</dd>
+            </div>
+          )}
+        </dl>
+      </div>
+    </section>
   );
 }
 
