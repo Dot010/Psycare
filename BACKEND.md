@@ -59,6 +59,15 @@ O app guarda só os 4 últimos dígitos do cartão. Com backend, **o número com
 - `DEMO_MODE` ausente ou `false` em produção. Quando o login real existir, apagar `loginMock` e `demoLoginAction`.
 - Segredos fora do git: o GitHub já tem Secret scanning e Push protection.
 
+## Ilha do jardim (`/api/island/`)
+
+- `GET` devolve a ilha de quem está logado (cria vazia na primeira vez). `PATCH` muda `fox_name`, `trips` e `unlocked`.
+- A ilha só cresce: `trips` não diminui e sobe uma de cada vez; `unlocked` soma ao que já existia, nunca troca.
+- As gotas e as plantas **não** ficam aqui: vêm dos cuidados reais (check-in, hábito, diário, respiração), como no jardim.
+- Só a própria pessoa vê. O profissional não tem acesso à ilha, para a terapia não virar placar.
+- LGPD: apagar a conta apaga a ilha (`on_delete=CASCADE`). Quando a exportação de dados existir, incluir `IslandState`.
+- No front, `src/features/garden/island/useIsland.ts` guarda o mesmo formato no `localStorage` até a troca pela API.
+
 ## 7. Mudanças no front quando o backend chegar
 
 1. Trocar o armazenamento dos hooks por chamadas à API, uma área por vez.
