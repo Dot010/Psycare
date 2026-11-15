@@ -35,7 +35,7 @@ export default function AgendaView() {
   return (
     <Page
       title="Agenda"
-      description="Suas próximas sessões."
+      description={noun === "consulta" ? "Suas próximas consultas." : "Suas próximas sessões."}
       width="narrow"
       className="space-y-10"
       actions={
