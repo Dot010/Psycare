@@ -14,7 +14,7 @@ export function WeekStrip({ days, streak }: WeekStripProps) {
   return (
     <section aria-labelledby="week-title" className="space-y-3">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 id="week-title" className="text-base font-bold text-foreground">
+        <h2 id="week-title" className="text-base font-semibold text-foreground">
           Sua semana
         </h2>
         <p className="text-xs text-muted-foreground">

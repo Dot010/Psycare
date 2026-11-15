@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   buildConsultSummary,
+  doseAdherence,
   doseSentence,
   dosesForDay,
   intensityLabel,
   medTimes,
   normalizeSintoma,
   periodOf,
+  symptomMoodLink,
   symptomStats,
   toggleKey,
   weekAdherence,
@@ -130,5 +132,51 @@ describe("resumo para a consulta", () => {
     expect(text).toContain("Média 4 em 1 dia registrado");
     expect(text).toContain("06/10/2026: Reunião difícil");
     expect(text).toContain("Não é um laudo");
+  });
+});
+
+describe("adesão do mês", () => {
+  it("conta os dias anteriores inteiros e, de hoje, só o que já foi marcado", () => {
+    const today = "2026-11-14";
+    const taken = [dosesForDay([sertralina], "2026-11-13")[0].key, dosesForDay([sertralina], today)[0].key];
+
+    expect(doseAdherence([sertralina], taken, today, 3)).toEqual({ planned: 3, taken: 2 });
+    expect(doseAdherence([sertralina], [], today, 3)).toEqual({ planned: 2, taken: 0 });
+  });
+});
+
+describe("sintoma e humor", () => {
+  const sint = (data: string, descricao = "Insônia"): Sintoma => ({
+    id: data + descricao,
+    data,
+    descricao,
+    nota: "",
+  });
+  const today = "2026-11-14";
+
+  it("compara o humor nos dias com o sintoma mais frequente e nos outros", () => {
+    const mood = new Map([
+      ["2026-11-10", 2],
+      ["2026-11-11", 3],
+      ["2026-11-12", 4],
+      ["2026-11-13", 4],
+      ["2026-11-14", 3],
+    ]);
+    const link = symptomMoodLink(
+      [sint("2026-11-10"), sint("2026-11-11"), sint("2026-11-12", "Cansaço")],
+      mood,
+      today,
+    );
+    expect(link).toEqual({ symptom: "Insônia", withSymptom: 2.5, without: 3.7 });
+  });
+
+  it("com poucos dias de um dos lados, não arrisca nada", () => {
+    const mood = new Map([
+      ["2026-11-10", 2],
+      ["2026-11-12", 4],
+      ["2026-11-13", 4],
+    ]);
+    expect(symptomMoodLink([sint("2026-11-10")], mood, today)).toBeNull();
+    expect(symptomMoodLink([], mood, today)).toBeNull();
   });
 });
