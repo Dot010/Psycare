@@ -15,7 +15,17 @@ import { useLocalStorage } from "@/lib/useLocalStorage";
 import { demoSessions, demoSnapshot, LIVE_PATIENT_ID, PATIENTS } from "../data";
 import { buildSnapshot, DEFAULT_SHARING, SHARING_KEY } from "../snapshot";
 import { buildClosing, closingError, evolutionText, type ClosingInput } from "../logic";
+import {
+  editNote as withEdit,
+  newGoal,
+  setGoalStatus as withStatus,
+  stamp,
+  updateAnamnesis,
+} from "../prontuario";
 import type {
+  Anamnesis,
+  AnamnesisField,
+  Goal,
   PatientSnapshot,
   ProAssignment,
   ProSession,
@@ -29,11 +39,15 @@ export const NOTES_KEY = "psycare:pro:notes:v1";
 export const PRO_ASSIGNED_KEY = "psycare:pro:assigned:v1";
 export const SESSION_STATUS_KEY = "psycare:pro:sessions:v1";
 export const CLOSINGS_KEY = "psycare:pro:closings:v1";
+export const ANAMNESIS_KEY = "psycare:pro:anamnesis:v1";
+export const GOALS_KEY = "psycare:pro:goals:v1";
 
 const NO_NOTES: SessionNote[] = [];
 const NO_ASSIGNED: ProAssignment[] = [];
 const NO_STATUS: Record<string, ProSession["status"]> = {};
 const NO_CLOSINGS: SessionClosing[] = [];
+const NO_ANAMNESIS: Record<string, Anamnesis> = {};
+const NO_GOALS: Goal[] = [];
 
 /** O que o profissional preencheu no "Encerrar sessão". */
 export interface CloseSessionInput extends ClosingInput {
@@ -64,6 +78,8 @@ export function usePro() {
   const [, setPatientAssignments] = useLocalStorage<Assignment[]>(ASSIGNMENTS_KEY, []);
   const [statusMap, setStatusMap] = useLocalStorage(SESSION_STATUS_KEY, NO_STATUS);
   const [closings, setClosings] = useLocalStorage<SessionClosing[]>(CLOSINGS_KEY, NO_CLOSINGS);
+  const [anamneses, setAnamneses] = useLocalStorage<Record<string, Anamnesis>>(ANAMNESIS_KEY, NO_ANAMNESIS);
+  const [goals, setGoals] = useLocalStorage<Goal[]>(GOALS_KEY, NO_GOALS);
 
   const sessions: ProSession[] = useMemo(
     () => demoSessions(today).map((s) => ({ ...s, status: statusMap[s.id] ?? s.status })),
@@ -94,7 +110,22 @@ export function usePro() {
       ...current,
     ]);
   };
-  const removeNote = (id: string) => setNotes((current) => current.filter((n) => n.id !== id));
+  // Não existe "apagar" no prontuário (CFP 1/2009): corrigir guarda a versão anterior.
+  const editNote = (id: string, text: string) =>
+    setNotes((current) => current.map((n) => (n.id === id ? withEdit(n, text, stamp(new Date())) : n)));
+
+  const saveAnamnesis = (patientId: string, fields: Partial<Record<AnamnesisField, string>>) =>
+    setAnamneses((current) => ({
+      ...current,
+      [patientId]: updateAnamnesis(current[patientId], patientId, fields, stamp(new Date())),
+    }));
+
+  const addGoal = (patientId: string, text: string) => {
+    const goal = newGoal(patientId, text, today, makeId("objetivo"));
+    if (goal) setGoals((current) => [...current, goal]);
+  };
+  const setGoalStatus = (id: string, status: Goal["status"]) =>
+    setGoals((current) => current.map((g) => (g.id === id ? withStatus(g, status, today) : g)));
 
   const assign = (
     patientId: string,
@@ -152,7 +183,12 @@ export function usePro() {
     answerRequest: setStatus,
     notes,
     addNote,
-    removeNote,
+    editNote,
+    anamneses,
+    saveAnamnesis,
+    goals,
+    addGoal,
+    setGoalStatus,
     assigned,
     assign,
     setSessionStatus,
