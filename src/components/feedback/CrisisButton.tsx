@@ -11,8 +11,9 @@ import { isPlanEmpty, phoneHref } from "@/features/safety/logic";
 /** Botão sempre visível no painel: leva a quem pode ajudar em uma crise, e ao plano de segurança da pessoa. */
 /**
  * `floating`: o botão redondo no canto (celular). `header`: o botão com texto na barra do topo (computador).
+ * `inline`: redondo, no lugar onde for colocado (telas cheias, como o Refúgio, que cobrem a barra do topo).
  */
-export function CrisisButton({ placement = "floating" }: { placement?: "floating" | "header" }) {
+export function CrisisButton({ placement = "floating" }: { placement?: "floating" | "header" | "inline" }) {
   const { plan } = useSafetyPlan();
   const hasPlan = !isPlanEmpty(plan);
 
@@ -26,6 +27,14 @@ export function CrisisButton({ placement = "floating" }: { placement?: "floating
           >
             <LifeBuoy className="size-4" aria-hidden />
             Preciso de ajuda agora
+          </button>
+        ) : placement === "inline" ? (
+          <button
+            type="button"
+            aria-label="Preciso de ajuda agora"
+            className="flex size-11 items-center justify-center rounded-full bg-strong text-white shadow-lg transition-colors hover:bg-brand-900 focus-visible:ring-3 focus-visible:ring-sun-300 focus-visible:outline-none"
+          >
+            <LifeBuoy className="size-5" aria-hidden />
           </button>
         ) : (
           <button
