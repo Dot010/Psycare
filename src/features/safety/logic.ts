@@ -80,3 +80,13 @@ export function removeContact(list: SafetyContact[], id: string): SafetyContact[
 export function isPlanEmpty(plan: SafetyPlan): boolean {
   return plan.contacts.length === 0 && SAFETY_SECTIONS.every((section) => plan[section.key].length === 0);
 }
+
+/** Quantos dos 5 passos do plano já têm alguma coisa escrita (os 4 de lista e as pessoas). */
+export const PLAN_STEPS = SAFETY_SECTIONS.length + 1;
+
+export function filledSteps(plan: SafetyPlan): number {
+  return (
+    SAFETY_SECTIONS.filter((section) => plan[section.key].length > 0).length +
+    (plan.contacts.length > 0 ? 1 : 0)
+  );
+}
