@@ -8,6 +8,7 @@ const STATUS_LABEL: Record<ProSession["status"], string> = {
   pendente: "Aguardando",
   cancelado: "Cancelada",
   realizada: "Realizada",
+  faltou: "Faltou",
 };
 
 export function SessionLine({ session, actions }: { session: ProSession; actions?: ReactNode }) {
@@ -21,7 +22,7 @@ export function SessionLine({ session, actions }: { session: ProSession; actions
         </p>
         <p className="text-sm text-muted-foreground">
           {session.tipo === "online" ? "Online" : "Presencial"} ·{" "}
-          <span className={cn(session.status === "pendente" && "font-medium text-sun-800")}>
+          <span className={cn(session.status === "pendente" && "font-medium text-sun-700")}>
             {STATUS_LABEL[session.status]}
           </span>
         </p>
