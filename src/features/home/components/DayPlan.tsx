@@ -142,7 +142,7 @@ export function DayPlan({ todayCheckIn, doneToday, drops, onCheckIn, onTagsChang
           >
             <Droplets className="size-3.5" aria-hidden />
             <CountUp value={drops} /> {drops === 1 ? "gota" : "gotas"}
-            <span className="sr-only">: ver meu jardim</span>
+            <span className="sr-only">: ver meu refúgio</span>
           </Link>
         </div>
       </div>

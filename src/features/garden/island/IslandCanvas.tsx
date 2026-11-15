@@ -55,18 +55,34 @@ export interface IslandCanvasProps {
   onGround: () => void;
   onPet: () => void;
   onSelectPlant?: (kind: PlantKind) => void;
+  /** Entrada de cinema: a câmera desce do céu girando até a ilha. */
+  intro?: boolean;
+  /** A cena 3D já está na tela (para a intro começar junto). */
+  onReady?: () => void;
 }
 
 const BED_AT = placeById("canteiros");
 
+const FLY_SECONDS = 3.2;
+
 /**
  * Câmera alta e em diagonal (como o portfólio do Bruno Simon), que chega perto do lugar escolhido.
  * Arrastar para os lados gira a ilha; no celular a câmera fica mais de cima, para a ilha caber em pé.
+ * Com `intro`, ela começa lá no alto e desce girando até a ilha.
  */
-function CameraRig({ selected, animate }: { selected: PlaceId | null; animate: boolean }) {
+function CameraRig({
+  selected,
+  animate,
+  intro,
+}: {
+  selected: PlaceId | null;
+  animate: boolean;
+  intro: boolean;
+}) {
   const target = useRef(new Vector3(0, 1, 0));
   const cur = useRef({ r: 25, theta: 0.5, phi: 0.84 });
-  const shift = useRef(0);
+  const shift = useRef({ x: 0, y: 0 });
+  const fly = useRef<number | null>(intro && animate ? 0 : null);
   const spin = useRef({ yaw: 0, down: false, lastX: 0 });
   const gl = useThree((state) => state.gl);
 
@@ -104,7 +120,7 @@ function CameraRig({ selected, animate }: { selected: PlaceId | null; animate: b
     const aspect = size.width / size.height;
     const portrait = aspect < 1;
     // Tela em pé: recua só um pouco e olha mais de cima (assim a ilha não fica minúscula).
-    const fit = portrait ? Math.min(1.45, 1.1 / aspect) : Math.max(1, 1.55 / aspect);
+    const fit = portrait ? Math.min(2, 0.95 / aspect) : Math.max(1, 1.55 / aspect);
     const base = place ? (place.id === "cabana" ? 12 : place.id === "farol" ? 18 : 14) : 25;
     const r = base * fit;
     const phi = place?.id === "cabana" ? 0.62 : portrait ? 0.62 : 0.84;
@@ -112,23 +128,40 @@ function CameraRig({ selected, animate }: { selected: PlaceId | null; animate: b
     const k = animate ? Math.min(1, delta * 2.5) : 1;
     target.current.lerp(goal, k);
     const c = cur.current;
-    c.r += (r - c.r) * k;
-    c.phi += (phi - c.phi) * k;
-    // Girar com o dedo responde na hora; ir até um lugar é suave.
-    c.theta += (theta - c.theta) * (spin.current.down ? 1 : k);
+    if (fly.current !== null && intro && !spin.current.down) {
+      // Intro: do alto (quase de cima) até o lugar de sempre, girando, com freio no fim.
+      fly.current += Math.min(delta, 0.05);
+      const t = Math.min(1, fly.current / FLY_SECONDS);
+      const away = Math.pow(1 - t, 3);
+      c.r = r * (1 + 1.8 * away);
+      c.phi = phi + (0.08 - phi) * away;
+      c.theta = theta + 2.4 * away;
+      if (t >= 1) fly.current = null;
+    } else {
+      // Pulou a intro: segue dali mesmo, suave.
+      fly.current = null;
+      c.r += (r - c.r) * k;
+      c.phi += (phi - c.phi) * k;
+      // Girar com o dedo responde na hora; ir até um lugar é suave.
+      c.theta += (theta - c.theta) * (spin.current.down ? 1 : k);
+    }
     camera.position.set(
       target.current.x + c.r * Math.sin(c.phi) * Math.sin(c.theta),
       target.current.y + c.r * Math.cos(c.phi),
       target.current.z + c.r * Math.sin(c.phi) * Math.cos(c.theta),
     );
     camera.lookAt(target.current);
-    // Com o cartão do lugar aberto ao lado (telas largas), a cena desliza para a esquerda.
+    // Com o cartão do lugar aberto, a cena sai da frente dele: para a esquerda nas telas largas
+    // (cartão ao lado) e para cima no celular (cartão embaixo).
     const wide = typeof window !== "undefined" && window.innerWidth >= 768;
-    const want = place && wide ? size.width * 0.22 : 0;
-    shift.current += (want - shift.current) * k;
+    const wantX = place && wide ? size.width * 0.18 : 0;
+    const wantY = place && !wide ? size.height * 0.2 : 0;
+    const sh = shift.current;
+    sh.x += (wantX - sh.x) * k;
+    sh.y += (wantY - sh.y) * k;
     const cam = camera as PerspectiveCamera;
-    if (Math.abs(shift.current) > 0.5)
-      cam.setViewOffset(size.width, size.height, shift.current, 0, size.width, size.height);
+    if (Math.abs(sh.x) > 0.5 || Math.abs(sh.y) > 0.5)
+      cam.setViewOffset(size.width, size.height, sh.x, sh.y, size.width, size.height);
     else if (cam.view?.enabled) cam.clearViewOffset();
   });
   return null;
@@ -360,6 +393,7 @@ function Scene(props: IslandCanvasProps) {
     onGround,
     onPet,
     onSelectPlant,
+    intro = false,
   } = props;
   const high = quality === "high";
   const fox = useRef(new Vector3(0, 0, 2));
@@ -406,7 +440,7 @@ function Scene(props: IslandCanvasProps) {
         shadow-camera-bottom={-22}
         shadow-bias={-0.0008}
       />
-      <CameraRig selected={selected} animate={animate} />
+      <CameraRig selected={selected} animate={animate} intro={intro} />
       <Sea night={night} animate={animate} />
       <primitive
         object={body}
@@ -470,6 +504,7 @@ export default function IslandCanvas(props: IslandCanvasProps) {
       dpr={props.quality === "high" ? [1, 1.75] : [1, 1.25]}
       frameloop={props.animate ? "always" : "demand"}
       gl={{ antialias: true }}
+      onCreated={() => props.onReady?.()}
     >
       <Scene {...props} />
     </Canvas>
