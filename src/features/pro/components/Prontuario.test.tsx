@@ -112,3 +112,55 @@ describe("Prontuário do psiquiatra", () => {
     expect(stored(EXAM_CHANGES_KEY).added[0]).toMatchObject({ patientId: "pac_pedro", nome: "TSH", step: 1 });
   });
 });
+
+describe("Prontuário separado por profissional", () => {
+  it("o que a psicóloga escreve não aparece para o psiquiatra, e cada um guarda o seu", async () => {
+    const first = setup();
+    await userEvent.type(screen.getByLabelText("Registrar evolução"), "Sessão sobre o trabalho.");
+    await userEvent.click(screen.getByRole("button", { name: "Guardar no prontuário" }));
+    expect(screen.getByText("Sessão sobre o trabalho.")).toBeInTheDocument();
+    first.unmount();
+
+    setup(psiquiatra);
+    expect(screen.queryByText("Sessão sobre o trabalho.")).not.toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText("Registrar evolução"), "Consulta de retorno.");
+    await userEvent.click(screen.getByRole("button", { name: "Guardar no prontuário" }));
+    expect(stored(NOTES_KEY).map((n: { proId: string }) => n.proId)).toEqual(["pro_med_01", "pro_psi_01"]);
+  });
+
+  it("registro antigo, sem dono, continua com a psicóloga", () => {
+    localStorage.setItem(
+      NOTES_KEY,
+      JSON.stringify([{ id: "n1", patientId: "pac_marina", date: "2026-10-01", text: "Nota antiga." }]),
+    );
+    const first = setup();
+    expect(screen.getByText("Nota antiga.")).toBeInTheDocument();
+    first.unmount();
+    setup(psiquiatra);
+    expect(screen.queryByText("Nota antiga.")).not.toBeInTheDocument();
+  });
+
+  it("a anamnese do psiquiatra tem o roteiro médico e fica separada", async () => {
+    setup(psiquiatra);
+    expect(screen.getByText(/20 anos \(CFM 1\.821\/2007\)/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("tab", { name: "Anamnese" }));
+    expect(screen.queryByLabelText("Demanda")).not.toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText("Queixa principal"), "Não durmo há semanas");
+    await userEvent.type(screen.getByLabelText("Exame do estado mental"), "Humor ansioso, sem ideação.");
+    await userEvent.click(screen.getByRole("button", { name: "Salvar anamnese" }));
+    const all = stored(ANAMNESIS_KEY);
+    expect(all["pro_med_01:pac_marina"].fields.queixa).toBe("Não durmo há semanas");
+    expect(all.pac_marina).toBeUndefined();
+  });
+
+  it("para o psiquiatra, o plano se chama Conduta", async () => {
+    setup(psiquiatra);
+    expect(screen.queryByRole("tab", { name: "Plano terapêutico" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("tab", { name: "Conduta" }));
+    await userEvent.type(screen.getByLabelText("Nova conduta"), "Manter a dose");
+    await userEvent.click(screen.getByRole("button", { name: "Adicionar" }));
+    const group = screen.getByRole("group", { name: "Situação de: Manter a dose" });
+    expect(within(group).getByRole("button", { name: "Em vigor" })).toHaveAttribute("aria-pressed", "true");
+    expect(stored(GOALS_KEY)[0]).toMatchObject({ proId: "pro_med_01" });
+  });
+});
