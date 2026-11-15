@@ -49,6 +49,38 @@ export interface SessionNote {
   text: string;
   /** A sessão em que a nota foi escrita, quando veio do "Encerrar sessão". */
   sessionId?: string;
+  /** Quando foi editada pela última vez ("AAAA-MM-DD HH:MM"). */
+  editedAt?: string;
+  /** Versões anteriores, da mais nova para a mais antiga. Editar nunca apaga o que foi escrito. */
+  versions?: NoteVersion[];
+}
+
+export interface NoteVersion {
+  text: string;
+  /** Até quando essa versão valeu ("AAAA-MM-DD HH:MM"). */
+  until: string;
+}
+
+export type AnamnesisField = "demanda" | "historia" | "saude" | "apoio";
+
+/** Primeira entrevista: avaliação da demanda (CFP 1/2009, art. 2, II). */
+export interface Anamnesis {
+  patientId: string;
+  fields: Partial<Record<AnamnesisField, string>>;
+  updatedAt: string;
+  /** Como estava antes de cada atualização, da mais nova para a mais antiga. */
+  history: { fields: Partial<Record<AnamnesisField, string>>; until: string }[];
+}
+
+/** Um objetivo do plano terapêutico (a "definição dos objetivos do trabalho"). */
+export interface Goal {
+  id: string;
+  patientId: string;
+  text: string;
+  status: "andamento" | "alcancado" | "revisto";
+  createdAt: string;
+  /** Quando o status mudou pela última vez. */
+  updatedAt?: string;
 }
 
 export interface ProAssignment {
