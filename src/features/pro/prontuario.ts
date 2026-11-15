@@ -9,7 +9,70 @@ export const NOTE_MAX = 4000;
 export const FIELD_MAX = 2000;
 export const GOAL_MAX = 200;
 
-export const ANAMNESIS_FIELDS: { id: AnamnesisField; label: string; hint: string }[] = [
+type Field = { id: AnamnesisField; label: string; hint: string };
+
+/** Anamnese psiquiátrica: o roteiro da primeira consulta médica. */
+export const PSYCHIATRY_ANAMNESIS_FIELDS: Field[] = [
+  { id: "queixa", label: "Queixa principal", hint: "O que trouxe a pessoa, com as palavras dela." },
+  {
+    id: "hda",
+    label: "História da doença atual",
+    hint: "Quando começou, como evoluiu, o que piora e o que alivia.",
+  },
+  {
+    id: "antecedentes",
+    label: "Antecedentes psiquiátricos",
+    hint: "Tratamentos anteriores, internações, tentativas de suicídio.",
+  },
+  {
+    id: "remedios",
+    label: "Remédios já usados",
+    hint: "O que funcionou, o que não funcionou e os efeitos colaterais.",
+  },
+  {
+    id: "clinico",
+    label: "Doenças clínicas e alergias",
+    hint: "Outras doenças, cirurgias, alergias, remédios em uso.",
+  },
+  {
+    id: "substancias",
+    label: "Álcool e outras substâncias",
+    hint: "O que usa, quanto e com que frequência.",
+  },
+  { id: "familia", label: "Histórico familiar", hint: "Transtornos mentais e suicídio na família." },
+  {
+    id: "estadoMental",
+    label: "Exame do estado mental",
+    hint: "Aparência, humor e afeto, pensamento, sono, apetite, crítica e risco.",
+  },
+];
+
+/** Os campos da anamnese de cada especialidade. */
+export function anamnesisFields(specialty: "psychologist" | "psychiatrist"): Field[] {
+  return specialty === "psychiatrist" ? PSYCHIATRY_ANAMNESIS_FIELDS : ANAMNESIS_FIELDS;
+}
+
+/** A psicóloga escreveu tudo o que existia antes de o prontuário ser separado por profissional. */
+export const LEGACY_PRO_ID = "pro_psi_01";
+
+/** De quem é um registro do prontuário. */
+export function ownerOf(item: { proId?: string }): string {
+  return item.proId ?? LEGACY_PRO_ID;
+}
+
+/** A chave de um registro que é um por paciente (anamnese, valor da sessão): a antiga era só o paciente. */
+export function ownKey(proId: string, patientId: string): string {
+  return proId === LEGACY_PRO_ID ? patientId : `${proId}:${patientId}`;
+}
+
+/** No prontuário do médico o plano se chama conduta, e as situações têm outros nomes. */
+export const CONDUCT_STATUS_LABEL: Record<Goal["status"], string> = {
+  andamento: "Em vigor",
+  alcancado: "Concluída",
+  revisto: "Revista",
+};
+
+export const ANAMNESIS_FIELDS: Field[] = [
   { id: "demanda", label: "Demanda", hint: "O que trouxe a pessoa, com as palavras dela." },
   {
     id: "historia",
@@ -60,14 +123,14 @@ export function updateAnamnesis(
   patientId: string,
   fields: Partial<Record<AnamnesisField, string>>,
   at: string,
+  list: Field[] = ANAMNESIS_FIELDS,
 ): Anamnesis {
   const clean: Partial<Record<AnamnesisField, string>> = {};
-  for (const { id } of ANAMNESIS_FIELDS) {
+  for (const { id } of list) {
     const value = (fields[id] ?? "").trim().slice(0, FIELD_MAX);
     if (value) clean[id] = value;
   }
-  const same =
-    current && ANAMNESIS_FIELDS.every(({ id }) => (current.fields[id] ?? "") === (clean[id] ?? ""));
+  const same = current && list.every(({ id }) => (current.fields[id] ?? "") === (clean[id] ?? ""));
   if (same) return current;
   return {
     patientId,
@@ -78,10 +141,16 @@ export function updateAnamnesis(
 }
 
 /** Novo objetivo do plano. `null` quando o texto está vazio. */
-export function newGoal(patientId: string, text: string, at: string, id: string): Goal | null {
+export function newGoal(
+  patientId: string,
+  text: string,
+  at: string,
+  id: string,
+  proId: string = LEGACY_PRO_ID,
+): Goal | null {
   const clean = text.trim().slice(0, GOAL_MAX);
   if (!clean) return null;
-  return { id, patientId, text: clean, status: "andamento", createdAt: at };
+  return { id, patientId, proId, text: clean, status: "andamento", createdAt: at };
 }
 
 /** Objetivo alcançado ou revisto não some do plano: só muda de situação, com a data. */

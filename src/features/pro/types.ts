@@ -44,6 +44,8 @@ export interface Patient {
 export interface SessionNote {
   id: string;
   patientId: string;
+  /** Quem escreveu. Sem isso, é do registro antigo, que era da psicóloga. */
+  proId?: string;
   date: string;
   /** Texto privado do profissional. Nunca aparece para o paciente. */
   text: string;
@@ -61,7 +63,20 @@ export interface NoteVersion {
   until: string;
 }
 
-export type AnamnesisField = "demanda" | "historia" | "saude" | "apoio";
+/** Campos da psicóloga (os 4 primeiros) e do psiquiatra (os demais). */
+export type AnamnesisField =
+  | "demanda"
+  | "historia"
+  | "saude"
+  | "apoio"
+  | "queixa"
+  | "hda"
+  | "antecedentes"
+  | "remedios"
+  | "clinico"
+  | "substancias"
+  | "familia"
+  | "estadoMental";
 
 /** Primeira entrevista: avaliação da demanda (CFP 1/2009, art. 2, II). */
 export interface Anamnesis {
@@ -76,6 +91,8 @@ export interface Anamnesis {
 export interface Goal {
   id: string;
   patientId: string;
+  /** Quem escreveu. Sem isso, é do registro antigo, que era da psicóloga. */
+  proId?: string;
   text: string;
   status: "andamento" | "alcancado" | "revisto";
   createdAt: string;
@@ -110,6 +127,8 @@ export interface ProSession {
 export interface SessionClosing {
   sessionId: string;
   patientId: string;
+  /** Quem atendeu e cobrou. Sem isso, é do registro antigo, que era da psicóloga. */
+  proId?: string;
   /** Dia da sessão (AAAA-MM-DD). */
   date: string;
   outcome: "realizada" | "faltou";

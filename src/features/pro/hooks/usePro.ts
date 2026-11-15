@@ -12,12 +12,16 @@ import { useHealth } from "@/features/health/hooks/useHealth";
 import { toISODate } from "@/lib/dates";
 import { upsertById } from "@/lib/list";
 import { useLocalStorage } from "@/lib/useLocalStorage";
-import { demoSessions, demoSnapshot, LIVE_PATIENT_ID, PATIENTS } from "../data";
+import { demoSessionsFor, demoSnapshot, LIVE_PATIENT_ID, PATIENTS } from "../data";
 import { buildSnapshot, DEFAULT_SHARING, SHARING_KEY } from "../snapshot";
-import { buildClosing, closingError, evolutionText, type ClosingInput } from "../logic";
+import { buildClosing, closingError, conductText, evolutionText, type ClosingInput } from "../logic";
 import {
+  anamnesisFields,
   editNote as withEdit,
+  LEGACY_PRO_ID,
   newGoal,
+  ownerOf,
+  ownKey,
   setGoalStatus as withStatus,
   stamp,
   updateAnamnesis,
@@ -106,6 +110,10 @@ export function usePro() {
   const me = useMaybeProIdentity();
   const myName = me?.name ?? null;
   const isMine = (a: Agendamento) => !myName || a.profissional === myName;
+  // Cada profissional tem o seu prontuário, a sua agenda e o seu financeiro.
+  const myId = me?.id ?? LEGACY_PRO_ID;
+  const specialty = me?.specialty ?? "psychologist";
+  const mine = (item: { proId?: string }) => ownerOf(item) === myId;
 
   const [notes, setNotes] = useLocalStorage<SessionNote[]>(NOTES_KEY, NO_NOTES);
   const [assigned, setAssigned] = useLocalStorage<ProAssignment[]>(PRO_ASSIGNED_KEY, NO_ASSIGNED);
@@ -117,26 +125,44 @@ export function usePro() {
   const [fees, setFees] = useLocalStorage<Record<string, number>>(FEES_KEY, NO_FEES);
 
   /** Valor da sessão de cada paciente: o que o profissional definiu, ou o de exemplo. */
-  const patients = useMemo(() => PATIENTS.map((p) => ({ ...p, fee: fees[p.id] ?? p.fee })), [fees]);
+  const patients = useMemo(
+    () => PATIENTS.map((p) => ({ ...p, fee: fees[ownKey(myId, p.id)] ?? p.fee })),
+    [fees, myId],
+  );
   const setFee = (patientId: string, value: number) => {
     if (!Number.isFinite(value) || value < 0 || value > FEE_MAX) return;
-    setFees((current) => ({ ...current, [patientId]: Math.round(value * 100) / 100 }));
+    setFees((current) => ({ ...current, [ownKey(myId, patientId)]: Math.round(value * 100) / 100 }));
   };
   /** Cobrança pendente que foi paga depois. Só existe para o que nasceu no "Encerrar sessão". */
   const markPaid = (sessionId: string) =>
-    setClosings((current) => current.map((c) => (c.sessionId === sessionId ? { ...c, paid: true } : c)));
+    setClosings((current) =>
+      current.map((c) => (c.sessionId === sessionId && ownerOf(c) === myId ? { ...c, paid: true } : c)),
+    );
 
   const sessions: ProSession[] = useMemo(
     () => [
-      ...demoSessions(today).map((s) => ({ ...s, status: statusMap[s.id] ?? s.status })),
+      ...demoSessionsFor(today, specialty).map((s) => ({
+        ...s,
+        status: statusMap[ownKey(myId, s.id)] ?? s.status,
+      })),
       ...liveSessions(appointments, myName, today, statusMap),
     ],
-    [today, statusMap, appointments, myName],
+    [today, statusMap, appointments, myName, myId, specialty],
   );
   // As cobranças do paciente de demonstração são de quem atendeu: cada profissional vê só as suas.
   const myClosings = closings.filter(
-    (c) => !c.sessionId.startsWith(LIVE_SESSION_PREFIX) || sessions.some((s) => s.id === c.sessionId),
+    (c) =>
+      mine(c) && (!c.sessionId.startsWith(LIVE_SESSION_PREFIX) || sessions.some((s) => s.id === c.sessionId)),
   );
+  const myNotes = notes.filter(mine);
+  const myGoals = goals.filter(mine);
+  // A anamnese é uma por paciente e por profissional; quem usa recebe só as suas, pela chave do paciente.
+  const myAnamneses = Object.fromEntries(
+    PATIENTS.flatMap((p) => {
+      const own = anamneses[ownKey(myId, p.id)];
+      return own ? [[p.id, own]] : [];
+    }),
+  ) as Record<string, Anamnesis>;
 
   const snapshotOf = (patientId: string): PatientSnapshot | null => {
     if (patientId === LIVE_PATIENT_ID) {
@@ -158,7 +184,7 @@ export function usePro() {
     const clean = text.trim().slice(0, 4000);
     if (!clean) return;
     setNotes((current) => [
-      { id: makeId("nota"), patientId, date: today, text: clean, sessionId },
+      { id: makeId("nota"), patientId, proId: myId, date: today, text: clean, sessionId },
       ...current,
     ]);
   };
@@ -167,13 +193,22 @@ export function usePro() {
     setNotes((current) => current.map((n) => (n.id === id ? withEdit(n, text, stamp(new Date())) : n)));
 
   const saveAnamnesis = (patientId: string, fields: Partial<Record<AnamnesisField, string>>) =>
-    setAnamneses((current) => ({
-      ...current,
-      [patientId]: updateAnamnesis(current[patientId], patientId, fields, stamp(new Date())),
-    }));
+    setAnamneses((current) => {
+      const key = ownKey(myId, patientId);
+      return {
+        ...current,
+        [key]: updateAnamnesis(
+          current[key],
+          patientId,
+          fields,
+          stamp(new Date()),
+          anamnesisFields(specialty),
+        ),
+      };
+    });
 
   const addGoal = (patientId: string, text: string) => {
-    const goal = newGoal(patientId, text, today, makeId("objetivo"));
+    const goal = newGoal(patientId, text, today, makeId("objetivo"), myId);
     if (goal) setGoals((current) => [...current, goal]);
   };
   const setGoalStatus = (id: string, status: Goal["status"]) =>
@@ -205,7 +240,9 @@ export function usePro() {
   };
 
   const setSessionStatus = (id: string, status: ProSession["status"]) => {
-    setStatusMap((current) => ({ ...current, [id]: status }));
+    // As consultas do paciente de demonstração já são de um profissional só; as de exemplo, cada um tem as suas.
+    const key = id.startsWith(LIVE_SESSION_PREFIX) ? id : ownKey(myId, id);
+    setStatusMap((current) => ({ ...current, [key]: status }));
     // Cancelar a consulta do paciente de demonstração também cancela do lado dele.
     if (id.startsWith(LIVE_SESSION_PREFIX) && status === "cancelado")
       setStatus(id.slice(LIVE_SESSION_PREFIX.length), "cancelado");
@@ -220,10 +257,26 @@ export function usePro() {
     const error = closingError(input);
     if (error) return error;
     const fee = patients.find((p) => p.id === session.patientId)?.fee ?? 0;
-    const closing = buildClosing(session, input, fee);
+    const closing = { ...buildClosing(session, input, fee), proId: myId };
     setSessionStatus(session.id, closing.outcome);
     addNote(session.patientId, evolutionText(session, input), session.id);
-    setClosings((current) => [...current.filter((c) => c.sessionId !== session.id), closing]);
+    setClosings((current) => [
+      ...current.filter((c) => !(c.sessionId === session.id && ownerOf(c) === myId)),
+      closing,
+    ]);
+    // A conduta do psiquiatra também fica na aba Conduta, com a data da consulta.
+    if (input.conduct && closing.outcome === "realizada") {
+      const goal = newGoal(
+        session.patientId,
+        conductText(input.conduct, input.conductNote)
+          .replace(/^Conduta: /, "")
+          .replace(/^./, (c) => c.toUpperCase()),
+        session.data,
+        makeId("conduta"),
+        myId,
+      );
+      if (goal) setGoals((current) => [...current, goal]);
+    }
     if (input.homework && closing.outcome === "realizada") {
       assign(session.patientId, input.homework.kind, input.homework.dueDate, "", input.by);
     }
@@ -240,12 +293,12 @@ export function usePro() {
     // Cada profissional só vê os pedidos de consulta feitos para ele.
     patientRequests: appointments.filter((a) => a.status === "pendente" && isMine(a)),
     answerRequest: setStatus,
-    notes,
+    notes: myNotes,
     addNote,
     editNote,
-    anamneses,
+    anamneses: myAnamneses,
     saveAnamnesis,
-    goals,
+    goals: myGoals,
     addGoal,
     setGoalStatus,
     assigned,

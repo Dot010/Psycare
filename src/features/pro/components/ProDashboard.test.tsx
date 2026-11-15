@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { UndoProvider } from "@/components/feedback/UndoProvider";
 import { ASSIGNMENTS_KEY } from "@/features/activities/hooks/useActivities";
-import { CLOSINGS_KEY, NOTES_KEY, PRO_ASSIGNED_KEY } from "../hooks/usePro";
+import { CLOSINGS_KEY, GOALS_KEY, NOTES_KEY, PRO_ASSIGNED_KEY } from "../hooks/usePro";
 import { PROFESSIONALS } from "../identity";
 import ProDashboard from "./ProDashboard";
 import { ProIdentityProvider } from "./ProIdentity";
@@ -110,7 +110,12 @@ describe("Painel do psiquiatra: encerrar consulta", () => {
     expect(stored(NOTES_KEY)[0].text).toBe(
       "Dormindo melhor, sem efeitos.\nConduta: ajustar a dose. Sobe para 20 mg.",
     );
-    expect(stored(CLOSINGS_KEY)[0].conduct).toBe("dose");
+    expect(stored(CLOSINGS_KEY)[0]).toMatchObject({ conduct: "dose", proId: "pro_med_01" });
+    // A conduta também entra na aba Conduta do prontuário dele.
+    expect(stored(GOALS_KEY)[0]).toMatchObject({
+      text: "Ajustar a dose. Sobe para 20 mg.",
+      proId: "pro_med_01",
+    });
     expect(screen.getByRole("link", { name: "Registrar receita" })).toHaveAttribute(
       "href",
       "/dashboard/pro/prescriptions",
