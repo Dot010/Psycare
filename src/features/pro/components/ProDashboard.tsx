@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { timeGreeting } from "@/features/home/logic";
 import { formatCurrencyBRL, formatDateBR } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { closingLine, daysSinceLastMood, financeSummary, moodTrend, trendSentence } from "../logic";
+import { buildLedger, monthTotals } from "../finance";
+import { closingLine, daysSinceLastMood, moodTrend, trendSentence } from "../logic";
 import { LIVE_PATIENT_ID, patientById } from "../data";
 import { usePro } from "../hooks/usePro";
 import type { ProSession } from "../types";
@@ -54,7 +55,10 @@ export default function ProDashboard({ specialty }: { specialty?: "psychiatrist"
     .sort((a, b) => a.hora.localeCompare(b.hora));
   const closedCount = todays.filter((s) => s.status === "realizada" || s.status === "faltou").length;
   const next = todays.find((s) => s.status === "confirmado");
-  const month = financeSummary(pro.sessions, pro.patients, pro.today, pro.closings);
+  // Os mesmos números da página Financeiro (o mês atual não usa o histórico de exemplo).
+  const ledger = buildLedger(pro.sessions, pro.closings, pro.patients, pro.today);
+  const totals = monthTotals(ledger, pro.closings, pro.today.slice(0, 7));
+  const month = { received: totals.received, toReceive: totals.pending };
 
   // Quem merece um olhar: humor mais baixo que na semana anterior ou alguns dias sem registrar.
   const watch = pro.patients.flatMap((patient) => {

@@ -1,13 +1,6 @@
 import type { DayLevel } from "@/features/mood/logic";
 import { addDays } from "@/features/health/logic";
-import type {
-  Patient,
-  PatientSnapshot,
-  Prescription,
-  PrescriptionChange,
-  ProSession,
-  SessionClosing,
-} from "./types";
+import type { PatientSnapshot, Prescription, PrescriptionChange, ProSession, SessionClosing } from "./types";
 
 function avg(values: number[]): number | null {
   return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
@@ -55,58 +48,6 @@ export function groupByDay(sessions: ProSession[]): { date: string; items: ProSe
     date,
     items: sessions.filter((s) => s.data === date).sort((a, b) => a.hora.localeCompare(b.hora)),
   }));
-}
-
-export interface FinanceSummary {
-  received: number;
-  toReceive: number;
-  count: number;
-  byPatient: { patient: Patient; sessions: number; total: number }[];
-}
-
-/**
- * Resumo do mês de `today` (AAAA-MM). Sessão encerrada no app usa o que foi cobrado nela
- * (pago = recebido; pendente = a receber). As demais seguem a regra antiga:
- * realizadas contam como recebido; confirmadas, a receber.
- */
-export function financeSummary(
-  sessions: ProSession[],
-  patients: Patient[],
-  today: string,
-  closings: SessionClosing[] = [],
-): FinanceSummary {
-  const month = today.slice(0, 7);
-  const inMonth = sessions.filter((s) => s.data.startsWith(month));
-  let received = 0;
-  let toReceive = 0;
-  const per = new Map<string, { sessions: number; total: number }>();
-  for (const s of inMonth) {
-    const fee = patients.find((p) => p.id === s.patientId)?.fee ?? 0;
-    const closing = closings.find((c) => c.sessionId === s.id);
-    if (closing) {
-      if (closing.paid) received += closing.charge;
-      else toReceive += closing.charge;
-      if (closing.charge > 0) {
-        const cur = per.get(s.patientId) ?? { sessions: 0, total: 0 };
-        per.set(s.patientId, { sessions: cur.sessions + 1, total: cur.total + closing.charge });
-      }
-    } else if (s.status === "realizada") {
-      received += fee;
-      const cur = per.get(s.patientId) ?? { sessions: 0, total: 0 };
-      per.set(s.patientId, { sessions: cur.sessions + 1, total: cur.total + fee });
-    } else if (s.status === "confirmado") {
-      toReceive += fee;
-    }
-  }
-  return {
-    received,
-    toReceive,
-    count: inMonth.filter((s) => s.status === "realizada").length,
-    byPatient: [...per.entries()]
-      .map(([id, v]) => ({ patient: patients.find((p) => p.id === id) as Patient, ...v }))
-      .filter((row) => row.patient)
-      .sort((a, b) => b.total - a.total),
-  };
 }
 
 export interface ClosingInput {
