@@ -48,3 +48,20 @@ export function placeNews(place: PlaceId, input: NewsInput): string | null {
   }
   return null;
 }
+
+/**
+ * Os lugares que têm algo novo agora (ganham um brilho em cima): atividade pedida esperando,
+ * mensagem de profissional sem resposta e consulta chegando (ou esperando confirmação).
+ */
+export function placesWithNews(input: Omit<NewsInput, "diaryPages">): PlaceId[] {
+  const result: PlaceId[] = [];
+  if (pendingAssignments(input.assignments).length > 0) result.push("garrafa");
+  if (input.chats.some((chat) => chat.messages.at(-1)?.sender === "doctor" && chat.messages.length > 1))
+    result.push("correio");
+  const next = nextAppointment(input.appointments, input.now);
+  if (next) {
+    const days = (Date.parse(next.data) - Date.parse(input.now.slice(0, 10))) / 86_400_000;
+    if (next.status === "pendente" || days <= 2) result.push("consulta");
+  }
+  return result;
+}

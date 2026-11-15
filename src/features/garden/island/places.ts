@@ -3,7 +3,8 @@
  * Tudo aqui é puro (sem three.js), para dar para testar.
  */
 
-export type PlaceId = "canteiros" | "cabana" | "farol" | "cais" | "garrafa" | "correio" | "consulta";
+export type PlaceId =
+  "canteiros" | "cabana" | "farol" | "cais" | "garrafa" | "correio" | "consulta" | "praia";
 
 export interface Place {
   id: PlaceId;
@@ -33,7 +34,7 @@ export const PLACES: Place[] = [
   {
     id: "cabana",
     label: "Cabana",
-    hint: "O diário. Cada página vira um livro na estante.",
+    hint: "O diário. Escreva uma linha aqui mesmo: vira um livro na estante.",
     href: "/dashboard/diary",
     x: -4,
     z: -2,
@@ -42,7 +43,7 @@ export const PLACES: Place[] = [
   {
     id: "farol",
     label: "Farol",
-    hint: "Ajuda agora: seu plano de segurança e o CVV 188.",
+    hint: "Ajuda agora: um exercício para a ansiedade, seu plano de segurança e o CVV 188.",
     href: "/dashboard/safety",
     x: 8,
     z: -6,
@@ -84,6 +85,15 @@ export const PLACES: Place[] = [
     z: 9.6,
     stop: [0.2, 8.8],
   },
+  {
+    id: "praia",
+    label: "Praia",
+    hint: "Pedra da preocupação: escreva o que pesa e jogue no mar, ou guarde para a sessão.",
+    href: "/dashboard/appointments",
+    x: 8.2,
+    z: 4.8,
+    stop: [7.1, 5.9],
+  },
 ];
 
 export const placeById = (id: PlaceId): Place => PLACES.find((place) => place.id === id) as Place;
@@ -96,6 +106,7 @@ export const OBSTACLES: { x: number; z: number; r: number }[] = [
   { x: -4, z: -2, r: 2.2 },
   { x: 8, z: -6, r: 1.4 },
   { x: 4.5, z: 3, r: 2.3 },
+  { x: 8.2, z: 4.8, r: 0.8 },
 ];
 
 /** Altura do chão da ilha num ponto: ondulação leve que some na borda. */
@@ -167,6 +178,39 @@ export function unlocksFor(input: { careDays: number; grownPlants: number; trips
   if (input.grownPlants >= 1) result.push("ninho");
   if (input.trips >= 2) result.push("bandeirinhas");
   return result;
+}
+
+const UNLOCK_NAMES: Record<Unlock, string> = {
+  banco: "o banco",
+  lanternas: "as lanternas",
+  ninho: "o ninho",
+  bandeirinhas: "as bandeirinhas",
+};
+
+/**
+ * A próxima coisa que vai aparecer na ilha e o que falta para ela, numa frase.
+ * Null quando tudo já apareceu.
+ */
+export function nextUnlock(input: { careDays: number; grownPlants: number; trips: number }): string | null {
+  const steps: { id: Unlock; missing: number; what: (n: number) => string }[] = [
+    { id: "banco", missing: 2 - input.careDays, what: (n) => `${n} ${n === 1 ? "dia" : "dias"} de cuidado` },
+    {
+      id: "lanternas",
+      missing: 3 - input.careDays,
+      what: (n) => `${n} ${n === 1 ? "dia" : "dias"} de cuidado`,
+    },
+    { id: "ninho", missing: 1 - input.grownPlants, what: () => "uma planta crescer toda" },
+    {
+      id: "bandeirinhas",
+      missing: 2 - input.trips,
+      what: (n) => `${n} ${n === 1 ? "travessia" : "travessias"} de barco`,
+    },
+  ];
+  const next = steps.find((step) => step.missing > 0);
+  if (!next) return null;
+  const verb = next.missing > 1 ? "Faltam" : "Falta";
+  const shows = next.id === "lanternas" || next.id === "bandeirinhas" ? "aparecerem" : "aparecer";
+  return `${verb} ${next.what(next.missing)} para ${shows} ${UNLOCK_NAMES[next.id]}.`;
 }
 
 /** Junta o que já tinha aparecido com o que aparece agora, sem tirar nada. */

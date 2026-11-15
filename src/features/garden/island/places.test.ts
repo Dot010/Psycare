@@ -6,6 +6,7 @@ import {
   heightAt,
   keepOnIsland,
   mergeUnlocks,
+  nextUnlock,
   OBSTACLES,
   PLACES,
   SAND_EDGE,
@@ -116,5 +117,20 @@ describe("manchas de grama", () => {
     expect(grass / total).toBeGreaterThan(0.5);
     expect(grass / total).toBeLessThan(0.95);
     expect(grassPatch(3, -2)).toBe(grassPatch(3, -2));
+  });
+});
+
+describe("próximo desbloqueio", () => {
+  it("diz o que falta para a próxima coisa aparecer", () => {
+    expect(nextUnlock({ careDays: 0, grownPlants: 0, trips: 0 })).toBe(
+      "Faltam 2 dias de cuidado para aparecer o banco.",
+    );
+    expect(nextUnlock({ careDays: 2, grownPlants: 0, trips: 0 })).toBe(
+      "Falta 1 dia de cuidado para aparecerem as lanternas.",
+    );
+    expect(nextUnlock({ careDays: 3, grownPlants: 1, trips: 1 })).toBe(
+      "Falta 1 travessia de barco para aparecerem as bandeirinhas.",
+    );
+    expect(nextUnlock({ careDays: 5, grownPlants: 2, trips: 2 })).toBeNull();
   });
 });
