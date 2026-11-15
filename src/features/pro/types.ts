@@ -113,6 +113,8 @@ export interface SessionClosing {
   /** Dia da sessão (AAAA-MM-DD). */
   date: string;
   outcome: "realizada" | "faltou";
+  /** Consulta do psiquiatra: a conduta sobre a medicação. */
+  conduct?: PrescriptionChange;
   /** Valor cobrado em reais. 0 = não cobrou (falta sem cobrança). */
   charge: number;
   paid: boolean;

@@ -3,9 +3,11 @@ import {
   buildClosing,
   closingError,
   closingLine,
+  conductText,
   evolutionText,
   financeSummary,
   groupByDay,
+  medicationHistory,
   moodTrend,
   sevenDays,
   trendSentence,
@@ -177,5 +179,70 @@ describe("encerrar sessão", () => {
     ];
     const summary = financeSummary([s1, s2], patients, today, closings);
     expect([summary.received, summary.toReceive]).toEqual([0, 180]);
+  });
+});
+
+describe("consulta do psiquiatra", () => {
+  const session: ProSession = {
+    id: "c1",
+    patientId: "p1",
+    data: "2026-10-08",
+    hora: "10:00",
+    tipo: "presencial",
+    status: "confirmado",
+  };
+
+  it("a conduta vai junto com a evolução e fica no fechamento", () => {
+    const input = {
+      outcome: "realizada" as const,
+      evolution: "Dormindo melhor. Sem efeitos colaterais.",
+      chargeMissed: false,
+      conduct: "dose" as const,
+      conductNote: "Subiu para 20 mg.",
+    };
+    expect(evolutionText(session, input)).toBe(
+      "Dormindo melhor. Sem efeitos colaterais.\nConduta: ajustar a dose. Subiu para 20 mg.",
+    );
+    expect(buildClosing(session, { ...input, paid: false }, 320).conduct).toBe("dose");
+    expect(conductText("none")).toBe("Conduta: manter a medicação.");
+  });
+
+  it("falta não tem conduta", () => {
+    const closing = buildClosing(
+      session,
+      { outcome: "faltou", evolution: "", chargeMissed: false, conduct: "stop", paid: false },
+      320,
+    );
+    expect(closing.conduct).toBeUndefined();
+  });
+
+  it("linha do tempo: um item por remédio, o mais novo em cima e os em uso primeiro", () => {
+    const rx = (id: string, nome: string, preparedAt: string, status: "ready" | "stopped" = "ready") =>
+      ({
+        id,
+        patientId: "p1",
+        nome,
+        dosagem: "x",
+        kind: "common",
+        origin: { type: "consultation", consultationId: "c" },
+        preparedAt,
+        useFrom: preparedAt,
+        useUntil: preparedAt,
+        status,
+        change: "none",
+      }) as const;
+    const history = medicationHistory(
+      [
+        rx("a", "Sertralina", "2026-08-01", "stopped"),
+        rx("b", "Escitalopram", "2026-09-01"),
+        rx("c", "Escitalopram", "2026-10-01"),
+        { ...rx("d", "Outro", "2026-10-01"), patientId: "p2" },
+      ],
+      "p1",
+    );
+    expect(history.map((h) => [h.nome, h.current.id, h.previous.map((p) => p.id)])).toEqual([
+      ["Escitalopram", "c", ["b"]],
+      ["Sertralina", "a", []],
+    ]);
   });
 });

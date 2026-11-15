@@ -47,7 +47,7 @@ export default function ProDashboard({ specialty }: { specialty?: "psychiatrist"
   const me = useProIdentity();
   const noun = specialty === "psychiatrist" ? "consulta" : "sessão";
   const [closing, setClosing] = useState<string | null>(null);
-  const [notice, setNotice] = useState<{ text: string; patientId: string } | null>(null);
+  const [notice, setNotice] = useState<{ text: string; patientId: string; rx?: boolean } | null>(null);
 
   const todays = pro.sessions
     .filter((s) => s.data === pro.today && s.status !== "cancelado")
@@ -100,6 +100,11 @@ export default function ProDashboard({ specialty }: { specialty?: "psychiatrist"
             <Button asChild variant="ghost" size="sm">
               <Link href={`/dashboard/pro/patients/${notice.patientId}`}>Ver prontuário</Link>
             </Button>
+            {notice.rx && (
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/dashboard/pro/prescriptions">Registrar receita</Link>
+              </Button>
+            )}
             <Button asChild variant="ghost" size="sm">
               <Link href="/dashboard/pro/finance">Ver financeiro</Link>
             </Button>
@@ -289,6 +294,8 @@ export default function ProDashboard({ specialty }: { specialty?: "psychiatrist"
                             const charged = input.outcome === "realizada" || input.chargeMissed;
                             setNotice({
                               patientId: s.patientId,
+                              rx:
+                                input.outcome === "realizada" && !!input.conduct && input.conduct !== "none",
                               text: `${noun === "sessão" ? "Sessão" : "Consulta"} de ${first} encerrada. ${
                                 input.outcome === "realizada" ? "A evolução" : "A falta"
                               } foi para o prontuário${charged ? " e a cobrança para o Financeiro" : ""}${
