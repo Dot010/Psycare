@@ -3,7 +3,7 @@
 import { Droplets, Phone, X } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { PLANT_NAMES } from "@/features/garden/logic";
+import { PLANT_NAMES, PLANT_ORDER } from "@/features/garden/logic";
 import { foxRef, placeById, type PlaceId } from "@/features/garden/island/places";
 import type { PlantState } from "@/features/garden/types";
 
@@ -12,6 +12,8 @@ export interface IslandPanelProps {
   foxName: string;
   plants: PlantState[];
   available: number;
+  /** Gotas que faltam para a próxima planta nascer (null: já nasceram todas). */
+  toNext?: number | null;
   pouring: boolean;
   onPour: () => void;
   onClose: () => void;
@@ -26,6 +28,7 @@ export function IslandPanel({
   foxName,
   plants,
   available,
+  toNext = null,
   pouring,
   onPour,
   onClose,
@@ -57,16 +60,44 @@ export function IslandPanel({
 
       {place === "canteiros" && (
         <div className="mt-3">
-          <ul className="flex flex-wrap gap-2" aria-label="Plantas">
-            {plants.map((plant) => (
-              <li
-                key={plant.kind}
-                className="rounded-full bg-brand-100 px-3 py-1 text-xs font-medium text-brand-ink"
-              >
-                {PLANT_NAMES[plant.kind]} · {Math.round(plant.growth * 100)}%
-              </li>
-            ))}
-          </ul>
+          {/* Um canteiro por planta, na ordem em que nascem. */}
+          <ol className="grid grid-cols-2 gap-2" aria-label="Plantas">
+            {PLANT_ORDER.map((kind, k) => {
+              const plant = plants.find((item) => item.kind === kind);
+              const next = !plant && k === plants.length;
+              return (
+                <li
+                  key={kind}
+                  className={
+                    plant
+                      ? "rounded-2xl bg-brand-100 px-3 py-2 text-xs font-medium text-brand-ink"
+                      : "rounded-2xl border border-dashed border-border px-3 py-2 text-xs text-muted-foreground"
+                  }
+                >
+                  {plant ? (
+                    <>
+                      <span>
+                        {PLANT_NAMES[kind]} · {Math.round(plant.growth * 100)}%
+                      </span>
+                      <span
+                        aria-hidden
+                        className="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-white/70"
+                      >
+                        <span
+                          className="block h-full rounded-full bg-brand-600"
+                          style={{ width: `${Math.round(plant.growth * 100)}%` }}
+                        />
+                      </span>
+                    </>
+                  ) : next && toNext !== null ? (
+                    `${PLANT_NAMES[kind]} nasce em ${toNext} ${toNext === 1 ? "gota" : "gotas"}`
+                  ) : (
+                    "Canteiro esperando"
+                  )}
+                </li>
+              );
+            })}
+          </ol>
           <Button onClick={onPour} disabled={available === 0 || pouring} className="mt-4 w-full">
             <Droplets aria-hidden />
             {pouring ? "Regando..." : available > 0 ? `Regar (${available})` : "Sem gotas para regar"}

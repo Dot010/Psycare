@@ -46,6 +46,13 @@ describe("cartão do lugar na ilha", () => {
     expect(screen.getByText("Girassol · 60%")).toBeInTheDocument();
   });
 
+  it("nos canteiros, mostra quantas gotas faltam para a próxima planta", () => {
+    render(<IslandPanel {...base} place="canteiros" toNext={4} />);
+    const beds = screen.getByRole("list", { name: "Plantas" });
+    expect(beds.children).toHaveLength(4);
+    expect(screen.getByText("Margarida nasce em 4 gotas")).toBeInTheDocument();
+  });
+
   it("fecha pelo botão", async () => {
     const onClose = vi.fn();
     render(<IslandPanel {...base} place="garrafa" onClose={onClose} />);
