@@ -10,11 +10,11 @@ import { ProIdentityProvider } from "./ProIdentity";
 
 beforeEach(() => localStorage.clear());
 
-function setup() {
+function setup(pro = PROFESSIONALS[0]) {
   return render(
-    <ProIdentityProvider value={PROFESSIONALS[0]}>
+    <ProIdentityProvider value={pro}>
       <UndoProvider>
-        <ProDashboard specialty="psychologist" />
+        <ProDashboard specialty={pro.specialty} />
       </UndoProvider>
     </ProIdentityProvider>,
   );
@@ -88,5 +88,32 @@ describe("Painel do dia: encerrar sessão", () => {
     expect(stored(CLOSINGS_KEY)[0]).toMatchObject({ outcome: "faltou", charge: 220, paid: false });
     // A tarefa para casa só existe quando a sessão aconteceu.
     expect(stored(ASSIGNMENTS_KEY)).toEqual([]);
+  });
+});
+
+describe("Painel do psiquiatra: encerrar consulta", () => {
+  it("tem o passo da conduta, que vai para o prontuário e oferece registrar a receita", async () => {
+    setup(PROFESSIONALS[1]);
+    const consultas = screen.getByRole("region", { name: "Consultas de hoje" });
+    await userEvent.click(within(consultas).getAllByRole("button", { name: "Encerrar consulta" })[0]);
+    await userEvent.click(screen.getByRole("button", { name: "Consulta realizada" }));
+    await userEvent.type(screen.getByLabelText("2. Evolução da consulta"), "Dormindo melhor, sem efeitos.");
+    expect(screen.getByRole("button", { name: "Manter a medicação" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Ajustar a dose" }));
+    await userEvent.type(screen.getByLabelText("O que muda"), "Sobe para 20 mg.");
+    await userEvent.click(screen.getByRole("button", { name: "Encerrar e salvar" }));
+
+    expect(stored(NOTES_KEY)[0].text).toBe(
+      "Dormindo melhor, sem efeitos.\nConduta: ajustar a dose. Sobe para 20 mg.",
+    );
+    expect(stored(CLOSINGS_KEY)[0].conduct).toBe("dose");
+    expect(screen.getByRole("link", { name: "Registrar receita" })).toHaveAttribute(
+      "href",
+      "/dashboard/pro/prescriptions",
+    );
   });
 });

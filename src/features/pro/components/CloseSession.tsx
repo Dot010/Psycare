@@ -8,8 +8,11 @@ import type { ActivityKind } from "@/features/activities/types";
 import { addDays } from "@/features/health/logic";
 import { formatCurrencyBRL } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { EVOLUTION_MAX } from "../logic";
+import { CONDUCT_LABEL, EVOLUTION_MAX } from "../logic";
 import type { CloseSessionInput } from "../hooks/usePro";
+import type { PrescriptionChange } from "../types";
+
+const CONDUCTS = Object.keys(CONDUCT_LABEL) as PrescriptionChange[];
 
 const choice = (on: boolean) =>
   cn(
@@ -31,8 +34,8 @@ interface CloseSessionProps {
 }
 
 /**
- * O "Encerrar sessão" em 4 passos curtos, na própria linha da sessão:
- * como foi, a evolução, a cobrança e (se quiser) uma tarefa para casa.
+ * O "Encerrar sessão" em passos curtos, na própria linha da sessão:
+ * como foi, a evolução, (na consulta do psiquiatra) a conduta, a cobrança e, se quiser, uma tarefa para casa.
  */
 export function CloseSession({ patientName, fee, today, noun, by, onClose, onCancel }: CloseSessionProps) {
   const id = useId();
@@ -42,8 +45,13 @@ export function CloseSession({ patientName, fee, today, noun, by, onClose, onCan
   const [chargeMissed, setChargeMissed] = useState(false);
   const [homework, setHomework] = useState<ActivityKind | "">("");
   const [due, setDue] = useState(addDays(today, 7));
+  const [conduct, setConduct] = useState<PrescriptionChange>("none");
+  const [conductNote, setConductNote] = useState("");
   const [error, setError] = useState("");
   const first = patientName.split(" ")[0];
+  const isConsult = noun === "consulta";
+  // Na consulta entra o passo da conduta; os seguintes andam um número.
+  const n = (step: number) => (isConsult && step >= 3 ? step + 1 : step);
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -53,6 +61,7 @@ export function CloseSession({ patientName, fee, today, noun, by, onClose, onCan
       paid,
       chargeMissed,
       by,
+      ...(isConsult ? { conduct, conductNote } : {}),
       homework: homework ? { kind: homework, dueDate: due } : undefined,
     });
     if (result) setError(result);
@@ -103,12 +112,51 @@ export function CloseSession({ patientName, fee, today, noun, by, onClose, onCan
             />
             <p className="text-xs text-muted-foreground">
               Vai para o prontuário de {first}. Não aparece no app de {first}, mas {first} tem direito de
-              pedir acesso ao prontuário (CFP 1/2009).
+              pedir acesso ao prontuário{isConsult ? "" : " (CFP 1/2009)"}.
             </p>
           </div>
 
+          {isConsult && (
+            <fieldset className="space-y-2">
+              <legend className="mb-2 text-sm font-semibold">3. Conduta</legend>
+              <div className="flex flex-wrap gap-2">
+                {CONDUCTS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    aria-pressed={conduct === c}
+                    className={choice(conduct === c)}
+                    onClick={() => setConduct(c)}
+                  >
+                    {CONDUCT_LABEL[c]}
+                  </button>
+                ))}
+              </div>
+              {conduct !== "none" && (
+                <>
+                  <label htmlFor={`${id}-conduta`} className="sr-only">
+                    O que muda
+                  </label>
+                  <input
+                    id={`${id}-conduta`}
+                    value={conductNote}
+                    maxLength={200}
+                    onChange={(e) => setConductNote(e.target.value)}
+                    placeholder="O que muda (opcional). Ex.: sobe para 20 mg pela manhã."
+                    className={fieldControlClass}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Depois de salvar, registre a receita nova em Receitas. O app não emite receita.
+                  </p>
+                </>
+              )}
+            </fieldset>
+          )}
+
           <fieldset className="space-y-2">
-            <legend className="mb-2 text-sm font-semibold">3. Cobrança · {formatCurrencyBRL(fee)}</legend>
+            <legend className="mb-2 text-sm font-semibold">
+              {n(3)}. Cobrança · {formatCurrencyBRL(fee)}
+            </legend>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
@@ -130,7 +178,7 @@ export function CloseSession({ patientName, fee, today, noun, by, onClose, onCan
           </fieldset>
 
           <fieldset className="space-y-2">
-            <legend className="mb-2 text-sm font-semibold">4. Tarefa para casa (opcional)</legend>
+            <legend className="mb-2 text-sm font-semibold">{n(4)}. Tarefa para casa (opcional)</legend>
             <div className="flex flex-wrap gap-2">
               <label htmlFor={`${id}-hw`} className="sr-only">
                 Atividade
