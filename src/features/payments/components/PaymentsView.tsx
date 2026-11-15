@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, QrCode } from "lucide-react";
+import { FileText, Printer, QrCode } from "lucide-react";
 import { useState } from "react";
 import { DemoNotice } from "@/components/feedback/DemoNotice";
 import { EmptyState } from "@/components/feedback/EmptyState";
@@ -8,6 +8,7 @@ import { Page } from "@/components/layout/Page";
 import { PageColumns } from "@/components/layout/PageColumns";
 import { Block } from "@/components/ui/block";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useAppointments } from "@/features/appointments/hooks/useAppointments";
 import { CHARGES } from "@/features/payments/data";
 import { chargesFromClosings, groupByProfessional, totalOpen } from "@/features/payments/logic";
@@ -15,7 +16,9 @@ import { CLOSINGS_KEY } from "@/features/pro/hooks/usePro";
 import type { SessionClosing } from "@/features/pro/types";
 import { useLocalStorage } from "@/lib/useLocalStorage";
 import { PixDialog, type PixTarget } from "@/features/payments/components/PixDialog";
-import { SPECIALTY_LABEL } from "@/features/pro/identity";
+import type { Charge } from "@/features/payments/types";
+import { SPECIALTY_LABEL, type Professional } from "@/features/pro/identity";
+import { useProfile } from "@/features/profile/useProfile";
 import { formatCurrencyBRL, formatDateBR } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +37,9 @@ export default function PaymentsView() {
     .reduce((sum, c) => sum + c.amount, 0);
   const pendingCount = all.filter((c) => c.status !== "paid").length;
   const [pix, setPix] = useState<PixTarget | null>(null);
+  // O mesmo recibo que o profissional emite no financeiro dele.
+  const [receipt, setReceipt] = useState<{ charge: Charge; professional: Professional } | null>(null);
+  const [profile] = useProfile();
 
   return (
     <Page
@@ -123,9 +129,8 @@ export default function PaymentsView() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            disabled
-                            title="Recibo disponível em breve"
-                            aria-label="Baixar recibo"
+                            aria-label={`Recibo de ${formatDateBR(charge.date)}`}
+                            onClick={() => setReceipt({ charge, professional })}
                           >
                             <FileText />
                           </Button>
@@ -156,6 +161,41 @@ export default function PaymentsView() {
       )}
 
       <PixDialog target={pix} onClose={() => setPix(null)} />
+
+      <Dialog open={receipt !== null} onOpenChange={(open) => !open && setReceipt(null)}>
+        <DialogContent className="gap-4 rounded-2xl p-8 sm:max-w-lg">
+          {receipt && (
+            <>
+              <DialogTitle className="text-2xl font-light">Recibo</DialogTitle>
+              <DialogDescription className="sr-only">
+                Recibo do atendimento, para o convênio e o imposto
+              </DialogDescription>
+              <p className="text-base leading-relaxed">
+                Recebi de <strong className="font-semibold">{profile.name || "Paciente demo"}</strong> a
+                quantia de{" "}
+                <strong className="font-semibold">{formatCurrencyBRL(receipt.charge.amount)}</strong>,
+                referente a {receipt.charge.description.toLowerCase()} de {formatDateBR(receipt.charge.date)}.
+              </p>
+              <p className="text-sm leading-relaxed">
+                {receipt.professional.name} · {receipt.professional.register}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Serve para o reembolso do convênio e para o imposto de renda. Na demonstração, os dados são de
+                exemplo.
+              </p>
+              <div className="flex gap-2">
+                <Button onClick={() => window.print()}>
+                  <Printer />
+                  Imprimir
+                </Button>
+                <Button variant="ghost" onClick={() => setReceipt(null)}>
+                  Fechar
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </Page>
   );
 }

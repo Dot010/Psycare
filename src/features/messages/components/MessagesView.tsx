@@ -9,11 +9,19 @@ import { useMessages } from "@/features/messages/hooks/useMessages";
 import { MESSAGE_MAX } from "@/features/messages/types";
 import { cn } from "@/lib/utils";
 
-const QUICK_REPLIES = [
-  { label: "Dúvida remédio", text: "Tenho uma dúvida sobre a medicação: " },
-  { label: "Enviar exame", text: "Gostaria de enviar o resultado de um exame: " },
-  { label: "Sintoma novo", text: "Estou sentindo o seguinte sintoma novo: " },
-];
+/** Atalhos por especialidade: remédio e exame são assunto do psiquiatra; com a psicóloga, outros. */
+const QUICK_REPLIES: Record<string, { label: string; text: string }[]> = {
+  Psiquiatria: [
+    { label: "Dúvida remédio", text: "Tenho uma dúvida sobre a medicação: " },
+    { label: "Enviar exame", text: "Gostaria de enviar o resultado de um exame: " },
+    { label: "Sintoma novo", text: "Estou sentindo o seguinte sintoma novo: " },
+  ],
+  Psicologia: [
+    { label: "Algo aconteceu", text: "Aconteceu uma coisa que eu queria contar: " },
+    { label: "Sobre a atividade", text: "Tenho uma dúvida sobre a atividade que você pediu: " },
+    { label: "Remarcar", text: "Preciso remarcar a nossa sessão: " },
+  ],
+};
 
 function Avatar({ name, className }: { name: string; className?: string }) {
   const initials = name
@@ -155,7 +163,7 @@ export function MessagesView() {
 
             <div className="space-y-3 border-t border-border px-5 py-4">
               <div className="no-scrollbar flex gap-2 overflow-x-auto">
-                {QUICK_REPLIES.map((reply) => (
+                {(QUICK_REPLIES[activeChat.specialty] ?? []).map((reply) => (
                   <button
                     key={reply.label}
                     type="button"

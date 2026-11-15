@@ -80,3 +80,11 @@ describe("Preparar a sessão", () => {
     expect(screen.getByText("0 coisas para levar")).toBeInTheDocument();
   });
 });
+
+describe("resumo para mostrar na consulta", () => {
+  it("fica aqui, junto do resto da preparação", async () => {
+    setup();
+    await userEvent.click(screen.getByRole("button", { name: "Ver resumo para mostrar" }));
+    expect(await screen.findByRole("dialog", { name: "Resumo para a consulta" })).toBeInTheDocument();
+  });
+});

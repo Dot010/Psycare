@@ -12,7 +12,6 @@ import { TabPanel, UnderlineTabs } from "@/components/ui/underline-tabs";
 import { DrawPanel } from "@/features/diary/components/DrawPanel";
 import { MoodMonth } from "@/features/diary/components/MoodMonth";
 import { PagesPanel } from "@/features/diary/components/PagesPanel";
-import { WeekPanel } from "@/features/diary/components/WeekPanel";
 import { WritePanel } from "@/features/diary/components/WritePanel";
 import { useDiary } from "@/features/diary/hooks/useDiary";
 import { writtenDays } from "@/features/diary/utils";
@@ -21,14 +20,13 @@ import { useMood } from "@/features/mood/hooks/useMood";
 import { toISODate } from "@/lib/dates";
 import { formatDateBR } from "@/lib/format";
 
-type Tab = "escrever" | "desenho" | "semana" | "humor" | "paginas";
+// A semana já aparece no calendário do topo, e desenhar é um jeito de escrever: ficam 3 abas.
+type Tab = "escrever" | "paginas" | "humor";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "escrever", label: "Escrever" },
-  { id: "desenho", label: "Desenho" },
-  { id: "semana", label: "Semana" },
-  { id: "humor", label: "Humor" },
   { id: "paginas", label: "Páginas" },
+  { id: "humor", label: "Humor" },
 ];
 
 function writingSentence(days: number): string {
@@ -41,6 +39,7 @@ export default function DiaryView() {
   const { entries, saveEntry, deleteEntry } = useDiary();
   const { levels } = useMood();
   const [tab, setTab] = useState<Tab>(useSearchParams()?.get("aba") === "humor" ? "humor" : "escrever");
+  const [mode, setMode] = useState<"texto" | "desenho">("texto");
   const today = toISODate(new Date());
   const written = writtenDays(entries, today);
   const forSession = entries
@@ -113,9 +112,24 @@ export default function DiaryView() {
             className="mb-6"
           />
           <TabPanel key={tab} label={TABS.find((t) => t.id === tab)!.label}>
-            {tab === "escrever" && <WritePanel onSave={saveEntry} />}
-            {tab === "desenho" && <DrawPanel onSave={saveEntry} />}
-            {tab === "semana" && <WeekPanel entries={entries} />}
+            {tab === "escrever" && (
+              <>
+                <div role="group" aria-label="Como registrar" className="mb-5 flex gap-2">
+                  {(["texto", "desenho"] as const).map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      aria-pressed={mode === m}
+                      onClick={() => setMode(m)}
+                      className="min-h-11 rounded-full border border-border px-4 text-sm font-medium aria-pressed:border-brand-600 aria-pressed:bg-brand-50 aria-pressed:text-brand-ink focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
+                    >
+                      {m === "texto" ? "Escrever" : "Desenhar"}
+                    </button>
+                  ))}
+                </div>
+                {mode === "texto" ? <WritePanel onSave={saveEntry} /> : <DrawPanel onSave={saveEntry} />}
+              </>
+            )}
             {tab === "humor" && <MoodView />}
             {tab === "paginas" && (
               <PagesPanel entries={entries} today={today} onSave={saveEntry} onDelete={deleteEntry} />

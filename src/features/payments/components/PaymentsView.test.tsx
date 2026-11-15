@@ -26,4 +26,11 @@ describe("PaymentsView", () => {
     expect(within(rafael).getByText("Em dia")).toBeInTheDocument();
     expect(within(rafael).queryByRole("button", { name: /Pagar/ })).toBeNull();
   });
+
+  it("o recibo de um atendimento pago abre, com o nome de quem atendeu", async () => {
+    render(<PaymentsView />);
+    await userEvent.click(screen.getAllByRole("button", { name: /^Recibo de / })[0]);
+    const dialog = await screen.findByRole("dialog", { name: "Recibo" });
+    expect(within(dialog).getByText(/Dra\. Helena Prado|Dr\. Rafael Nunes/)).toBeInTheDocument();
+  });
 });
