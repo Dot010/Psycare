@@ -8,17 +8,22 @@ import { useHealth } from "@/features/health/hooks/useHealth";
 import { dosesForDay } from "@/features/health/logic";
 import { nextStep } from "@/features/home/logic";
 import { nextUp } from "@/features/planner/logic";
-import { usePlanner } from "@/features/planner/hooks/usePlanner";
+import type { usePlanner } from "@/features/planner/hooks/usePlanner";
 import { toISODate } from "@/lib/dates";
 
 /**
  * "Agora": uma coisa só para fazer, a mais importante do momento.
  * O resto do Início continua embaixo, mas quem chega num dia ruim não precisa escolher.
  */
-export function NextStepCard({ checkedIn }: { checkedIn: boolean }) {
+export function NextStepCard({
+  checkedIn,
+  planner,
+}: {
+  checkedIn: boolean;
+  planner: ReturnType<typeof usePlanner>;
+}) {
   const { appointments } = useAppointments();
   const { remedios, taken } = useHealth();
-  const planner = usePlanner();
   const date = new Date();
   const today = toISODate(date);
   const now = date.toTimeString().slice(0, 5);
@@ -60,6 +65,15 @@ export function NextStepCard({ checkedIn }: { checkedIn: boolean }) {
           <ArrowRight className="size-4" aria-hidden />
         </Link>
       )}
+      {/* O mesmo "Hoje está difícil" do Meu dia: vale no app todo. */}
+      <button
+        type="button"
+        aria-pressed={planner.hardToday}
+        onClick={() => planner.setHardToday(!planner.hardToday)}
+        className="mt-4 block min-h-11 text-sm underline underline-offset-4 opacity-90 focus-visible:ring-3 focus-visible:ring-white/60 focus-visible:outline-none"
+      >
+        {planner.hardToday ? "Voltar a ver tudo" : "Hoje está difícil? Ver só o essencial"}
+      </button>
     </section>
   );
 }

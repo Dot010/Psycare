@@ -125,3 +125,12 @@ describe("Seu dia", () => {
     expect(within(help).getByRole("link", { name: /Ligar 188/ })).toHaveAttribute("href", "tel:188");
   });
 });
+
+describe("Hoje está difícil", () => {
+  it("no modo essencial, o Seu dia mostra só o registro de humor", () => {
+    render(
+      <DayPlan doneToday={new Set()} drops={0} onCheckIn={() => {}} onTagsChange={() => {}} essential />,
+    );
+    expect(screen.getByText(/^0 de 1/)).toBeInTheDocument();
+  });
+});

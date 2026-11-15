@@ -9,6 +9,7 @@ import { WeekMini } from "@/features/home/components/WeekMini";
 import { timeGreeting } from "@/features/home/logic";
 import { useGarden } from "@/features/garden/hooks/useGarden";
 import { Onboarding } from "@/features/onboarding/components/Onboarding";
+import { usePlanner } from "@/features/planner/hooks/usePlanner";
 import { useProfile } from "@/features/profile/useProfile";
 
 /**
@@ -19,6 +20,8 @@ import { useProfile } from "@/features/profile/useProfile";
 export default function HomeView() {
   const garden = useGarden();
   const [profile] = useProfile();
+  // "Hoje está difícil" vale no app todo: aqui some o que não é essencial.
+  const planner = usePlanner();
   const now = new Date();
   const dateLabel = now.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
 
@@ -38,7 +41,7 @@ export default function HomeView() {
         </h1>
       </header>
 
-      <NextStepCard checkedIn={Boolean(garden.todayCheckIn)} />
+      <NextStepCard checkedIn={Boolean(garden.todayCheckIn)} planner={planner} />
 
       <Stagger className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
         <DayPlan
@@ -47,12 +50,13 @@ export default function HomeView() {
           drops={garden.poured + garden.available}
           onCheckIn={garden.checkIn}
           onTagsChange={garden.setTags}
+          essential={planner.hardToday}
         />
 
         <Stagger className="min-w-0 space-y-5">
           <SessionMini />
           <TodayDoses />
-          <WeekMini />
+          {!planner.hardToday && <WeekMini />}
         </Stagger>
       </Stagger>
     </div>
