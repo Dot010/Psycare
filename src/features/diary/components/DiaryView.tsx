@@ -1,17 +1,25 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { BookCover } from "@/features/diary/components/BookCover";
+import { Page } from "@/components/layout/Page";
+import { PageColumns } from "@/components/layout/PageColumns";
+import { CountUp } from "@/components/motion/CountUp";
+import { ProgressRing } from "@/components/motion/ProgressRing";
+import { Block } from "@/components/ui/block";
+import { TabPanel, UnderlineTabs } from "@/components/ui/underline-tabs";
 import { DrawPanel } from "@/features/diary/components/DrawPanel";
+import { MoodMonth } from "@/features/diary/components/MoodMonth";
 import { PagesPanel } from "@/features/diary/components/PagesPanel";
 import { WeekPanel } from "@/features/diary/components/WeekPanel";
 import { WritePanel } from "@/features/diary/components/WritePanel";
 import { useDiary } from "@/features/diary/hooks/useDiary";
 import { writtenDays } from "@/features/diary/utils";
 import MoodView from "@/features/mood/components/MoodView";
+import { useMood } from "@/features/mood/hooks/useMood";
 import { toISODate } from "@/lib/dates";
-import { cn } from "@/lib/utils";
+import { formatDateBR } from "@/lib/format";
 
 type Tab = "escrever" | "desenho" | "semana" | "humor" | "paginas";
 
@@ -31,67 +39,90 @@ function writingSentence(days: number): string {
 
 export default function DiaryView() {
   const { entries, saveEntry, deleteEntry } = useDiary();
-  const [opened, setOpened] = useState(true);
+  const { levels } = useMood();
   const [tab, setTab] = useState<Tab>(useSearchParams()?.get("aba") === "humor" ? "humor" : "escrever");
   const today = toISODate(new Date());
+  const written = writtenDays(entries, today);
+  const forSession = entries
+    .filter((e) => e.discussInSession)
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 3);
 
   return (
-    <div className="bg-linear-to-b from-brand-100/70 to-transparent">
-      <div className="mx-auto w-full max-w-2xl space-y-6 px-5 pt-8 pb-16 md:px-8 md:pt-12">
-        <header className="space-y-3">
-          <p className="text-xs font-medium tracking-widest text-brand-accent uppercase">Diário</p>
-          <h1 className="text-4xl leading-tight font-semibold text-ink">Meu diário</h1>
-          <p className="max-w-md text-lg leading-snug text-foreground">
-            {writingSentence(writtenDays(entries, today))}
-          </p>
-        </header>
+    <Page
+      title="Como foram seus dias"
+      kicker="Diário"
+      description="Só você lê. O que for para a sessão, você escolhe."
+      width="wide"
+    >
+      <PageColumns
+        aside={
+          <>
+            <Block label="Sua semana de escrita">
+              <div className="flex items-center gap-4">
+                <ProgressRing value={written / 7} label={`Escreveu em ${written} de 7 dias`} size={84}>
+                  <span className="text-lg font-semibold">
+                    <CountUp value={written} />
+                    /7
+                  </span>
+                </ProgressRing>
+                <p className="text-sm leading-relaxed">{writingSentence(written)}</p>
+              </div>
+            </Block>
 
-        <BookCover
-          title="Meu diário"
-          subtitle="Só você lê"
-          opened={opened}
-          onOpen={() => setOpened((value) => !value)}
-        />
-
-        {!opened && (
-          <p className="text-center text-sm text-muted-foreground">Toque no livro para abrir o diário.</p>
-        )}
-
-        {opened && (
-          <section aria-label="Páginas do diário" className="space-y-6">
-            <div role="tablist" aria-label="Seções do diário" className="flex flex-wrap gap-2">
-              {TABS.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  role="tab"
-                  id={`diario-tab-${item.id}`}
-                  aria-selected={tab === item.id}
-                  aria-controls={`diario-panel-${item.id}`}
-                  onClick={() => setTab(item.id)}
-                  className={cn(
-                    "h-10 pointer-coarse:h-11 rounded-full border px-4 text-sm font-semibold transition-colors",
-                    tab === item.id
-                      ? "border-brand-ink bg-brand-ink text-white"
-                      : "border-input bg-card text-muted-foreground hover:bg-sunken",
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-            <div role="tabpanel" id={`diario-panel-${tab}`} aria-labelledby={`diario-tab-${tab}`}>
-              {tab === "escrever" && <WritePanel onSave={saveEntry} />}
-              {tab === "desenho" && <DrawPanel onSave={saveEntry} />}
-              {tab === "semana" && <WeekPanel entries={entries} />}
-              {tab === "humor" && <MoodView />}
-              {tab === "paginas" && (
-                <PagesPanel entries={entries} today={today} onSave={saveEntry} onDelete={deleteEntry} />
+            <Block
+              title="Vai para a sessão"
+              aside={
+                <span className="rounded-full bg-brand-100 px-2.5 py-0.5 font-semibold text-brand-ink">
+                  {forSession.length}
+                </span>
+              }
+            >
+              {forSession.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Ao escrever, marque &quot;levar para a sessão&quot; e a página aparece aqui.
+                </p>
+              ) : (
+                <ul>
+                  {forSession.map((e) => (
+                    <li key={e.id} className="border-t border-sunken py-2.5 first:border-t-0">
+                      <p className="text-xs text-muted-foreground">{formatDateBR(e.date)}</p>
+                      <p className="line-clamp-2 text-sm leading-relaxed">{e.title}</p>
+                    </li>
+                  ))}
+                </ul>
               )}
-            </div>
-          </section>
-        )}
-      </div>
-    </div>
+              <Link
+                href="/dashboard/appointments"
+                className="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-brand-ink underline"
+              >
+                Ver em Consultas
+              </Link>
+            </Block>
+          </>
+        }
+      >
+        <MoodMonth levels={levels} entries={entries} today={today} />
+
+        <Block label="Páginas do diário">
+          <UnderlineTabs
+            label="Seções do diário"
+            tabs={TABS}
+            value={tab}
+            onChange={setTab}
+            className="mb-6"
+          />
+          <TabPanel key={tab} label={TABS.find((t) => t.id === tab)!.label}>
+            {tab === "escrever" && <WritePanel onSave={saveEntry} />}
+            {tab === "desenho" && <DrawPanel onSave={saveEntry} />}
+            {tab === "semana" && <WeekPanel entries={entries} />}
+            {tab === "humor" && <MoodView />}
+            {tab === "paginas" && (
+              <PagesPanel entries={entries} today={today} onSave={saveEntry} onDelete={deleteEntry} />
+            )}
+          </TabPanel>
+        </Block>
+      </PageColumns>
+    </Page>
   );
 }

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { UndoProvider } from "@/components/feedback/UndoProvider";
@@ -28,15 +28,37 @@ beforeEach(() => {
 });
 
 describe("Diário novo", () => {
-  it("já abre com as abas e a capa fecha e abre o diário", async () => {
+  it("abre com o calendário do mês e as abas", () => {
+    setup();
+    expect(screen.getByRole("region", { name: "Seu mês" })).toBeInTheDocument();
+    expect(screen.getByRole("tablist", { name: "Seções do diário" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Próximo mês" })).toBeDisabled();
+  });
+
+  it("uma página guardada pinta o dia no calendário e aparece ao tocar nele", async () => {
     const user = userEvent.setup();
     setup();
-    expect(screen.getByRole("tablist", { name: "Seções do diário" })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Fechar o diário" }));
-    expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
-    expect(screen.getByText(/Toque no livro/)).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Abrir o diário" }));
-    expect(screen.getByRole("tablist", { name: "Seções do diário" })).toBeInTheDocument();
+    await user.type(screen.getByLabelText(/Escreva do seu jeito/), "Hoje foi um dia tranquilo no trabalho");
+    await user.click(screen.getByRole("button", { name: "Guardar página" }));
+
+    const day = new Date().getDate();
+    const cell = screen.getByRole("button", { name: new RegExp(`^${day} de .*: mais ou menos, 1 página$`) });
+    await user.click(cell);
+    expect(cell).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(screen.getByRole("region", { name: "Seu mês" })).getByText(/Hoje foi um dia tranquilo/),
+    ).toBeInTheDocument();
+  });
+
+  it("o que vai para a sessão aparece ao lado", async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.type(screen.getByLabelText(/Escreva do seu jeito/), "Quero falar da briga com a minha mãe");
+    await user.click(screen.getByRole("checkbox", { name: /sessão|consulta/i }));
+    await user.click(screen.getByRole("button", { name: "Guardar página" }));
+
+    const box = screen.getByRole("region", { name: "Vai para a sessão" });
+    expect(within(box).getByText(/briga com a minha mãe/)).toBeInTheDocument();
   });
 
   it("pede um pouco mais de texto antes de guardar", async () => {
