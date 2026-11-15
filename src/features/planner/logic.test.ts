@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  byPeriod,
+  periodOf,
   buildTask,
   dueTasks,
   FULL_DAY,
@@ -178,5 +180,33 @@ describe("dueTasks", () => {
       source: "habito" as const,
     }));
     expect(openCount(habits, "2026-10-09")).toBe(0);
+  });
+});
+
+describe("partes do dia", () => {
+  it("separa pela hora: manhã até 11:59, tarde até 17:59, depois noite", () => {
+    expect(periodOf("08:00")).toBe("Manhã");
+    expect(periodOf("11:59")).toBe("Manhã");
+    expect(periodOf("12:00")).toBe("Tarde");
+    expect(periodOf("17:59")).toBe("Tarde");
+    expect(periodOf("18:00")).toBe("Noite");
+    expect(periodOf(undefined)).toBe("Sem horário");
+  });
+
+  it("agrupa na ordem do dia e some com os grupos vazios", () => {
+    const t = (id: string, time?: string) => ({
+      id,
+      title: id,
+      time,
+      importance: "medium" as const,
+      done: false,
+      source: "free" as const,
+    });
+    const groups = byPeriod([t("a", "20:00"), t("b"), t("c", "09:00")]);
+    expect(groups.map(([period, list]) => [period, list.map((x) => x.id)])).toEqual([
+      ["Manhã", ["c"]],
+      ["Noite", ["a"]],
+      ["Sem horário", ["b"]],
+    ]);
   });
 });

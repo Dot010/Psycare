@@ -149,3 +149,21 @@ function minutesBetween(from: string, to: string): number {
   const [th, tm] = to.split(":").map(Number);
   return th * 60 + tm - (fh * 60 + fm);
 }
+
+export type DayPeriod = "Manhã" | "Tarde" | "Noite" | "Sem horário";
+export const DAY_PERIODS: DayPeriod[] = ["Manhã", "Tarde", "Noite", "Sem horário"];
+
+/** Em que parte do dia a tarefa cai: antes do meio-dia, até as 18h, depois disso, ou sem hora. */
+export function periodOf(time?: string): DayPeriod {
+  if (!time) return "Sem horário";
+  if (time < "12:00") return "Manhã";
+  if (time < "18:00") return "Tarde";
+  return "Noite";
+}
+
+/** As tarefas separadas por parte do dia, na ordem do dia, sem os grupos vazios. */
+export function byPeriod(tasks: Task[]): [DayPeriod, Task[]][] {
+  return DAY_PERIODS.map(
+    (period) => [period, tasks.filter((t) => periodOf(t.time) === period)] as [DayPeriod, Task[]],
+  ).filter(([, list]) => list.length > 0);
+}

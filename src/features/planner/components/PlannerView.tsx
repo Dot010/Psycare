@@ -6,13 +6,19 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { ItemMenu } from "@/components/feedback/ItemMenu";
 import { Page } from "@/components/layout/Page";
+import { PageColumns } from "@/components/layout/PageColumns";
+import { CountUp } from "@/components/motion/CountUp";
+import { ProgressRing } from "@/components/motion/ProgressRing";
+import { Block } from "@/components/ui/block";
 import { Button } from "@/components/ui/button";
+import { TabPanel, UnderlineTabs } from "@/components/ui/underline-tabs";
 import { addDays } from "@/features/health/logic";
 import { formatDateBR } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { HabitsPanel } from "@/features/habits/components/HabitsPanel";
 import { usePlanner } from "../hooks/usePlanner";
 import {
+  byPeriod,
   IMPORTANCE_LABEL,
   inbox,
   isFullDay,
@@ -26,6 +32,7 @@ import {
   upcoming,
 } from "../logic";
 import type { Task } from "../types";
+import { FocusNow } from "./FocusNow";
 import { TaskDialog } from "./TaskDialog";
 
 type Tab = "hoje" | "lista" | "calendario" | "habitos";
@@ -105,8 +112,9 @@ export default function PlannerView() {
   return (
     <Page
       title="Meu dia"
-      description="Tudo o que você precisa fazer, num lugar só."
-      width="narrow"
+      kicker={new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
+      description="Uma coisa de cada vez. O resto pode esperar."
+      width="wide"
       actions={
         <>
           <Button variant="outline" onClick={exportICS}>
@@ -120,32 +128,20 @@ export default function PlannerView() {
         </>
       }
     >
-      <div role="tablist" aria-label="Visões do Meu dia" className="flex gap-2">
-        {TABS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            role="tab"
-            aria-selected={tab === item.id}
-            onClick={() => setTab(item.id)}
-            className={cn(
-              "min-h-11 rounded-full border px-5 text-sm transition-colors focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none",
-              tab === item.id
-                ? "border-brand-600 bg-brand-100 font-medium text-brand-ink"
-                : "border-border text-foreground hover:border-brand-600",
-            )}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
+      <UnderlineTabs label="Visões do Meu dia" tabs={TABS} value={tab} onChange={setTab} />
 
-      {tab === "hoje" && <TodayTab planner={planner} row={row} onAdd={() => open(undefined, today)} />}
-      {tab === "habitos" && <HabitsPanel />}
-      {tab === "lista" && <ListTab tasks={tasks} today={today} row={row} />}
-      {tab === "calendario" && (
-        <CalendarTab tasks={tasks} today={today} row={row} onAdd={(date) => open(undefined, date)} />
-      )}
+      <TabPanel key={tab} label={TABS.find((t) => t.id === tab)!.label}>
+        {tab === "hoje" && <TodayTab planner={planner} row={row} onAdd={() => open(undefined, today)} />}
+        {tab === "habitos" && (
+          <Block>
+            <HabitsPanel />
+          </Block>
+        )}
+        {tab === "lista" && <ListTab tasks={tasks} today={today} row={row} />}
+        {tab === "calendario" && (
+          <CalendarTab tasks={tasks} today={today} row={row} onAdd={(date) => open(undefined, date)} />
+        )}
+      </TabPanel>
 
       <TaskDialog
         key={`${editing?.id ?? "new"}-${dialogOpen}-${dialogDate ?? ""}`}
@@ -176,7 +172,7 @@ function TaskRow({
   onPostpone: () => void;
 }) {
   return (
-    <li className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
+    <li className="flex min-h-14 items-center gap-3 border-t border-sunken py-2 first:border-t-0">
       <button
         type="button"
         role="checkbox"
@@ -187,7 +183,7 @@ function TaskRow({
         onClick={onToggle}
         className={cn(
           "flex size-8 pointer-coarse:size-11 shrink-0 items-center justify-center rounded-full border-2 text-sm transition-colors focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none",
-          task.done ? "border-brand-600 bg-brand-600 text-white" : "border-brand-300",
+          task.done ? "animate-pop border-brand-600 bg-brand-600 text-white" : "border-brand-400",
         )}
       >
         {task.done ? "✓" : ""}
@@ -195,7 +191,7 @@ function TaskRow({
       <div className="min-w-0 flex-1">
         <p
           className={cn(
-            "text-base font-medium break-words text-foreground",
+            "text-base break-words text-foreground",
             task.done && "text-muted-foreground line-through",
           )}
         >
@@ -251,59 +247,77 @@ function TodayTab({
   row: (task: Task) => React.ReactNode;
   onAdd: () => void;
 }) {
-  const { today, tasks, hardToday, setHardToday } = planner;
+  const { today, tasks, hardToday, setHardToday, toggleDone } = planner;
   const now = new Date().toTimeString().slice(0, 5);
   const todays = tasksOn(tasks, today);
   const shown = hardToday ? todays.filter((t) => t.importance === "high" || t.done) : todays;
   const next = nextUp(tasks, today, now);
   const late = overdue(tasks, today);
+  const done = shown.filter((t) => t.done).length;
 
   return (
-    <div className="space-y-6">
-      {hardToday ? (
-        <section className="space-y-2 rounded-2xl bg-sun-100 p-4">
-          <p className="text-base font-medium text-ink">Tudo bem. Hoje basta o essencial.</p>
-          <p className="text-sm text-ink">Estou mostrando só o que é de importância alta. O resto espera.</p>
-          <Button variant="outline" className="min-h-11" onClick={() => setHardToday(false)}>
-            Ver todas as tarefas
-          </Button>
-        </section>
-      ) : (
-        <Button variant="outline" className="min-h-11" onClick={() => setHardToday(true)}>
-          Hoje foi difícil
-        </Button>
-      )}
+    <PageColumns
+      aside={
+        <>
+          <Block label="Progresso de hoje">
+            <div className="flex items-center gap-4">
+              <ProgressRing
+                value={shown.length ? done / shown.length : 0}
+                label={`${done} de ${shown.length} feitas hoje`}
+              >
+                <span className="text-xl font-semibold">
+                  <CountUp value={done} />/{shown.length}
+                </span>
+              </ProgressRing>
+              <div className="space-y-1">
+                <p className="text-base font-semibold">
+                  {shown.length > 0 && done === shown.length
+                    ? "Tudo feito hoje"
+                    : `${done} de ${shown.length} feitas`}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Cada tarefa feita vira uma gota para o seu jardim.
+                </p>
+              </div>
+            </div>
+          </Block>
+
+          <Block
+            tone="sunSoft"
+            title={hardToday ? "Tudo bem. Hoje basta o essencial." : "Hoje está difícil?"}
+          >
+            <p className="mb-4 text-sm leading-relaxed">
+              {hardToday
+                ? "Estou mostrando só o que é de importância alta. O resto espera."
+                : "Deixo na lista só o essencial. O resto vai para amanhã, sem culpa."}
+            </p>
+            <Button variant="outline" className="min-h-11" onClick={() => setHardToday(!hardToday)}>
+              {hardToday ? "Ver todas as tarefas" : "Hoje foi difícil"}
+            </Button>
+          </Block>
+        </>
+      }
+    >
+      {next && !hardToday && <FocusNow key={next.id} task={next} onDone={() => toggleDone(next.id)} />}
 
       {isFullDay(tasks, today) && !hardToday && (
-        <p role="status" className="rounded-xl bg-sun-100 px-4 py-3 text-sm text-ink">
+        <p role="status" className="rounded-2xl bg-sun-100 px-4 py-3 text-sm text-ink">
           Seu dia está cheio. Que tal adiar uma ou duas tarefas, sem culpa?
         </p>
       )}
 
-      {next && !hardToday && (
-        <section aria-label="Agora" className="rounded-2xl bg-brand-100 p-4">
-          <p className="text-sm text-brand-ink">Agora</p>
-          <p className="text-lg font-semibold text-brand-ink">
-            {next.title}
-            {next.time && <span className="ml-2 text-base font-normal">às {next.time}</span>}
-          </p>
-        </section>
-      )}
-
       {late.length > 0 && !hardToday && (
-        <section aria-label="Atrasadas" className="space-y-2">
-          <h2 className="text-lg font-semibold text-brand-ink">Ficou para trás</h2>
-          <p className="text-sm text-muted-foreground">
+        <Block label="Atrasadas" title="Ficou para trás">
+          <p className="-mt-2 mb-2 text-sm text-muted-foreground">
             Sem pressão. Adie para amanhã ou conclua quando der.
           </p>
-          <ul className="space-y-2">{late.map(row)}</ul>
-        </section>
+          <ul>{late.map(row)}</ul>
+        </Block>
       )}
 
-      <section aria-label="Tarefas de hoje" className="space-y-2">
-        <h2 className="text-lg font-semibold text-brand-ink">Hoje</h2>
+      <Block label="Tarefas de hoje" title="Hoje" size="lg">
         {shown.length === 0 ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <p className="text-base text-muted-foreground">
               {hardToday ? "Nada essencial para hoje." : "Nada marcado para hoje."}
             </p>
@@ -314,10 +328,19 @@ function TodayTab({
             )}
           </div>
         ) : (
-          <ul className="space-y-2">{shown.map(row)}</ul>
+          <div className="space-y-2">
+            {byPeriod(shown).map(([period, list]) => (
+              <div key={period}>
+                <p className="pt-2 pb-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                  {period}
+                </p>
+                <ul>{list.map(row)}</ul>
+              </div>
+            ))}
+          </div>
         )}
-      </section>
-    </div>
+      </Block>
+    </PageColumns>
   );
 }
 
@@ -335,39 +358,35 @@ function ListTab({
   const todays = tasksOn(tasks, today);
   const next = upcoming(tasks, today);
   return (
-    <div className="space-y-6">
+    <PageColumns>
       {late.length > 0 && (
-        <section aria-label="Ficou para trás" className="space-y-2">
-          <h2 className="text-lg font-semibold text-brand-ink">Ficou para trás</h2>
-          <ul className="space-y-2">{late.map(row)}</ul>
-        </section>
+        <Block label="Ficou para trás" title="Ficou para trás">
+          <ul>{late.map(row)}</ul>
+        </Block>
       )}
-      <section aria-label="Hoje" className="space-y-2">
-        <h2 className="text-lg font-semibold text-brand-ink">Hoje</h2>
+      <Block label="Hoje" title="Hoje">
         {todays.length ? (
-          <ul className="space-y-2">{todays.map(row)}</ul>
+          <ul>{todays.map(row)}</ul>
         ) : (
           <p className="text-muted-foreground">Nada para hoje.</p>
         )}
-      </section>
+      </Block>
       {next.map(([date, list]) => (
-        <section key={date} aria-label={dayLabel(date, today)} className="space-y-2">
-          <h2 className="text-lg font-semibold text-brand-ink">{dayLabel(date, today)}</h2>
-          <ul className="space-y-2">{list.map(row)}</ul>
-        </section>
+        <Block key={date} label={dayLabel(date, today)} title={dayLabel(date, today)}>
+          <ul>{list.map(row)}</ul>
+        </Block>
       ))}
-      <section aria-label="Sem dia" className="space-y-2">
-        <h2 className="text-lg font-semibold text-brand-ink">Sem dia</h2>
-        <p className="text-sm text-muted-foreground">
+      <Block label="Sem dia" title="Sem dia" tone="sand">
+        <p className="-mt-2 mb-2 text-sm text-muted-foreground">
           Ideias soltas. Quando souber o dia, escolha em &quot;Quando?&quot;.
         </p>
         {free.length ? (
-          <ul className="space-y-2">{free.map(row)}</ul>
+          <ul>{free.map(row)}</ul>
         ) : (
           <p className="text-muted-foreground">Nada solto por aqui.</p>
         )}
-      </section>
-    </div>
+      </Block>
+    </PageColumns>
   );
 }
 
@@ -394,13 +413,16 @@ function CalendarTab({
   const chosen = tasksOn(tasks, selected);
 
   return (
-    <div className="space-y-6">
-      <section aria-label="Calendário" className="space-y-3 rounded-2xl border border-border bg-card p-4">
+    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <section
+        aria-label="Calendário"
+        className="animate-rise space-y-3 rounded-3xl border border-border bg-card p-5 md:p-6"
+      >
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="icon" aria-label="Mês anterior" onClick={() => move(-1)}>
             <ChevronLeft />
           </Button>
-          <h2 className="text-lg font-semibold text-brand-ink capitalize">
+          <h2 className="text-lg font-medium text-ink capitalize">
             {MONTHS[view.month]} de {view.year}
           </h2>
           <Button variant="ghost" size="icon" aria-label="Próximo mês" onClick={() => move(1)}>
@@ -443,9 +465,12 @@ function CalendarTab({
         </div>
       </section>
 
-      <section aria-label={`Tarefas de ${formatDateBR(selected)}`} className="space-y-2">
+      <section
+        aria-label={`Tarefas de ${formatDateBR(selected)}`}
+        className="animate-rise space-y-3 rounded-3xl border border-border bg-card p-5 [animation-delay:80ms] md:p-6"
+      >
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-brand-ink">{dayLabel(selected, today)}</h2>
+          <h2 className="text-lg font-medium text-ink">{dayLabel(selected, today)}</h2>
           <Button variant="outline" className="min-h-11" onClick={() => onAdd(selected)}>
             <CalendarPlus />
             Adicionar neste dia
@@ -457,7 +482,7 @@ function CalendarTab({
           </p>
         )}
         {chosen.length ? (
-          <ul className="space-y-2">{chosen.map(row)}</ul>
+          <ul>{chosen.map(row)}</ul>
         ) : (
           <p className="text-muted-foreground">Nada neste dia.</p>
         )}
