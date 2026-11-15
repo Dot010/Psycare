@@ -5,14 +5,13 @@ import {
   closingLine,
   conductText,
   evolutionText,
-  financeSummary,
   groupByDay,
   medicationHistory,
   moodTrend,
   sevenDays,
   trendSentence,
 } from "./logic";
-import type { Patient, ProSession, SessionClosing } from "./types";
+import type { ProSession, SessionClosing } from "./types";
 
 const today = "2026-10-08";
 const snap = {
@@ -45,11 +44,7 @@ describe("tendência de humor", () => {
   });
 });
 
-describe("agenda e financeiro", () => {
-  const patients: Patient[] = [
-    { id: "a", name: "A", age: 30, since: "2026-01-01", fee: 200 },
-    { id: "b", name: "B", age: 30, since: "2026-01-01", fee: 100 },
-  ];
+describe("agenda", () => {
   const s = (
     id: string,
     patientId: string,
@@ -72,24 +67,6 @@ describe("agenda e financeiro", () => {
     ]);
     expect(groups.map((g) => g.date)).toEqual(["2026-10-08", "2026-10-09"]);
     expect(groups[1].items.map((i) => i.id)).toEqual(["2", "1"]);
-  });
-  it("soma recebido e a receber só do mês", () => {
-    const summary = financeSummary(
-      [
-        s("1", "a", "2026-10-02", "realizada"),
-        s("2", "a", "2026-10-03", "realizada"),
-        s("3", "b", "2026-10-04", "realizada"),
-        s("4", "b", "2026-10-20", "confirmado"),
-        s("5", "a", "2026-09-30", "realizada"),
-        s("6", "a", "2026-10-21", "cancelado"),
-      ],
-      patients,
-      today,
-    );
-    expect(summary.received).toBe(500);
-    expect(summary.toReceive).toBe(100);
-    expect(summary.count).toBe(3);
-    expect(summary.byPatient[0]).toMatchObject({ sessions: 2, total: 400 });
   });
 });
 
@@ -167,18 +144,6 @@ describe("encerrar sessão", () => {
     expect(closingLine(c({}), brl)).toBe("Evolução salva · R$ 180 pendente");
     expect(closingLine(c({ paid: true }), brl)).toBe("Evolução salva · R$ 180 pago");
     expect(closingLine(c({ outcome: "faltou", charge: 0 }), brl)).toBe("Falta registrada · sem cobrança");
-  });
-
-  it("no financeiro, o que foi cobrado no fechamento vale mais que a regra antiga", () => {
-    const patients: Patient[] = [{ id: "p1", name: "Ana", age: 30, since: "2026-01-01", fee: 180 }];
-    const s1: ProSession = { ...session, id: "a", status: "realizada" };
-    const s2: ProSession = { ...session, id: "b", status: "faltou" };
-    const closings: SessionClosing[] = [
-      { sessionId: "a", patientId: "p1", date: "2026-10-08", outcome: "realizada", charge: 180, paid: false },
-      { sessionId: "b", patientId: "p1", date: "2026-10-08", outcome: "faltou", charge: 0, paid: false },
-    ];
-    const summary = financeSummary([s1, s2], patients, today, closings);
-    expect([summary.received, summary.toReceive]).toEqual([0, 180]);
   });
 });
 

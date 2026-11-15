@@ -41,6 +41,7 @@ export const SESSION_STATUS_KEY = "psycare:pro:sessions:v1";
 export const CLOSINGS_KEY = "psycare:pro:closings:v1";
 export const ANAMNESIS_KEY = "psycare:pro:anamnesis:v1";
 export const GOALS_KEY = "psycare:pro:goals:v1";
+export const FEES_KEY = "psycare:pro:fees:v1";
 
 const NO_NOTES: SessionNote[] = [];
 const NO_ASSIGNED: ProAssignment[] = [];
@@ -48,6 +49,9 @@ const NO_STATUS: Record<string, ProSession["status"]> = {};
 const NO_CLOSINGS: SessionClosing[] = [];
 const NO_ANAMNESIS: Record<string, Anamnesis> = {};
 const NO_GOALS: Goal[] = [];
+const NO_FEES: Record<string, number> = {};
+/** Limite do valor da sessão, só para evitar erro de digitação (um zero a mais). */
+export const FEE_MAX = 5000;
 
 /** O que o profissional preencheu no "Encerrar sessão". */
 export interface CloseSessionInput extends ClosingInput {
@@ -80,6 +84,17 @@ export function usePro() {
   const [closings, setClosings] = useLocalStorage<SessionClosing[]>(CLOSINGS_KEY, NO_CLOSINGS);
   const [anamneses, setAnamneses] = useLocalStorage<Record<string, Anamnesis>>(ANAMNESIS_KEY, NO_ANAMNESIS);
   const [goals, setGoals] = useLocalStorage<Goal[]>(GOALS_KEY, NO_GOALS);
+  const [fees, setFees] = useLocalStorage<Record<string, number>>(FEES_KEY, NO_FEES);
+
+  /** Valor da sessão de cada paciente: o que o profissional definiu, ou o de exemplo. */
+  const patients = useMemo(() => PATIENTS.map((p) => ({ ...p, fee: fees[p.id] ?? p.fee })), [fees]);
+  const setFee = (patientId: string, value: number) => {
+    if (!Number.isFinite(value) || value < 0 || value > FEE_MAX) return;
+    setFees((current) => ({ ...current, [patientId]: Math.round(value * 100) / 100 }));
+  };
+  /** Cobrança pendente que foi paga depois. Só existe para o que nasceu no "Encerrar sessão". */
+  const markPaid = (sessionId: string) =>
+    setClosings((current) => current.map((c) => (c.sessionId === sessionId ? { ...c, paid: true } : c)));
 
   const sessions: ProSession[] = useMemo(
     () => demoSessions(today).map((s) => ({ ...s, status: statusMap[s.id] ?? s.status })),
@@ -163,7 +178,7 @@ export function usePro() {
   const closeSession = (session: ProSession, input: CloseSessionInput): string | null => {
     const error = closingError(input);
     if (error) return error;
-    const fee = PATIENTS.find((p) => p.id === session.patientId)?.fee ?? 0;
+    const fee = patients.find((p) => p.id === session.patientId)?.fee ?? 0;
     const closing = buildClosing(session, input, fee);
     setSessionStatus(session.id, closing.outcome);
     addNote(session.patientId, evolutionText(session, input), session.id);
@@ -176,7 +191,9 @@ export function usePro() {
 
   return {
     today,
-    patients: PATIENTS,
+    patients,
+    setFee,
+    markPaid,
     sharing,
     sessions,
     patientRequests: appointments.filter((a) => a.status === "pendente"),
