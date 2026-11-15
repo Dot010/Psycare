@@ -14,6 +14,11 @@ function getContext(create = false): AudioContext | null {
   return context;
 }
 
+/** O contexto de áudio já liberado (ou null). Para quem monta sons próprios, como a ilha. */
+export function audioContext(): AudioContext | null {
+  return getContext();
+}
+
 export function unlockAudio(): void {
   const ctx = getContext(true);
   if (ctx && ctx.state === "suspended") void ctx.resume();

@@ -34,11 +34,13 @@ import {
   rng,
   ROCK,
 } from "@/features/garden/island/scene/builders";
+import { Animals } from "@/features/garden/island/scene/Animals";
 import { Effects } from "@/features/garden/island/scene/Effects";
 import { makeFallenLeaves, makeFoliage, type Foliage } from "@/features/garden/island/scene/foliage";
 import { Fox } from "@/features/garden/island/scene/Fox";
 import { IslandGrass } from "@/features/garden/island/scene/IslandGrass";
 import { Sea } from "@/features/garden/island/scene/Sea";
+import { Weather } from "@/features/garden/island/scene/Weather";
 import type { PlantKind, PlantState } from "@/features/garden/types";
 
 export interface IslandCanvasProps {
@@ -58,6 +60,8 @@ export interface IslandCanvasProps {
   onSelectPlant?: (kind: PlantKind) => void;
   /** Entrada de cinema: a câmera desce do céu girando até a ilha. */
   intro?: boolean;
+  /** Está chovendo (a página decide quando chove, para o som acompanhar). */
+  raining?: boolean;
   /** A cena 3D já está na tela (para a intro começar junto). */
   onReady?: () => void;
 }
@@ -395,6 +399,7 @@ function Scene(props: IslandCanvasProps) {
     onPet,
     onSelectPlant,
     intro = false,
+    raining = false,
   } = props;
   const high = quality === "high";
   const fox = useRef(new Vector3(0, 0, 2));
@@ -457,6 +462,15 @@ function Scene(props: IslandCanvasProps) {
       ))}
       <IslandGrass count={high ? 18000 : 8000} fox={fox} animate={animate} season={season} />
       <Trees season={season} animate={animate} high={high} />
+      <Weather
+        raining={raining}
+        night={night}
+        animate={animate}
+        sky={sky}
+        haze={haze}
+        drops={high ? 1100 : 500}
+      />
+      <Animals night={night} animate={animate} fox={fox} />
       <Effects night={night} animate={animate} season={season} cabinOpen={selected === "cabana"} />
       <Places selected={selected} night={night} animate={animate} unlocked={unlocked} onSelect={onSelect} />
       <SmallPlaces onSelect={onSelect} />

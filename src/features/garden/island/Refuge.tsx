@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, CircleHelp, Droplets } from "lucide-react";
+import { ArrowLeft, CircleHelp, Droplets, Volume2, VolumeX } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
@@ -15,6 +15,7 @@ import type { useGarden } from "@/features/garden/hooks/useGarden";
 import { IslandPanel } from "@/features/garden/island/IslandPanel";
 import { foxRef, PLACES, SEASON_NAMES, seasonFor, type PlaceId } from "@/features/garden/island/places";
 import { useIsland } from "@/features/garden/island/useIsland";
+import { useIslandSound } from "@/features/garden/island/useIslandSound";
 import { useMediaQuery, usePrefersReducedMotion } from "@/lib/motion";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
@@ -80,6 +81,30 @@ export function Refuge({ garden }: { garden: Garden }) {
   const [joy, setJoy] = useState(0);
   const [note, setNote] = useState<string | null>(null);
 
+  // Chuvinha de vez em quando (nem sempre): a primeira chance vem logo, as outras demoram mais.
+  const [raining, setRaining] = useState(false);
+  useEffect(() => {
+    if (reduced) return;
+    let timer = 0;
+    const schedule = (wait: number) => {
+      timer = window.setTimeout(() => {
+        if (Math.random() < 0.45) {
+          setRaining(true);
+          timer = window.setTimeout(
+            () => {
+              setRaining(false);
+              schedule(240_000 + Math.random() * 300_000);
+            },
+            35_000 + Math.random() * 20_000,
+          );
+        } else schedule(180_000 + Math.random() * 240_000);
+      }, wait);
+    };
+    schedule(40_000 + Math.random() * 50_000);
+    return () => window.clearTimeout(timer);
+  }, [reduced]);
+  const sound = useIslandSound({ night, raining });
+
   // Intro: o nome aparece enquanto a câmera desce; some sozinho ou com um toque.
   const [sceneReady, setSceneReady] = useState(false);
   const [introDone, setIntroDone] = useState(false);
@@ -110,6 +135,7 @@ export function Refuge({ garden }: { garden: Garden }) {
   }, [garden.poured]);
 
   const pet = () => {
+    sound.pet();
     setNote(`${island.foxName ? `A ${island.foxName}` : "A raposa"} gostou do carinho.`);
     window.setTimeout(() => setNote(null), 2500);
   };
@@ -158,6 +184,7 @@ export function Refuge({ garden }: { garden: Garden }) {
             quality={compact ? "low" : "high"}
             joy={joy}
             intro={!skipped}
+            raining={raining}
             onReady={() => setSceneReady(true)}
             onSelect={setSelected}
             onGround={() => setSelected(null)}
@@ -215,7 +242,8 @@ export function Refuge({ garden }: { garden: Garden }) {
           <Link href="/dashboard/home" aria-label="Sair do refúgio" className={cn(pill, "px-3")}>
             <ArrowLeft className="size-5" aria-hidden />
           </Link>
-          <h1 className={cn(pill, "font-semibold")}>Seu refúgio</h1>
+          {/* No celular o nome fica só na intro: o topo precisa de espaço para gotas, som e ajuda. */}
+          <h1 className={cn(pill, "font-semibold whitespace-nowrap max-sm:sr-only")}>Seu refúgio</h1>
         </div>
         <div className="flex items-center gap-2">
           <Dialog>
@@ -263,6 +291,19 @@ export function Refuge({ garden }: { garden: Garden }) {
               <p className="text-xs text-muted-foreground">Dia sem gota é só um dia sem gota.</p>
             </DialogContent>
           </Dialog>
+          <button
+            type="button"
+            aria-pressed={sound.enabled}
+            aria-label={sound.enabled ? "Desligar o som" : "Ligar o som"}
+            onClick={sound.toggle}
+            className={cn(pill, "px-3")}
+          >
+            {sound.enabled ? (
+              <Volume2 className="size-5" aria-hidden />
+            ) : (
+              <VolumeX className="size-5" aria-hidden />
+            )}
+          </button>
           <CrisisButton placement="inline" />
         </div>
       </header>

@@ -37,4 +37,10 @@ describe("Refúgio em tela cheia", () => {
       "/dashboard/diary",
     );
   });
+
+  it("o som começa desligado e o botão liga", async () => {
+    render(<GardenView />);
+    await userEvent.click(screen.getByRole("button", { name: "Ligar o som" }));
+    expect(screen.getByRole("button", { name: "Desligar o som" })).toHaveAttribute("aria-pressed", "true");
+  });
 });
