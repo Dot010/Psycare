@@ -2,17 +2,23 @@
 
 import { Phone, X } from "lucide-react";
 import { useState } from "react";
+import { Page } from "@/components/layout/Page";
+import { PageColumns } from "@/components/layout/PageColumns";
+import { Block } from "@/components/ui/block";
 import { EmergencyCalls } from "@/features/safety/components/EmergencyCalls";
 import { useSafetyPlan } from "@/features/safety/hooks/useSafetyPlan";
 import {
+  filledSteps,
   MAX_CONTACTS,
   MAX_ITEM_LENGTH,
   MAX_ITEMS,
   phoneHref,
+  PLAN_STEPS,
   SAFETY_SECTIONS,
 } from "@/features/safety/logic";
 import { CONTACT_NAME_MAX, CONTACT_ROLE_MAX, contactSchema } from "@/features/safety/schema";
 import type { SafetyListKey } from "@/features/safety/types";
+import { cn } from "@/lib/utils";
 
 const inputClass =
   "h-11 min-w-0 rounded-xl border border-input bg-card px-3 text-sm text-foreground focus-visible:ring-3 focus-visible:ring-brand-600/40 focus-visible:outline-none";
@@ -22,7 +28,6 @@ const addButtonClass =
 function ItemSection({
   id,
   title,
-  hint,
   placeholder,
   items,
   onAdd,
@@ -30,7 +35,6 @@ function ItemSection({
 }: {
   id: SafetyListKey;
   title: string;
-  hint: string;
   placeholder: string;
   items: string[];
   onAdd: (text: string) => void;
@@ -39,14 +43,7 @@ function ItemSection({
   const [draft, setDraft] = useState("");
 
   return (
-    <section aria-labelledby={`safety-${id}`} className="space-y-3 border-t border-border pt-6">
-      <div>
-        <h2 id={`safety-${id}`} className="text-xl font-semibold text-brand-ink">
-          {title}
-        </h2>
-        <p className="text-sm text-muted-foreground">{hint}</p>
-      </div>
-
+    <div className="space-y-3">
       {items.length > 0 && (
         <ul className="space-y-1">
           {items.map((item, index) => (
@@ -96,7 +93,7 @@ function ItemSection({
           </button>
         </form>
       )}
-    </section>
+    </div>
   );
 }
 
@@ -119,14 +116,7 @@ function PeopleSection() {
   };
 
   return (
-    <section aria-labelledby="safety-people" className="space-y-3 border-t border-border pt-6">
-      <div>
-        <h2 id="safety-people" className="text-xl font-semibold text-brand-ink">
-          Pessoas de confiança
-        </h2>
-        <p className="text-sm text-muted-foreground">Quem eu posso chamar quando estiver difícil.</p>
-      </div>
-
+    <div className="space-y-3">
       {plan.contacts.length > 0 && (
         <ul className="space-y-1">
           {plan.contacts.map((contact) => (
@@ -207,53 +197,149 @@ function PeopleSection() {
           )}
         </form>
       )}
-    </section>
+    </div>
   );
 }
 
-/** O plano de segurança: escrito nos dias calmos, lido nos dias difíceis. Os telefones de emergência vêm primeiro. */
+interface Step {
+  key: SafetyListKey | "people";
+  title: string;
+  hint: string;
+  filled: string[];
+  body: React.ReactNode;
+}
+
+/**
+ * O plano de segurança: escrito nos dias calmos, lido nos dias difíceis.
+ * Os telefones de emergência ficam à mão na lateral; o plano vem em 5 passos, um aberto de cada vez.
+ */
 export default function SafetyView() {
   const { plan, addTo, removeFrom } = useSafetyPlan();
+  const filled = filledSteps(plan);
+
+  const list = (key: SafetyListKey): Step => {
+    const section = SAFETY_SECTIONS.find((item) => item.key === key)!;
+    return {
+      key,
+      title: section.title,
+      hint: section.hint,
+      filled: plan[key],
+      body: (
+        <ItemSection
+          id={key}
+          title={section.title}
+          placeholder={section.placeholder}
+          items={plan[key]}
+          onAdd={(text) => addTo(key, text)}
+          onRemove={(index) => removeFrom(key, index)}
+        />
+      ),
+    };
+  };
+  // A ordem segue a do plano de segurança usado na clínica: sinais, o que fazer sozinho,
+  // distrações, pessoas a quem pedir ajuda e, por último, deixar o ambiente seguro.
+  const steps: Step[] = [
+    list("warnings"),
+    list("coping"),
+    list("places"),
+    {
+      key: "people",
+      title: "Pessoas de confiança",
+      hint: "Quem eu posso chamar quando estiver difícil.",
+      filled: plan.contacts.map((contact) => contact.name),
+      body: <PeopleSection />,
+    },
+    list("safeEnv"),
+  ];
+  const firstEmpty = steps.findIndex((step) => step.filled.length === 0);
+  const [open, setOpen] = useState<number | null>(null);
+  const expanded = open ?? (firstEmpty === -1 ? null : firstEmpty);
 
   return (
-    <div className="bg-linear-to-b from-sun-100/80 to-transparent">
-      <div className="mx-auto w-full max-w-2xl space-y-8 px-5 pt-8 pb-16 md:px-8 md:pt-12">
-        <header className="space-y-4">
-          <h1 className="text-4xl leading-tight font-semibold text-ink">Você não está sozinho(a).</h1>
-          <p className="max-w-md text-lg leading-snug text-foreground">
-            Se você está em perigo agora ou pensando em se machucar, peça ajuda neste momento. A ligação é
-            gratuita.
-          </p>
-          <EmergencyCalls />
-        </header>
-
-        <section className="space-y-2">
-          <p className="text-xs font-medium tracking-widest text-brand-accent uppercase">Meu plano</p>
-          <p className="max-w-md text-base leading-relaxed text-foreground">
-            Escreva nos dias mais calmos, para ler nos dias difíceis. Fica só neste aparelho, e o botão de
-            ajuda do app mostra um resumo dele.
-          </p>
-        </section>
-
-        {SAFETY_SECTIONS.map((section) => (
-          <ItemSection
-            key={section.key}
-            id={section.key}
-            title={section.title}
-            hint={section.hint}
-            placeholder={section.placeholder}
-            items={plan[section.key]}
-            onAdd={(text) => addTo(section.key, text)}
-            onRemove={(index) => removeFrom(section.key, index)}
-          />
-        ))}
-
-        <PeopleSection />
+    <Page
+      title="Você não está sozinho(a)"
+      kicker="Plano de segurança"
+      description="Escreva nos dias mais calmos, para ler nos dias difíceis. Fica só neste aparelho."
+      width="wide"
+    >
+      <PageColumns
+        aside={
+          <>
+            <Block tone="danger" title="Em perigo agora?" className="[&_h2]:text-lg [&_h2]:text-danger-600">
+              <p className="mb-4 text-sm leading-relaxed">
+                Se você está pensando em se machucar, peça ajuda neste momento. A ligação é gratuita.
+              </p>
+              <EmergencyCalls />
+            </Block>
+            <Block title="No botão de ajuda">
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                O botão &quot;Preciso de ajuda agora&quot;, no topo do app, mostra um resumo deste plano.
+              </p>
+            </Block>
+          </>
+        }
+      >
+        <Block
+          title="Meu plano em 5 passos"
+          size="lg"
+          aside={
+            <span className="flex items-center gap-3">
+              <span aria-hidden className="block h-2.5 w-28 overflow-hidden rounded-full bg-brand-100">
+                <span
+                  className="block h-full rounded-full bg-primary transition-[width] duration-500"
+                  style={{ width: `${(filled / PLAN_STEPS) * 100}%` }}
+                />
+              </span>
+              <span className="font-semibold">
+                {filled} de {PLAN_STEPS}
+              </span>
+            </span>
+          }
+        >
+          <ol>
+            {steps.map((step, index) => {
+              const isOpen = expanded === index;
+              const done = step.filled.length > 0;
+              return (
+                <li key={step.key} className="border-t border-sunken first:border-t-0">
+                  <h3>
+                    <button
+                      type="button"
+                      aria-expanded={isOpen}
+                      onClick={() => setOpen(isOpen ? -1 : index)}
+                      className="flex min-h-16 w-full items-center gap-4 py-3 text-left focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
+                    >
+                      <span
+                        aria-hidden
+                        className={cn(
+                          "flex size-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold",
+                          done
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-brand-400 text-brand-ink",
+                        )}
+                      >
+                        {index + 1}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-base font-medium">{step.title}</span>
+                        <span className="block truncate text-sm text-muted-foreground">
+                          {done ? step.filled.join(" · ") : step.hint}
+                        </span>
+                      </span>
+                      <span className="sr-only">{done ? "(preenchido)" : "(vazio)"}</span>
+                    </button>
+                  </h3>
+                  {isOpen && <div className="animate-rise pb-5 pl-12">{step.body}</div>}
+                </li>
+              );
+            })}
+          </ol>
+        </Block>
 
         <p className="text-xs text-muted-foreground">
           Este plano é uma ajuda sua para você. Ele não substitui o acompanhamento com um profissional.
         </p>
-      </div>
-    </div>
+      </PageColumns>
+    </Page>
   );
 }

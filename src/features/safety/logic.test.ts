@@ -4,10 +4,12 @@ import {
   addItem,
   cleanPhone,
   EMPTY_PLAN,
+  filledSteps,
   isPlanEmpty,
   isValidPhone,
   MAX_ITEMS,
   phoneHref,
+  PLAN_STEPS,
   removeContact,
   removeItem,
 } from "@/features/safety/logic";
@@ -55,5 +57,20 @@ describe("telefones e contatos", () => {
   it("sabe quando o plano ainda está vazio", () => {
     expect(isPlanEmpty(EMPTY_PLAN)).toBe(true);
     expect(isPlanEmpty({ ...EMPTY_PLAN, coping: ["Respirar"] })).toBe(false);
+  });
+});
+
+describe("passos preenchidos", () => {
+  it("conta as listas com algum item e as pessoas, de 0 a 5", () => {
+    expect(PLAN_STEPS).toBe(5);
+    expect(filledSteps(EMPTY_PLAN)).toBe(0);
+    expect(
+      filledSteps({
+        ...EMPTY_PLAN,
+        warnings: ["durmo pouco"],
+        coping: ["respirar"],
+        contacts: [{ id: "c1", name: "Bia", role: "amiga", phone: "11999990000" }],
+      }),
+    ).toBe(3);
   });
 });
