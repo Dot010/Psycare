@@ -7,7 +7,9 @@ describe("Ajuda", () => {
     render(<HelpView />);
     expect(screen.getByRole("link", { name: "188" })).toHaveAttribute("href", "tel:188");
     expect(screen.getByText("Quem lê o meu diário?")).toBeInTheDocument();
-    expect(screen.getByText("Como o jardim cresce?")).toBeInTheDocument();
+    expect(screen.getByText("Como as plantas do Refúgio crescem?")).toBeInTheDocument();
+    // Sem formulário de chamado que não envia nada.
+    expect(screen.queryByText("Abrir chamado")).not.toBeInTheDocument();
     expect(screen.queryByText("Chat de suporte")).not.toBeInTheDocument();
     expect(screen.queryByText("Base de conhecimento")).not.toBeInTheDocument();
   });
