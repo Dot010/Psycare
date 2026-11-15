@@ -73,6 +73,8 @@ export const CLOSINGS_KEY = "psycare:pro:closings:v1";
 export const ANAMNESIS_KEY = "psycare:pro:anamnesis:v1";
 export const GOALS_KEY = "psycare:pro:goals:v1";
 export const FEES_KEY = "psycare:pro:fees:v1";
+export const ADDED_SESSIONS_KEY = "psycare:pro:added-sessions:v1";
+const NO_SESSIONS: ProSession[] = [];
 
 const NO_NOTES: SessionNote[] = [];
 const NO_ASSIGNED: ProAssignment[] = [];
@@ -106,7 +108,7 @@ export function usePro() {
   const { entries } = useDiary();
   const { records } = useActivities();
   const health = useHealth();
-  const { appointments, setStatus } = useAppointmentsAdmin();
+  const { appointments, setStatus, addAppointment } = useAppointmentsAdmin();
   const me = useMaybeProIdentity();
   const myName = me?.name ?? null;
   const isMine = (a: Agendamento) => !myName || a.profissional === myName;
@@ -123,6 +125,7 @@ export function usePro() {
   const [anamneses, setAnamneses] = useLocalStorage<Record<string, Anamnesis>>(ANAMNESIS_KEY, NO_ANAMNESIS);
   const [goals, setGoals] = useLocalStorage<Goal[]>(GOALS_KEY, NO_GOALS);
   const [fees, setFees] = useLocalStorage<Record<string, number>>(FEES_KEY, NO_FEES);
+  const [added, setAdded] = useLocalStorage<ProSession[]>(ADDED_SESSIONS_KEY, NO_SESSIONS);
 
   /** Valor da sessão de cada paciente: o que o profissional definiu, ou o de exemplo. */
   const patients = useMemo(
@@ -146,9 +149,41 @@ export function usePro() {
         status: statusMap[ownKey(myId, s.id)] ?? s.status,
       })),
       ...liveSessions(appointments, myName, today, statusMap),
+      ...added
+        .filter((s) => ownerOf(s) === myId)
+        .map((s) => ({ ...s, status: statusMap[ownKey(myId, s.id)] ?? s.status })),
     ],
-    [today, statusMap, appointments, myName, myId, specialty],
+    [today, statusMap, appointments, myName, myId, specialty, added],
   );
+
+  /**
+   * Marcar uma sessão pela agenda. Devolve o erro, se houver.
+   * Para o paciente de demonstração, a consulta aparece também em Consultas, já confirmada.
+   */
+  const addSession = (input: Pick<ProSession, "patientId" | "data" | "hora" | "tipo">): string | null => {
+    if (!PATIENTS.some((p) => p.id === input.patientId)) return "Escolha o paciente.";
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(input.data) || input.data < today)
+      return "Escolha um dia a partir de hoje.";
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(input.hora)) return "Escolha um horário válido.";
+    if (sessions.some((s) => s.data === input.data && s.hora === input.hora && s.status !== "cancelado"))
+      return "Você já tem uma sessão nesse horário.";
+    if (input.patientId === LIVE_PATIENT_ID && myName) {
+      addAppointment({
+        id: makeId("ag"),
+        profissional: myName,
+        data: input.data,
+        hora: input.hora,
+        tipo: input.tipo,
+        status: "confirmado",
+      });
+    } else {
+      setAdded((current) => [
+        ...current,
+        { ...input, id: makeId("sess"), status: "confirmado", proId: myId },
+      ]);
+    }
+    return null;
+  };
   // As cobranças do paciente de demonstração são de quem atendeu: cada profissional vê só as suas.
   const myClosings = closings.filter(
     (c) =>
@@ -304,6 +339,7 @@ export function usePro() {
     assigned,
     assign,
     setSessionStatus,
+    addSession,
     closings: myClosings,
     closeSession,
     snapshotOf,
@@ -317,5 +353,6 @@ function useAppointmentsAdmin() {
   const [, setAppointments] = useLocalStorage<typeof appointments>(APPOINTMENTS_KEY, mockUser.agendamentos);
   const setStatus = (id: string, status: "confirmado" | "cancelado") =>
     setAppointments((current) => current.map((a) => (a.id === id ? { ...a, status } : a)));
-  return { appointments, setStatus };
+  const addAppointment = (item: Agendamento) => setAppointments((current) => [...current, item]);
+  return { appointments, setStatus, addAppointment };
 }

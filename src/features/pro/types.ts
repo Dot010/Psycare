@@ -117,6 +117,8 @@ export interface ProSession {
   hora: string;
   tipo: "online" | "presencial";
   status: "confirmado" | "pendente" | "cancelado" | "realizada" | "faltou";
+  /** Quem marcou, nas sessões criadas pelo profissional na agenda. */
+  proId?: string;
 }
 
 /**
