@@ -127,6 +127,7 @@ export function Refuge({ garden }: { garden: Garden }) {
       foxName={island.foxName}
       plants={garden.plants}
       available={garden.available}
+      toNext={garden.toNext}
       pouring={garden.pouring}
       onPour={garden.pour}
       onClose={() => setSelected(null)}

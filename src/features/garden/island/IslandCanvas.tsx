@@ -11,7 +11,7 @@ import {
   type MeshToonMaterial,
   type PerspectiveCamera,
 } from "three";
-import { Plant, type BumpRef } from "@/features/garden/components/Plants";
+import { Plant, PLANT_SPOTS, type BumpRef } from "@/features/garden/components/Plants";
 import {
   heightAt,
   PLACES,
@@ -21,7 +21,8 @@ import {
   type Unlock,
 } from "@/features/garden/island/places";
 import {
-  makeBed,
+  BED_SPOTS,
+  makeBeds,
   makeBlob,
   makeCabin,
   makeDock,
@@ -241,7 +242,7 @@ function Places({
     () =>
       [
         ["CABANA", -2.4, 1.4, 4.4],
-        ["CANTEIROS", BED_AT.x, BED_AT.z + 2.5, 3.6],
+        ["CANTEIROS", BED_AT.x, BED_AT.z + 2.85, 3.6],
         ["FAROL", 5.9, -3.4, 3.6],
       ].map(([text, x, z, w]) => {
         const m = makeGroundLabel(text as string, w as number);
@@ -399,7 +400,7 @@ function Scene(props: IslandCanvasProps) {
   const fox = useRef(new Vector3(0, 0, 2));
   const bumps: BumpRef = useRef({});
   const body = useMemo(() => makeIslandBody(), []);
-  const bed = useMemo(() => makeBed(), []);
+  const beds = useMemo(() => makeBeds(), []);
   const rocks = useMemo(() => {
     const r = rng(5);
     return Array.from({ length: 10 }, (_, i) => {
@@ -460,7 +461,8 @@ function Scene(props: IslandCanvasProps) {
       <Places selected={selected} night={night} animate={animate} unlocked={unlocked} onSelect={onSelect} />
       <SmallPlaces onSelect={onSelect} />
 
-      {/* Canteiro grande com as plantas do jardim (as mesmas gotas, as mesmas plantas). */}
+      {/* Os canteiros com as plantas do jardim (as mesmas gotas, as mesmas plantas): uma por canteiro,
+          na ordem em que nascem. Canteiro sem planta mostra um montinho de terra com estaca. */}
       <group
         position={[BED_AT.x, heightAt(BED_AT.x, BED_AT.z) - 0.1, BED_AT.z]}
         onClick={(event) => {
@@ -469,20 +471,28 @@ function Scene(props: IslandCanvasProps) {
           onSelect("canteiros");
         }}
       >
-        <primitive object={bed} />
-        <group position-y={0.22}>
-          {plants.map((plant, index) => (
-            <Plant
-              key={plant.kind}
-              kind={plant.kind}
-              growth={plant.growth}
-              index={index}
-              sway={animate}
-              bumps={bumps}
-              onSelect={onSelectPlant}
-            />
-          ))}
-        </group>
+        <primitive object={beds.group} />
+        {beds.seedSpots.map((spot, k) => (
+          <primitive key={k} object={spot} visible={!plants[k]} />
+        ))}
+        {plants.slice(0, BED_SPOTS.length).map((plant, index) => {
+          const [bx, bz] = BED_SPOTS[index];
+          const [px, pz] = PLANT_SPOTS[plant.kind];
+          return (
+            <group key={plant.kind} position={[bx, 0.3, bz]} scale={0.78}>
+              <group position={[-px, 0, -pz]}>
+                <Plant
+                  kind={plant.kind}
+                  growth={plant.growth}
+                  index={index}
+                  sway={animate}
+                  bumps={bumps}
+                  onSelect={onSelectPlant}
+                />
+              </group>
+            </group>
+          );
+        })}
       </group>
 
       <Suspense fallback={null}>

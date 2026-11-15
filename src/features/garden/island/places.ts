@@ -28,7 +28,7 @@ export const PLACES: Place[] = [
     href: "/dashboard/garden",
     x: 4.5,
     z: 3,
-    stop: [3.2, 4.4],
+    stop: [2.5, 5.1],
   },
   {
     id: "cabana",
@@ -95,7 +95,7 @@ export const WALK_RADIUS = 10.6;
 export const OBSTACLES: { x: number; z: number; r: number }[] = [
   { x: -4, z: -2, r: 2.2 },
   { x: 8, z: -6, r: 1.4 },
-  { x: 4.5, z: 3, r: 1.9 },
+  { x: 4.5, z: 3, r: 2.3 },
 ];
 
 /** Altura do chão da ilha num ponto: ondulação leve que some na borda. */

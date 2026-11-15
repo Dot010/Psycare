@@ -9,6 +9,9 @@ const PLANTS: { kind: PlantKind; appearsAt: number; fullAt: number }[] = [
   { kind: "lavender", appearsAt: 24, fullAt: 44 },
 ];
 
+/** A ordem em que as plantas nascem (um canteiro para cada uma, na ilha). */
+export const PLANT_ORDER: PlantKind[] = PLANTS.map((plant) => plant.kind);
+
 export const PLANT_NAMES: Record<PlantKind, string> = {
   sunflower: "Girassol",
   daisy: "Margarida",

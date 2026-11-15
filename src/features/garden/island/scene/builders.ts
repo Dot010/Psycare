@@ -469,25 +469,145 @@ export function makeDock(): { group: Group; boat: Group } {
   return { group: g, boat };
 }
 
-/** Canteiro grande de madeira onde ficam as plantas do jardim. */
-export function makeBed(): Group {
+/** Onde fica cada canteiro, a partir do centro do lugar: 4 canteiros em quadrado, com caminho no meio. */
+export const BED_SPOTS: [number, number][] = [
+  [-0.98, -0.98],
+  [0.98, -0.98],
+  [-0.98, 0.98],
+  [0.98, 0.98],
+];
+const BED_W = 1.45;
+
+/** Um canteiro elevado: tábuas em duas alturas, postes nos cantos, terra com sulcos e pedrinhas. */
+function makeBed(seed: number): Group {
+  const r = rng(seed);
   const g = new Group();
-  const W = 3.4;
-  const H = 0.3;
-  const T = 0.14;
+  const W = BED_W;
+  const T = 0.1;
+  const plank = (y: number, h: number) =>
+    [
+      [0, W / 2 - T / 2, W, T],
+      [0, -W / 2 + T / 2, W, T],
+      [W / 2 - T / 2, 0, T, W - 2 * T],
+      [-W / 2 + T / 2, 0, T, W - 2 * T],
+    ].forEach(([x, z, w, d]) =>
+      g.add(
+        mesh(
+          new BoxGeometry(w, h, d),
+          toon(new Color(0xb08660).offsetHSL((r() - 0.5) * 0.02, 0, (r() - 0.5) * 0.08).getHex()),
+          x,
+          y,
+          z,
+        ),
+      ),
+    );
+  plank(0.08, 0.15);
+  plank(0.24, 0.15);
+  // Postes nos cantos, um pouco mais altos, com uma tampinha.
   [
-    [0, W / 2 - T / 2, W, T],
-    [0, -W / 2 + T / 2, W, T],
-    [W / 2 - T / 2, 0, T, W - 2 * T],
-    [-W / 2 + T / 2, 0, T, W - 2 * T],
-  ].forEach(([x, z, w, d], k) =>
-    g.add(mesh(new BoxGeometry(w, H, d), toon(k % 2 ? 0xb08660 : 0xa57c56), x, H / 2 - 0.04, z)),
+    [1, 1],
+    [1, -1],
+    [-1, 1],
+    [-1, -1],
+  ].forEach(([sx, sz]) => {
+    const x = (sx * (W - T)) / 2;
+    const z = (sz * (W - T)) / 2;
+    g.add(mesh(new BoxGeometry(0.15, 0.42, 0.15), toon(0x8a5a3c), x, 0.2, z));
+    g.add(mesh(new BoxGeometry(0.18, 0.04, 0.18), toon(0x76492f), x, 0.43, z));
+  });
+  // Terra fofa, um pouco abaulada, com sulcos e pedrinhas.
+  const soil = new BoxGeometry(W - 2 * T, 0.12, W - 2 * T, 4, 1, 4);
+  const pos = soil.attributes.position;
+  for (let i = 0; i < pos.count; i++)
+    if (pos.getY(i) > 0) pos.setY(i, pos.getY(i) + (1 - Math.hypot(pos.getX(i), pos.getZ(i)) / W) * 0.06);
+  soil.computeVertexNormals();
+  g.add(mesh(soil, toon(0x5c4033), 0, 0.24, 0, false));
+  [-0.38, 0, 0.38].forEach((z) =>
+    g.add(mesh(new BoxGeometry(W - 2 * T - 0.12, 0.04, 0.09), toon(0x4a3328), 0, 0.33, z, false)),
   );
-  const soil = mesh(new BoxGeometry(W - 2 * T, 0.22, W - 2 * T), toon(0x5c4033), 0, 0.1, 0, false);
-  g.add(soil);
-  for (let k = -2; k <= 2; k++)
-    g.add(mesh(new BoxGeometry(W - 2 * T - 0.04, 0.05, 0.14), toon(0x5c4033), 0, 0.225, k * 0.6, false));
+  for (let k = 0; k < 3; k++)
+    g.add(
+      mesh(
+        new DodecahedronGeometry(0.035 + r() * 0.025, 0),
+        toon(0xb9b0a4),
+        (r() - 0.5) * (W - 0.4),
+        0.33,
+        (r() - 0.5) * (W - 0.4),
+        false,
+      ),
+    );
   return g;
+}
+
+/** Montinho de terra com uma estaca: o canteiro que ainda vai ganhar planta. */
+function makeSeedSpot(): Group {
+  const g = new Group();
+  const mound = mesh(new IcosahedronGeometry(0.22, 1), toon(0x6b4a3a), 0, 0.3, 0, false);
+  mound.scale.set(1, 0.35, 1);
+  g.add(mound);
+  g.add(mesh(new BoxGeometry(0.04, 0.42, 0.04), toon(0xc9a27a), 0.28, 0.5, -0.12));
+  g.add(mesh(new BoxGeometry(0.2, 0.13, 0.025), toon(0xfdfcf9), 0.28, 0.68, -0.1));
+  return g;
+}
+
+/** Regador azul: corpo, bico e alça. */
+function makeWateringCan(): Group {
+  const g = new Group();
+  const color = toon(0x6fa8c8);
+  g.add(mesh(new CylinderGeometry(0.17, 0.19, 0.3, 10), color, 0, 0.15, 0));
+  const spout = mesh(new CylinderGeometry(0.025, 0.04, 0.42, 6), color, 0.24, 0.24, 0);
+  spout.rotation.z = -0.9;
+  g.add(spout);
+  g.add(mesh(new CylinderGeometry(0.06, 0.04, 0.05, 8), toon(0x5a8fae), 0.4, 0.37, 0));
+  const handle = mesh(new TorusGeometry(0.12, 0.022, 6, 12, Math.PI), color, -0.02, 0.3, 0);
+  g.add(handle);
+  return g;
+}
+
+/**
+ * Os canteiros: 4 canteiros elevados com caminho de pedras no meio, um regador e um saquinho.
+ * `seedSpots[k]` é o montinho do canteiro k (fica fora do grupo: some quando a planta nasce ali).
+ */
+export function makeBeds(): { group: Group; seedSpots: Group[] } {
+  const group = new Group();
+  const seedSpots: Group[] = [];
+  BED_SPOTS.forEach(([x, z], k) => {
+    const bed = makeBed(80 + k);
+    bed.position.set(x, 0, z);
+    bed.rotation.y = (k % 2 ? 1 : -1) * 0.03;
+    group.add(bed);
+    const spot = makeSeedSpot();
+    spot.position.set(x, 0, z);
+    seedSpots.push(spot);
+  });
+  // Caminho de pedras chatas em cruz, entre os canteiros.
+  const r = rng(91);
+  for (let i = -3; i <= 3; i++)
+    [
+      [i * 0.32, 0],
+      [0, i * 0.32],
+    ].forEach(([x, z]) => {
+      if (i === 0 && x === 0 && z !== 0) return;
+      const stone = mesh(
+        new CylinderGeometry(0.13 + r() * 0.03, 0.15, 0.04, 7),
+        toon(new Color(0xd8cfc2).offsetHSL(0, 0, (r() - 0.5) * 0.08).getHex()),
+        x + (r() - 0.5) * 0.06,
+        0.1,
+        z + (r() - 0.5) * 0.06,
+        false,
+      );
+      stone.rotation.y = r() * Math.PI;
+      group.add(stone);
+    });
+  const can = makeWateringCan();
+  can.position.set(1.95, 0.08, 0.2);
+  can.rotation.y = 2.4;
+  group.add(can);
+  const sack = mesh(new IcosahedronGeometry(0.2, 1), toon(0xd9c39a), -1.95, 0.25, -0.3);
+  sack.scale.set(1, 1.25, 0.9);
+  group.add(sack);
+  group.add(mesh(new CylinderGeometry(0.05, 0.08, 0.1, 6), toon(0xb89c6e), -1.95, 0.52, -0.3));
+  return { group, seedSpots };
 }
 
 /** O que a ilha ganha com o uso: banco, lanternas, casinha de passarinho e bandeirinhas. */
