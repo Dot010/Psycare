@@ -14,16 +14,35 @@ import { upsertById } from "@/lib/list";
 import { useLocalStorage } from "@/lib/useLocalStorage";
 import { demoSessions, demoSnapshot, LIVE_PATIENT_ID, PATIENTS } from "../data";
 import { buildSnapshot, DEFAULT_SHARING, SHARING_KEY } from "../snapshot";
-import type { PatientSnapshot, ProAssignment, ProSession, SessionNote, Sharing } from "../types";
+import { buildClosing, closingError, evolutionText, type ClosingInput } from "../logic";
+import type {
+  PatientSnapshot,
+  ProAssignment,
+  ProSession,
+  SessionClosing,
+  SessionNote,
+  Sharing,
+} from "../types";
 import { makeId } from "@/features/activities/logic";
 
 export const NOTES_KEY = "psycare:pro:notes:v1";
 export const PRO_ASSIGNED_KEY = "psycare:pro:assigned:v1";
 export const SESSION_STATUS_KEY = "psycare:pro:sessions:v1";
+export const CLOSINGS_KEY = "psycare:pro:closings:v1";
 
 const NO_NOTES: SessionNote[] = [];
 const NO_ASSIGNED: ProAssignment[] = [];
 const NO_STATUS: Record<string, ProSession["status"]> = {};
+const NO_CLOSINGS: SessionClosing[] = [];
+
+/** O que o profissional preencheu no "Encerrar sessão". */
+export interface CloseSessionInput extends ClosingInput {
+  paid: boolean;
+  /** Tarefa para casa, opcional: vira um pedido em Atividades do paciente. */
+  homework?: { kind: ProAssignment["kind"]; dueDate: string };
+  /** Quem está encerrando (aparece no pedido da tarefa). */
+  by: string;
+}
 
 /** Preferência do paciente sobre o que o profissional pode ver. */
 export function useSharing() {
@@ -44,6 +63,7 @@ export function usePro() {
   const [assigned, setAssigned] = useLocalStorage<ProAssignment[]>(PRO_ASSIGNED_KEY, NO_ASSIGNED);
   const [, setPatientAssignments] = useLocalStorage<Assignment[]>(ASSIGNMENTS_KEY, []);
   const [statusMap, setStatusMap] = useLocalStorage(SESSION_STATUS_KEY, NO_STATUS);
+  const [closings, setClosings] = useLocalStorage<SessionClosing[]>(CLOSINGS_KEY, NO_CLOSINGS);
 
   const sessions: ProSession[] = useMemo(
     () => demoSessions(today).map((s) => ({ ...s, status: statusMap[s.id] ?? s.status })),
@@ -66,10 +86,13 @@ export function usePro() {
     return demoSnapshot(patientId, today);
   };
 
-  const addNote = (patientId: string, text: string) => {
-    const clean = text.trim().slice(0, 2000);
+  const addNote = (patientId: string, text: string, sessionId?: string) => {
+    const clean = text.trim().slice(0, 4000);
     if (!clean) return;
-    setNotes((current) => [{ id: makeId("nota"), patientId, date: today, text: clean }, ...current]);
+    setNotes((current) => [
+      { id: makeId("nota"), patientId, date: today, text: clean, sessionId },
+      ...current,
+    ]);
   };
   const removeNote = (id: string) => setNotes((current) => current.filter((n) => n.id !== id));
 
@@ -101,6 +124,25 @@ export function usePro() {
   const setSessionStatus = (id: string, status: ProSession["status"]) =>
     setStatusMap((current) => ({ ...current, [id]: status }));
 
+  /**
+   * Encerrar sessão: um passo só que hoje eram três soltos.
+   * Marca realizada ou falta, guarda a evolução no prontuário, lança a cobrança
+   * e, se tiver, manda a tarefa para casa. Devolve o erro, se faltar algo.
+   */
+  const closeSession = (session: ProSession, input: CloseSessionInput): string | null => {
+    const error = closingError(input);
+    if (error) return error;
+    const fee = PATIENTS.find((p) => p.id === session.patientId)?.fee ?? 0;
+    const closing = buildClosing(session, input, fee);
+    setSessionStatus(session.id, closing.outcome);
+    addNote(session.patientId, evolutionText(session, input), session.id);
+    setClosings((current) => [...current.filter((c) => c.sessionId !== session.id), closing]);
+    if (input.homework && closing.outcome === "realizada") {
+      assign(session.patientId, input.homework.kind, input.homework.dueDate, "", input.by);
+    }
+    return null;
+  };
+
   return {
     today,
     patients: PATIENTS,
@@ -114,6 +156,8 @@ export function usePro() {
     assigned,
     assign,
     setSessionStatus,
+    closings,
+    closeSession,
     snapshotOf,
     activities: records,
   };
