@@ -12,6 +12,8 @@ import { GardenFallback } from "@/features/garden/components/GardenFallback";
 import { WaterHelp } from "@/features/garden/components/WaterHelp";
 import { WeekStrip } from "@/features/garden/components/WeekStrip";
 import type { useGarden } from "@/features/garden/hooks/useGarden";
+import { grantWater } from "@/features/garden/water";
+import { tripSeconds, tripStatus } from "@/features/garden/island/boatTrip";
 import { IslandPanel } from "@/features/garden/island/IslandPanel";
 import { foxRef, PLACES, SEASON_NAMES, seasonFor, type PlaceId } from "@/features/garden/island/places";
 import { useIsland } from "@/features/garden/island/useIsland";
@@ -105,6 +107,41 @@ export function Refuge({ garden }: { garden: Garden }) {
   }, [reduced]);
   const sound = useIslandSound({ night, raining });
 
+  // Travessia de barco respirando: o relógio fica aqui, a cena só acompanha.
+  const [trip, setTrip] = useState<{ startedAt: number; cycles: number } | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  const [arrived, setArrived] = useState(false);
+  const addTrip = useRef(island.addTrip);
+  useEffect(() => {
+    addTrip.current = island.addTrip;
+  });
+  useEffect(() => {
+    if (!trip || arrived) return;
+    const id = window.setInterval(() => {
+      const seconds = (performance.now() - trip.startedAt) / 1000;
+      setElapsed(seconds);
+      if (seconds >= tripSeconds(trip.cycles)) {
+        window.clearInterval(id);
+        setArrived(true);
+        // Respirar é um cuidado: rende a gota do dia (uma vez por dia, como na página de respiração).
+        grantWater("breathing");
+        addTrip.current();
+      }
+    }, 200);
+    return () => window.clearInterval(id);
+  }, [trip, arrived]);
+  const startTrip = (cycles: number) => {
+    setSelected(null);
+    setArrived(false);
+    setElapsed(0);
+    setTrip({ startedAt: performance.now(), cycles });
+  };
+  const endTrip = () => {
+    setTrip(null);
+    setArrived(false);
+  };
+  const breath = trip && !arrived ? tripStatus(elapsed, trip.cycles) : null;
+
   // Intro: o nome aparece enquanto a câmera desce; some sozinho ou com um toque.
   const [sceneReady, setSceneReady] = useState(false);
   const [introDone, setIntroDone] = useState(false);
@@ -156,6 +193,7 @@ export function Refuge({ garden }: { garden: Garden }) {
       toNext={garden.toNext}
       pouring={garden.pouring}
       onPour={garden.pour}
+      onStartTrip={startTrip}
       onClose={() => setSelected(null)}
     />
   ) : null;
@@ -185,6 +223,7 @@ export function Refuge({ garden }: { garden: Garden }) {
             joy={joy}
             intro={!skipped}
             raining={raining}
+            trip={trip}
             onReady={() => setSceneReady(true)}
             onSelect={setSelected}
             onGround={() => setSelected(null)}
@@ -363,7 +402,7 @@ export function Refuge({ garden }: { garden: Garden }) {
       )}
 
       {/* O cartão do lugar: ao lado nas telas largas, embaixo (rolando) no celular. */}
-      {panel && (
+      {panel && !trip && (
         <div
           className={cn(
             "absolute inset-x-3 bottom-[calc(7.5rem+env(safe-area-inset-bottom))] max-h-[44dvh] overflow-y-auto rounded-3xl md:inset-x-auto md:top-24 md:right-5 md:bottom-auto md:max-h-[calc(100dvh-14rem)] md:w-80",
@@ -374,11 +413,72 @@ export function Refuge({ garden }: { garden: Garden }) {
         </div>
       )}
 
+      {/* No barco: o guia da respiração embaixo, no meio. */}
+      {trip && (
+        <div className="absolute inset-x-3 bottom-[max(1rem,env(safe-area-inset-bottom))] mx-auto max-w-sm rounded-3xl border border-white/60 bg-card/90 p-5 text-center shadow-lg backdrop-blur-md">
+          {arrived ? (
+            <>
+              <p className="text-xs font-semibold tracking-[0.2em] text-muted-foreground uppercase">
+                Você chegou
+              </p>
+              <h2 className="mt-1 text-2xl font-semibold">A ilhota</h2>
+              <p className="mt-2 text-sm">
+                {trip.cycles} respirações até aqui, com {foxRef(island.foxName)}. Respirar conta como cuidado:
+                rende a gota do dia.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Se ficou tonto(a), respire normal por um tempo. Não precisa fazer de novo agora.
+              </p>
+              <button
+                type="button"
+                onClick={endTrip}
+                className="mt-4 min-h-11 w-full rounded-full bg-strong px-5 text-sm font-medium text-white focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
+              >
+                Voltar para casa
+              </button>
+            </>
+          ) : (
+            <>
+              <p aria-live="polite" className="text-3xl font-semibold">
+                {breath?.kind === "exhale" ? "Solte devagar" : (breath?.label ?? "Inspire")}
+              </p>
+              <p className="mt-1 text-5xl leading-none font-semibold tabular-nums" aria-hidden>
+                {breath?.remaining ?? ""}
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Respiração {Math.min(breath?.cycle ?? 1, trip.cycles)} de {trip.cycles}
+              </p>
+              <div
+                role="progressbar"
+                aria-label="Caminho até a ilhota"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round((elapsed / tripSeconds(trip.cycles)) * 100)}
+                className="mt-3 h-2 overflow-hidden rounded-full bg-brand-100"
+              >
+                <div
+                  className="h-full rounded-full bg-brand-600 transition-[width] duration-200"
+                  style={{ width: `${Math.min(100, (elapsed / tripSeconds(trip.cycles)) * 100)}%` }}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={endTrip}
+                className="mt-4 min-h-11 rounded-full border border-border px-5 text-sm focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
+              >
+                Parar e voltar
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
       {/* Embaixo: os lugares e uma linha sobre a ilha. */}
       <div
         className={cn(
           "absolute inset-x-0 bottom-0 space-y-2 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:p-5",
           hud,
+          trip && "hidden",
         )}
       >
         <nav

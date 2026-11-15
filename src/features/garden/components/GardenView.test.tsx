@@ -43,4 +43,15 @@ describe("Refúgio em tela cheia", () => {
     await userEvent.click(screen.getByRole("button", { name: "Ligar o som" }));
     expect(screen.getByRole("button", { name: "Desligar o som" })).toHaveAttribute("aria-pressed", "true");
   });
+
+  it("no cais, sai de barco respirando e dá para parar", async () => {
+    render(<GardenView />);
+    const places = screen.getByRole("navigation", { name: "Lugares da ilha" });
+    await userEvent.click(within(places).getByRole("button", { name: "Cais" }));
+    await userEvent.click(screen.getByRole("button", { name: /3 respirações/ }));
+    expect(screen.getByText("Respiração 1 de 3")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar", { name: "Caminho até a ilhota" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Parar e voltar" }));
+    expect(screen.queryByText("Respiração 1 de 3")).not.toBeInTheDocument();
+  });
 });

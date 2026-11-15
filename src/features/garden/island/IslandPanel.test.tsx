@@ -35,6 +35,17 @@ describe("cartão do lugar na ilha", () => {
     );
   });
 
+  it("no cais, dá para sair de barco respirando, ou ir para a respiração completa", async () => {
+    const onStartTrip = vi.fn();
+    render(<IslandPanel {...base} place="cais" foxName="Mel" onStartTrip={onStartTrip} />);
+    await userEvent.click(screen.getByRole("button", { name: /5 respirações/ }));
+    expect(onStartTrip).toHaveBeenCalledWith(5);
+    expect(screen.getByRole("link", { name: "Mais exercícios de respiração" })).toHaveAttribute(
+      "href",
+      "/dashboard/breathing",
+    );
+  });
+
   it("nos canteiros, regar só funciona com gotas", async () => {
     const onPour = vi.fn();
     const { rerender } = render(<IslandPanel {...base} place="canteiros" onPour={onPour} />);

@@ -1,7 +1,15 @@
 "use client";
 
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MutableRefObject,
+} from "react";
 import {
   PCFShadowMap,
   Vector3,
@@ -27,6 +35,7 @@ import {
   makeCabin,
   makeDock,
   makeGroundLabel,
+  makeIslet,
   makeIslandBody,
   makeLighthouse,
   makeTree,
@@ -34,6 +43,7 @@ import {
   rng,
   ROCK,
 } from "@/features/garden/island/scene/builders";
+import { breathAt } from "@/features/garden/island/boatTrip";
 import { Animals } from "@/features/garden/island/scene/Animals";
 import { Effects } from "@/features/garden/island/scene/Effects";
 import { makeFallenLeaves, makeFoliage, type Foliage } from "@/features/garden/island/scene/foliage";
@@ -62,6 +72,8 @@ export interface IslandCanvasProps {
   intro?: boolean;
   /** Está chovendo (a página decide quando chove, para o som acompanhar). */
   raining?: boolean;
+  /** Travessia de barco respirando: quando saiu do cais e quantas respirações. */
+  trip?: { startedAt: number; cycles: number } | null;
   /** A cena 3D já está na tela (para a intro começar junto). */
   onReady?: () => void;
 }
@@ -79,10 +91,13 @@ function CameraRig({
   selected,
   animate,
   intro,
+  follow,
 }: {
   selected: PlaceId | null;
   animate: boolean;
   intro: boolean;
+  /** Na travessia, a câmera acompanha o barco. */
+  follow: MutableRefObject<Vector3> | null;
 }) {
   const target = useRef(new Vector3(0, 1, 0));
   const cur = useRef({ r: 25, theta: 0.5, phi: 0.84 });
@@ -121,14 +136,18 @@ function CameraRig({
 
   useFrame(({ camera, size }, delta) => {
     const place = selected ? placeById(selected) : null;
-    const goal = place ? new Vector3(place.x, 1.6, place.z) : new Vector3(0, 1, 0);
+    const goal = follow
+      ? new Vector3(follow.current.x, 1.5, follow.current.z)
+      : place
+        ? new Vector3(place.x, 1.6, place.z)
+        : new Vector3(0, 1, 0);
     const aspect = size.width / size.height;
     const portrait = aspect < 1;
     // Tela em pé: recua só um pouco e olha mais de cima (assim a ilha não fica minúscula).
     const fit = portrait ? Math.min(2, 0.95 / aspect) : Math.max(1, 1.55 / aspect);
-    const base = place ? (place.id === "cabana" ? 12 : place.id === "farol" ? 18 : 14) : 25;
+    const base = follow ? 20 : place ? (place.id === "cabana" ? 12 : place.id === "farol" ? 18 : 14) : 25;
     const r = base * fit;
-    const phi = place?.id === "cabana" ? 0.62 : portrait ? 0.62 : 0.84;
+    const phi = follow ? 0.95 : place?.id === "cabana" ? 0.62 : portrait ? 0.62 : 0.84;
     const theta = (place ? Math.atan2(place.x, place.z) + 0.35 : 0.5) + spin.current.yaw;
     const k = animate ? Math.min(1, delta * 2.5) : 1;
     target.current.lerp(goal, k);
@@ -232,16 +251,27 @@ function Trees({ season, animate, high }: { season: Season; animate: boolean; hi
   );
 }
 
+const DOCK_AT: [number, number] = [-1, 12.5];
+const BOAT_HOME: [number, number] = [2.6, 3.5];
+const BOAT_AWAY: [number, number] = [6.6, 19.5];
+
 function Places({
   selected,
   night,
   animate,
   unlocked,
   onSelect,
-}: Pick<IslandCanvasProps, "selected" | "night" | "animate" | "unlocked" | "onSelect">) {
+  trip,
+  boatAt,
+}: Pick<IslandCanvasProps, "selected" | "night" | "animate" | "unlocked" | "onSelect"> & {
+  trip: IslandCanvasProps["trip"];
+  /** Onde o barco está no mundo (a câmera e a raposa usam). */
+  boatAt: MutableRefObject<Vector3>;
+}) {
   const cabin = useMemo(() => makeCabin(), []);
   const light = useMemo(() => makeLighthouse(), []);
   const dock = useMemo(() => makeDock(), []);
+  const islet = useMemo(() => makeIslet(), []);
   const labels = useMemo(
     () =>
       [
@@ -279,7 +309,17 @@ function Places({
     l.cabin.roof.position.y = l.roofLift * 4.2;
     l.cabin.roof.rotation.z = l.roofLift * 0.12;
     if (animate) l.light.beam.rotation.y += delta * 0.7;
-    l.dock.boat.position.y = Math.sin(performance.now() * 0.0012) * 0.12 - 0.05;
+    // O barco: no cais, ou indo para a ilhota enquanto a pessoa respira (a vela enche com o ar).
+    const boat = l.dock.boat;
+    const breath = trip ? breathAt((performance.now() - trip.startedAt) / 1000, trip.cycles) : null;
+    const travel = breath ? breath.travel : 0;
+    const k = animate ? Math.min(1, delta * (breath ? 2 : 0.8)) : 1;
+    boat.position.x += (BOAT_HOME[0] + (BOAT_AWAY[0] - BOAT_HOME[0]) * travel - boat.position.x) * k;
+    boat.position.z += (BOAT_HOME[1] + (BOAT_AWAY[1] - BOAT_HOME[1]) * travel - boat.position.z) * k;
+    boat.position.y = Math.sin(performance.now() * 0.0012) * 0.12 - 0.05;
+    const sail = breath ? 0.35 + 0.65 * breath.fill : 1;
+    l.dock.sail.scale.y += (sail - l.dock.sail.scale.y) * (animate ? Math.min(1, delta * 6) : 1);
+    boatAt.current.set(DOCK_AT[0] + boat.position.x, boat.position.y, DOCK_AT[1] + boat.position.z);
   });
 
   const click = (id: PlaceId) => (event: ThreeEvent<MouseEvent>) => {
@@ -306,7 +346,10 @@ function Places({
       <group position={[8, heightAt(8, -6) - 0.2, -6]} onClick={click("farol")} {...hover}>
         <primitive object={light.group} />
       </group>
-      <group position={[-1, 0, 12.5]} onClick={click("cais")} {...hover}>
+      <group position={[DOCK_AT[0] + BOAT_AWAY[0] + 1.2, 0, DOCK_AT[1] + BOAT_AWAY[1] + 3.6]}>
+        <primitive object={islet} />
+      </group>
+      <group position={[DOCK_AT[0], 0, DOCK_AT[1]]} onClick={click("cais")} {...hover}>
         <primitive object={dock.group} />
       </group>
       {labels.map((m, i) => (
@@ -400,9 +443,11 @@ function Scene(props: IslandCanvasProps) {
     onSelectPlant,
     intro = false,
     raining = false,
+    trip = null,
   } = props;
   const high = quality === "high";
   const fox = useRef(new Vector3(0, 0, 2));
+  const boatAt = useRef(new Vector3(1.6, 0, 16));
   const bumps: BumpRef = useRef({});
   const body = useMemo(() => makeIslandBody(), []);
   const beds = useMemo(() => makeBeds(), []);
@@ -446,7 +491,7 @@ function Scene(props: IslandCanvasProps) {
         shadow-camera-bottom={-22}
         shadow-bias={-0.0008}
       />
-      <CameraRig selected={selected} animate={animate} intro={intro} />
+      <CameraRig selected={selected} animate={animate} intro={intro} follow={trip ? boatAt : null} />
       <Sea night={night} animate={animate} />
       <primitive
         object={body}
@@ -472,7 +517,15 @@ function Scene(props: IslandCanvasProps) {
       />
       <Animals night={night} animate={animate} fox={fox} />
       <Effects night={night} animate={animate} season={season} cabinOpen={selected === "cabana"} />
-      <Places selected={selected} night={night} animate={animate} unlocked={unlocked} onSelect={onSelect} />
+      <Places
+        selected={selected}
+        night={night}
+        animate={animate}
+        unlocked={unlocked}
+        onSelect={onSelect}
+        trip={trip}
+        boatAt={boatAt}
+      />
       <SmallPlaces onSelect={onSelect} />
 
       {/* Os canteiros com as plantas do jardim (as mesmas gotas, as mesmas plantas): uma por canteiro,
@@ -510,7 +563,15 @@ function Scene(props: IslandCanvasProps) {
       </group>
 
       <Suspense fallback={null}>
-        <Fox target={target} face={face} position={fox} animate={animate} joy={joy} onPet={onPet} />
+        <Fox
+          target={target}
+          face={face}
+          position={fox}
+          animate={animate}
+          joy={joy}
+          onPet={onPet}
+          seat={trip ? boatAt : null}
+        />
       </Suspense>
     </>
   );

@@ -4,6 +4,7 @@ import { Droplets, Phone, X } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PLANT_NAMES, PLANT_ORDER } from "@/features/garden/logic";
+import { TRIP_CYCLES, tripSeconds } from "@/features/garden/island/boatTrip";
 import { foxRef, placeById, type PlaceId } from "@/features/garden/island/places";
 import type { PlantState } from "@/features/garden/types";
 
@@ -16,6 +17,8 @@ export interface IslandPanelProps {
   toNext?: number | null;
   pouring: boolean;
   onPour: () => void;
+  /** No cais: sair de barco respirando (quantas respirações). */
+  onStartTrip?: (cycles: number) => void;
   onClose: () => void;
 }
 
@@ -31,6 +34,7 @@ export function IslandPanel({
   toNext = null,
   pouring,
   onPour,
+  onStartTrip,
   onClose,
 }: IslandPanelProps) {
   const p = placeById(place);
@@ -122,7 +126,36 @@ export function IslandPanel({
         </div>
       )}
 
-      {place !== "canteiros" && (
+      {place === "cais" && onStartTrip && (
+        <div className="mt-3">
+          <p className="text-sm">
+            Atravesse até a ilhota com {fox}: inspire enchendo a vela, solte o ar e o barco anda.
+          </p>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {TRIP_CYCLES.map((cycles) => (
+              <button
+                key={cycles}
+                type="button"
+                aria-label={`${cycles} respirações, ${tripSeconds(cycles)} segundos`}
+                onClick={() => onStartTrip(cycles)}
+                className="flex min-h-16 flex-col items-center justify-center rounded-2xl bg-strong px-2 text-white focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
+              >
+                <span className="text-xl leading-none font-semibold">{cycles}</span>
+                <span className="mt-1 text-xs opacity-85">respirações</span>
+                <span className="text-xs opacity-70">{tripSeconds(cycles)} s</span>
+              </button>
+            ))}
+          </div>
+          <Link
+            href={p.href}
+            className="mt-3 inline-flex min-h-11 items-center text-sm font-medium text-brand-ink underline underline-offset-2"
+          >
+            Mais exercícios de respiração
+          </Link>
+        </div>
+      )}
+
+      {place !== "canteiros" && !(place === "cais" && onStartTrip) && (
         <div className="mt-4 flex flex-wrap gap-2">
           <Link href={p.href} className={linkClass}>
             {place === "cais"
