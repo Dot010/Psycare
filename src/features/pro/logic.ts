@@ -1,6 +1,13 @@
 import type { DayLevel } from "@/features/mood/logic";
 import { addDays } from "@/features/health/logic";
-import type { Patient, PatientSnapshot, ProSession, SessionClosing } from "./types";
+import type {
+  Patient,
+  PatientSnapshot,
+  Prescription,
+  PrescriptionChange,
+  ProSession,
+  SessionClosing,
+} from "./types";
 
 function avg(values: number[]): number | null {
   return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
@@ -107,6 +114,24 @@ export interface ClosingInput {
   evolution: string;
   /** Falta: cobrar ou não. Sessão realizada é sempre cobrada. */
   chargeMissed: boolean;
+  /** Só na consulta do psiquiatra: o que foi decidido sobre a medicação. */
+  conduct?: PrescriptionChange;
+  conductNote?: string;
+}
+
+/** A conduta na consulta do psiquiatra. Usa os mesmos valores da mudança na receita. */
+export const CONDUCT_LABEL: Record<PrescriptionChange, string> = {
+  none: "Manter a medicação",
+  dose: "Ajustar a dose",
+  switch: "Trocar o remédio",
+  stop: "Suspender",
+};
+
+/** "Conduta: ajustar a dose. Subiu para 20 mg." */
+export function conductText(conduct: PrescriptionChange, note?: string): string {
+  const label = CONDUCT_LABEL[conduct].toLowerCase();
+  const clean = note?.trim();
+  return `Conduta: ${label}.${clean ? ` ${clean}` : ""}`;
 }
 
 export const EVOLUTION_MIN = 10;
@@ -133,6 +158,7 @@ export function buildClosing(
     patientId: session.patientId,
     date: session.data,
     outcome: input.outcome === "faltou" ? "faltou" : "realizada",
+    ...(input.conduct && input.outcome === "realizada" ? { conduct: input.conduct } : {}),
     charge: charged ? fee : 0,
     paid: charged && input.outcome === "realizada" ? input.paid : false,
   };
@@ -144,7 +170,8 @@ export function evolutionText(session: ProSession, input: ClosingInput): string 
     const note = input.evolution.trim();
     return `O paciente não compareceu à sessão das ${session.hora}.${note ? ` ${note}` : ""}`;
   }
-  return input.evolution.trim().slice(0, EVOLUTION_MAX);
+  const text = input.evolution.trim().slice(0, EVOLUTION_MAX);
+  return input.conduct ? `${text}\n${conductText(input.conduct, input.conductNote)}` : text;
 }
 
 /** "Evolução salva · R$ 180,00 pendente", para a linha da sessão já encerrada. */
@@ -152,4 +179,33 @@ export function closingLine(closing: SessionClosing, money: (n: number) => strin
   const first = closing.outcome === "realizada" ? "Evolução salva" : "Falta registrada";
   if (closing.charge === 0) return `${first} · sem cobrança`;
   return `${first} · ${money(closing.charge)} ${closing.paid ? "pago" : "pendente"}`;
+}
+
+export interface MedHistory {
+  nome: string;
+  /** A receita mais nova desse remédio. */
+  current: Prescription;
+  /** As anteriores, da mais nova para a mais antiga. */
+  previous: Prescription[];
+}
+
+/** A linha do tempo da medicação de um paciente: um item por remédio, os em uso primeiro. */
+export function medicationHistory(prescriptions: Prescription[], patientId: string): MedHistory[] {
+  const byName = new Map<string, Prescription[]>();
+  for (const p of prescriptions.filter((item) => item.patientId === patientId)) {
+    const key = p.nome.trim().toLowerCase();
+    byName.set(key, [...(byName.get(key) ?? []), p]);
+  }
+  return [...byName.values()]
+    .map((list) => {
+      const sorted = [...list].sort((a, b) => b.preparedAt.localeCompare(a.preparedAt));
+      return { nome: sorted[0].nome, current: sorted[0], previous: sorted.slice(1) };
+    })
+    .sort((a, b) =>
+      a.current.status === b.current.status
+        ? a.nome.localeCompare(b.nome)
+        : a.current.status === "ready"
+          ? -1
+          : 1,
+    );
 }
