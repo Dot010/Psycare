@@ -8,22 +8,31 @@ import { Page } from "@/components/layout/Page";
 import { PageColumns } from "@/components/layout/PageColumns";
 import { Block } from "@/components/ui/block";
 import { Button } from "@/components/ui/button";
+import { useAppointments } from "@/features/appointments/hooks/useAppointments";
 import { CHARGES } from "@/features/payments/data";
-import { groupByProfessional, totalOpen } from "@/features/payments/logic";
+import { chargesFromClosings, groupByProfessional, totalOpen } from "@/features/payments/logic";
+import { CLOSINGS_KEY } from "@/features/pro/hooks/usePro";
+import type { SessionClosing } from "@/features/pro/types";
+import { useLocalStorage } from "@/lib/useLocalStorage";
 import { PixDialog, type PixTarget } from "@/features/payments/components/PixDialog";
 import { SPECIALTY_LABEL } from "@/features/pro/identity";
 import { formatCurrencyBRL, formatDateBR } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+const NO_CLOSINGS: SessionClosing[] = [];
+
 export default function PaymentsView() {
-  const groups = groupByProfessional(CHARGES);
+  // As cobranças de exemplo e as que os profissionais lançaram ao encerrar as suas consultas.
+  const [closings] = useLocalStorage<SessionClosing[]>(CLOSINGS_KEY, NO_CLOSINGS);
+  const { appointments } = useAppointments();
+  const all = [...CHARGES, ...chargesFromClosings(closings, appointments)];
+  const groups = groupByProfessional(all);
   const open = totalOpen(groups);
   const year = new Date().getFullYear();
-  const paidThisYear = CHARGES.filter((c) => c.status === "paid" && c.date.startsWith(String(year))).reduce(
-    (sum, c) => sum + c.amount,
-    0,
-  );
-  const pendingCount = CHARGES.filter((c) => c.status !== "paid").length;
+  const paidThisYear = all
+    .filter((c) => c.status === "paid" && c.date.startsWith(String(year)))
+    .reduce((sum, c) => sum + c.amount, 0);
+  const pendingCount = all.filter((c) => c.status !== "paid").length;
   const [pix, setPix] = useState<PixTarget | null>(null);
 
   return (

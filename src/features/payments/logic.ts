@@ -1,4 +1,6 @@
 import { PROFESSIONALS, type Professional } from "@/features/pro/identity";
+import type { Agendamento } from "@/features/appointments/types";
+import type { SessionClosing } from "@/features/pro/types";
 import type { Charge } from "./types";
 
 export interface ProfessionalCharges {
@@ -22,4 +24,32 @@ export function groupByProfessional(charges: Charge[]): ProfessionalCharges[] {
 
 export function totalOpen(groups: ProfessionalCharges[]): number {
   return groups.reduce((sum, g) => sum + g.open, 0);
+}
+
+/**
+ * O que o profissional lançou ao encerrar uma consulta marcada pelo paciente vira cobrança aqui,
+ * com o profissional certo. Quando ele marca como paga, aparece paga para o paciente também.
+ */
+export function chargesFromClosings(closings: SessionClosing[], appointments: Agendamento[]): Charge[] {
+  return closings.flatMap((closing) => {
+    if (closing.charge <= 0 || !closing.sessionId.startsWith("ag_")) return [];
+    const appointment = appointments.find((a) => `ag_${a.id}` === closing.sessionId);
+    const professional = PROFESSIONALS.find((p) => p.name === appointment?.profissional);
+    if (!professional) return [];
+    const missed = closing.outcome === "faltou";
+    return [
+      {
+        id: `fech-${closing.sessionId}`,
+        professionalId: professional.id,
+        description: missed
+          ? "Falta cobrada"
+          : professional.specialty === "psychiatrist"
+            ? "Consulta de psiquiatria"
+            : "Sessão de psicoterapia",
+        amount: closing.charge,
+        date: closing.date,
+        status: closing.paid ? "paid" : "pending",
+      },
+    ];
+  });
 }

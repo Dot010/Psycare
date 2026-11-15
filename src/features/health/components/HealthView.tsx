@@ -23,6 +23,7 @@ import { WeekDots } from "@/features/health/components/WeekDots";
 import { useHealth } from "@/features/health/hooks/useHealth";
 import { medicinesFor } from "@/features/health/medicines";
 import { LIVE_PATIENT_ID } from "@/features/pro/data";
+import { useExams } from "@/features/pro/hooks/useExams";
 import { usePrescriptions } from "@/features/pro/hooks/usePrescriptions";
 import {
   buildConsultSummary,
@@ -81,6 +82,11 @@ export default function HealthView() {
   const week = weekAdherence(remedios, health.taken, today);
   const recentSymptoms = [...health.sintomas].sort((a, b) => b.data.localeCompare(a.data)).slice(0, 8);
   const exames = [...health.exames].sort((a, b) => b.data.localeCompare(a.data));
+  // Os exames que o psiquiatra pediu: o paciente acompanha a etapa e avisa quando coletou.
+  const { exams: allExams, advanceExam } = useExams();
+  const requested = allExams
+    .filter((exam) => exam.patientId === LIVE_PATIENT_ID)
+    .sort((a, b) => a.step - b.step || b.requestedAt.localeCompare(a.requestedAt));
 
   const openSintoma = (item?: Sintoma) => {
     setEditingSintoma(item);
@@ -302,6 +308,39 @@ export default function HealthView() {
         {tab === "encaminhamento" && (
           <Block size="lg">
             <ReferralSection />
+          </Block>
+        )}
+
+        {tab === "exames" && requested.length > 0 && (
+          <Block title="Pedidos pelo psiquiatra" size="lg">
+            <ul>
+              {requested.map((exam) => (
+                <li
+                  key={exam.id}
+                  className="flex items-start justify-between gap-3 border-t border-sunken py-3 first:border-t-0"
+                >
+                  <div className="min-w-0 space-y-0.5">
+                    <p className="text-lg font-medium text-foreground">{exam.nome}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Pedido em {formatDateBR(exam.requestedAt)} ·{" "}
+                      {exam.step === 1
+                        ? "falta coletar"
+                        : exam.step === 2
+                          ? "coletado, esperando o resultado"
+                          : "resultado chegou"}
+                    </p>
+                    {exam.step === 3 && exam.result && (
+                      <p className="text-sm text-foreground">{exam.result}</p>
+                    )}
+                  </div>
+                  {exam.step === 1 && (
+                    <Button variant="outline" size="sm" onClick={() => advanceExam(exam)}>
+                      Já coletei
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
           </Block>
         )}
 

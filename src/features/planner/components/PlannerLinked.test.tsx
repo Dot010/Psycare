@@ -42,6 +42,18 @@ const setup = () =>
   );
 const todayRegion = () => screen.getByRole("region", { name: "Tarefas de hoje" });
 
+/** Abre o Calendário no dia pedido (passando para o mês seguinte, se for o caso) e devolve as tarefas dele. */
+async function openDay(offsetDays: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + offsetDays);
+  await userEvent.click(screen.getByRole("tab", { name: "Calendário" }));
+  if (date.getMonth() !== new Date().getMonth())
+    await userEvent.click(screen.getByRole("button", { name: "Próximo mês" }));
+  const label = date.toLocaleDateString("pt-BR").slice(0, 5);
+  await userEvent.click(screen.getByRole("button", { name: new RegExp(`^${label},`) }));
+  return screen.getByRole("region", { name: `Tarefas de ${date.toLocaleDateString("pt-BR")}` });
+}
+
 describe("Meu dia ligado à receita e à consulta", () => {
   beforeEach(() => window.localStorage.clear());
 
@@ -54,10 +66,7 @@ describe("Meu dia ligado à receita e à consulta", () => {
     setup();
     await userEvent.click(screen.getByRole("button", { name: "Psiquiatra deixa pronta" }));
     expect(within(todayRegion()).getByText("Retirar a receita de Lyberdia")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("tab", { name: "Lista" }));
-    expect(
-      within(screen.getByRole("region", { name: "Amanhã" })).getByText("Comprar o remédio Lyberdia"),
-    ).toBeInTheDocument();
+    expect(within(await openDay(1)).getByText("Comprar o remédio Lyberdia")).toBeInTheDocument();
   });
 
   it("marcar 'Retirar a receita' como feita registra o passo do paciente", async () => {
@@ -71,8 +80,9 @@ describe("Meu dia ligado à receita e à consulta", () => {
   it("'Comprar o remédio' só se conclui no card do remédio", async () => {
     setup();
     await userEvent.click(screen.getByRole("button", { name: "Psiquiatra deixa pronta" }));
-    await userEvent.click(screen.getByRole("tab", { name: "Lista" }));
-    const row = screen.getByText("Comprar o remédio Lyberdia").closest("li") as HTMLElement;
+    const row = within(await openDay(1))
+      .getByText("Comprar o remédio Lyberdia")
+      .closest("li") as HTMLElement;
     expect(within(row).getByRole("checkbox")).toBeDisabled();
     expect(within(row).getByRole("link", { name: "Abrir" })).toHaveAttribute(
       "href",
@@ -97,8 +107,9 @@ describe("Meu dia ligado à receita e à consulta", () => {
 
   it("a consulta confirmada aparece no Meu dia, com hora", async () => {
     setup();
-    await userEvent.click(screen.getByRole("tab", { name: "Lista" }));
-    const row = screen.getByText("Consulta com Dra. Helena Prado (online)").closest("li") as HTMLElement;
+    const row = within(await openDay(5))
+      .getByText("Consulta com Dra. Helena Prado (online)")
+      .closest("li") as HTMLElement;
     expect(within(row).getByText(/15:30/)).toBeInTheDocument();
     expect(within(row).getByRole("link", { name: "Abrir" })).toHaveAttribute(
       "href",

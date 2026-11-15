@@ -93,4 +93,21 @@ describe("Saúde em abas", () => {
     await userEvent.click(screen.getByRole("tab", { name: "Encaminhamento" }));
     expect(screen.getByText("Meu encaminhamento")).toBeInTheDocument();
   });
+
+  it("os exames que o psiquiatra pediu aparecem em Exames, e dá para avisar que coletou", async () => {
+    render(
+      <UndoProvider>
+        <HealthView />
+      </UndoProvider>,
+    );
+    await userEvent.click(screen.getByRole("tab", { name: "Exames" }));
+    const block = screen
+      .getByRole("heading", { name: "Pedidos pelo psiquiatra" })
+      .closest("section") as HTMLElement;
+    expect(within(block).getByText("TSH")).toBeInTheDocument();
+    expect(within(block).getByText(/coletado, esperando o resultado/)).toBeInTheDocument();
+    expect(within(block).getByText(/Valores dentro da referência/)).toBeInTheDocument();
+    // O exame de outro paciente não aparece.
+    expect(within(block).queryByText("Glicemia")).not.toBeInTheDocument();
+  });
 });

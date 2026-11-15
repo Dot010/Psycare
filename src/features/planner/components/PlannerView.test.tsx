@@ -13,6 +13,18 @@ const setup = () =>
 const todayRegion = () => screen.getByRole("region", { name: "Tarefas de hoje" });
 const item = (title: string) => within(todayRegion()).getByText(title).closest("li") as HTMLElement;
 
+/** Abre o Calendário no dia pedido (passando para o mês seguinte, se for o caso) e devolve as tarefas dele. */
+async function openDay(offsetDays: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + offsetDays);
+  await userEvent.click(screen.getByRole("tab", { name: "Calendário" }));
+  if (date.getMonth() !== new Date().getMonth())
+    await userEvent.click(screen.getByRole("button", { name: "Próximo mês" }));
+  const label = date.toLocaleDateString("pt-BR").slice(0, 5);
+  await userEvent.click(screen.getByRole("button", { name: new RegExp(`^${label},`) }));
+  return screen.getByRole("region", { name: `Tarefas de ${date.toLocaleDateString("pt-BR")}` });
+}
+
 describe("Meu dia", () => {
   beforeEach(() => window.localStorage.clear());
 
@@ -88,10 +100,7 @@ describe("Meu dia", () => {
         "Responder o e-mail da faculdade",
       ),
     ).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole("tab", { name: "Lista" }));
-    expect(
-      within(screen.getByRole("region", { name: "Amanhã" })).getByText("Responder o e-mail da faculdade"),
-    ).toBeInTheDocument();
+    expect(within(await openDay(1)).getByText("Responder o e-mail da faculdade")).toBeInTheDocument();
   });
 
   it("'Hoje foi difícil' mostra só o essencial e dá para voltar", async () => {
@@ -105,9 +114,9 @@ describe("Meu dia", () => {
     expect(within(todayRegion()).getByText("Responder o e-mail da faculdade")).toBeInTheDocument();
   });
 
-  it("a Lista tem a caixa 'Sem dia' para ideias soltas", async () => {
+  it("o Calendário tem a caixa 'Sem dia' para ideias soltas", async () => {
     setup();
-    await userEvent.click(screen.getByRole("tab", { name: "Lista" }));
+    await userEvent.click(screen.getByRole("tab", { name: "Calendário" }));
     expect(
       within(screen.getByRole("region", { name: "Sem dia" })).getByText("Organizar a gaveta de remédios"),
     ).toBeInTheDocument();

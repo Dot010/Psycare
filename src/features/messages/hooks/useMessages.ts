@@ -3,14 +3,17 @@
 import { useMemo, useState } from "react";
 import { useLocalStorage } from "@/lib/useLocalStorage";
 import { mockUser } from "@/mocks/user";
-import { demoReply, REPLY_DELAY_MS } from "@/features/messages/logic";
+import { demoReply, REPLY_DELAY_MS, withAllChats } from "@/features/messages/logic";
 import type { Chat, MessageItem } from "@/features/messages/types";
 import { sendMessageSchema, type SendMessageInput } from "@/features/messages/types";
 
 export const CHATS_KEY = "psycare:chats:v1";
 
 export function useMessages() {
-  const [chats, setChats] = useLocalStorage<Chat[]>(CHATS_KEY, mockUser.chats);
+  const [stored, setStored] = useLocalStorage<Chat[]>(CHATS_KEY, mockUser.chats);
+  const chats = useMemo(() => withAllChats(stored, mockUser.chats), [stored]);
+  const setChats = (update: (current: Chat[]) => Chat[]) =>
+    setStored((current) => update(withAllChats(current, mockUser.chats)));
   const [activeChatId, setActiveChatId] = useState<string>(mockUser.chats?.[0]?.id || "");
 
   const activeChat = useMemo(
@@ -50,7 +53,7 @@ export function useMessages() {
 
     // Demonstração: o profissional "responde" sozinho. Na versão real, isto virá do servidor.
     const chatId = parsed.data.chatId;
-    const reply = demoReply(parsed.data.content);
+    const reply = demoReply(parsed.data.content, chats.find((chat) => chat.id === chatId)?.doctorName);
     setTimeout(() => {
       const answer: MessageItem = {
         id: crypto.randomUUID(),

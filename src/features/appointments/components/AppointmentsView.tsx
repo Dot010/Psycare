@@ -26,12 +26,21 @@ const STATUS_STYLES: Record<Agendamento["status"], string> = {
   cancelado: "bg-sunken text-muted-foreground",
 };
 
+/** Em palavras: "pendente" é que o profissional ainda vai confirmar; consulta confirmada que passou foi feita. */
+function statusLabel(item: Agendamento, past: boolean): string {
+  if (item.status === "cancelado") return "Cancelada";
+  if (item.status === "pendente") return past ? "Não confirmada" : "Esperando confirmação";
+  return past ? "Realizada" : "Confirmada";
+}
+
 function AppointmentRow({
   item,
+  past = false,
   onReschedule,
   onCancel,
 }: {
   item: Agendamento;
+  past?: boolean;
   onReschedule?: () => void;
   onCancel?: () => void;
 }) {
@@ -45,13 +54,8 @@ function AppointmentRow({
         {item.observacao && <p className="text-sm text-foreground">Lembrar de: {item.observacao}</p>}
       </div>
       <div className="flex shrink-0 items-center gap-1">
-        <span
-          className={cn(
-            "rounded-full px-3 py-1 text-xs font-semibold capitalize",
-            STATUS_STYLES[item.status],
-          )}
-        >
-          {item.status}
+        <span className={cn("rounded-full px-3 py-1 text-xs font-semibold", STATUS_STYLES[item.status])}>
+          {statusLabel(item, past)}
         </span>
         {(onReschedule || onCancel) && (
           <ItemMenu
@@ -120,13 +124,7 @@ export function AppointmentsView() {
       <PageColumns
         aside={
           <>
-            <NextSessionCard
-              action={
-                <Button disabled title="Demonstração: a sala de vídeo ainda não existe">
-                  Entrar na sala (em breve)
-                </Button>
-              }
-            />
+            <NextSessionCard />
             {professionals.length > 0 && (
               <Block title="Quem cuida de você">
                 <ul className="space-y-3">
@@ -196,7 +194,7 @@ export function AppointmentsView() {
               <Block title="Histórico">
                 <ul>
                   {past.map((item) => (
-                    <AppointmentRow key={item.id} item={item} />
+                    <AppointmentRow key={item.id} item={item} past />
                   ))}
                 </ul>
               </Block>

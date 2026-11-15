@@ -108,7 +108,7 @@ export const mockUser = {
   sintomas: [
     {
       id: "1",
-      descricao: "Hemorragia bucal",
+      descricao: "Boca seca",
       data: "03/09/2026",
       nota: "Leve",
     },
@@ -138,6 +138,20 @@ export const mockUser = {
           sender: "doctor",
           content: "Olá! Como você está se sentindo hoje?",
           timestamp: "03/09/2026 08:05",
+        },
+      ],
+    },
+    {
+      id: "2",
+      doctorName: "Dr. Rafael Nunes",
+      specialty: "Psiquiatria",
+      lastMessage: "Qualquer dúvida sobre o remédio, me escreva por aqui.",
+      messages: [
+        {
+          id: "1",
+          sender: "doctor",
+          content: "Qualquer dúvida sobre o remédio, me escreva por aqui.",
+          timestamp: "10/09/2026 10:40",
         },
       ],
     },

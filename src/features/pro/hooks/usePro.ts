@@ -34,6 +34,33 @@ import type {
   Sharing,
 } from "../types";
 import { makeId } from "@/features/activities/logic";
+import type { Agendamento } from "@/features/appointments/types";
+import { useMaybeProIdentity } from "../components/ProIdentity";
+
+/** As consultas que o paciente de demonstração marcou viram sessões na agenda do profissional dele. */
+export const LIVE_SESSION_PREFIX = "ag_";
+
+export function liveSessions(
+  appointments: Agendamento[],
+  professionalName: string | null,
+  today: string,
+  statusMap: Record<string, ProSession["status"]>,
+): ProSession[] {
+  return appointments
+    .filter((a) => a.status === "confirmado" && (!professionalName || a.profissional === professionalName))
+    .map((a) => {
+      const id = `${LIVE_SESSION_PREFIX}${a.id}`;
+      return {
+        id,
+        patientId: LIVE_PATIENT_ID,
+        data: a.data,
+        hora: a.hora,
+        tipo: a.tipo,
+        // Consulta confirmada que já passou conta como feita (histórico da demonstração).
+        status: statusMap[id] ?? (a.data < today ? "realizada" : "confirmado"),
+      };
+    });
+}
 
 export const NOTES_KEY = "psycare:pro:notes:v1";
 export const PRO_ASSIGNED_KEY = "psycare:pro:assigned:v1";
@@ -76,6 +103,9 @@ export function usePro() {
   const { records } = useActivities();
   const health = useHealth();
   const { appointments, setStatus } = useAppointmentsAdmin();
+  const me = useMaybeProIdentity();
+  const myName = me?.name ?? null;
+  const isMine = (a: Agendamento) => !myName || a.profissional === myName;
 
   const [notes, setNotes] = useLocalStorage<SessionNote[]>(NOTES_KEY, NO_NOTES);
   const [assigned, setAssigned] = useLocalStorage<ProAssignment[]>(PRO_ASSIGNED_KEY, NO_ASSIGNED);
@@ -97,8 +127,15 @@ export function usePro() {
     setClosings((current) => current.map((c) => (c.sessionId === sessionId ? { ...c, paid: true } : c)));
 
   const sessions: ProSession[] = useMemo(
-    () => demoSessions(today).map((s) => ({ ...s, status: statusMap[s.id] ?? s.status })),
-    [today, statusMap],
+    () => [
+      ...demoSessions(today).map((s) => ({ ...s, status: statusMap[s.id] ?? s.status })),
+      ...liveSessions(appointments, myName, today, statusMap),
+    ],
+    [today, statusMap, appointments, myName],
+  );
+  // As cobranças do paciente de demonstração são de quem atendeu: cada profissional vê só as suas.
+  const myClosings = closings.filter(
+    (c) => !c.sessionId.startsWith(LIVE_SESSION_PREFIX) || sessions.some((s) => s.id === c.sessionId),
   );
 
   const snapshotOf = (patientId: string): PatientSnapshot | null => {
@@ -167,8 +204,12 @@ export function usePro() {
     }
   };
 
-  const setSessionStatus = (id: string, status: ProSession["status"]) =>
+  const setSessionStatus = (id: string, status: ProSession["status"]) => {
     setStatusMap((current) => ({ ...current, [id]: status }));
+    // Cancelar a consulta do paciente de demonstração também cancela do lado dele.
+    if (id.startsWith(LIVE_SESSION_PREFIX) && status === "cancelado")
+      setStatus(id.slice(LIVE_SESSION_PREFIX.length), "cancelado");
+  };
 
   /**
    * Encerrar sessão: um passo só que hoje eram três soltos.
@@ -196,7 +237,8 @@ export function usePro() {
     markPaid,
     sharing,
     sessions,
-    patientRequests: appointments.filter((a) => a.status === "pendente"),
+    // Cada profissional só vê os pedidos de consulta feitos para ele.
+    patientRequests: appointments.filter((a) => a.status === "pendente" && isMine(a)),
     answerRequest: setStatus,
     notes,
     addNote,
@@ -209,7 +251,7 @@ export function usePro() {
     assigned,
     assign,
     setSessionStatus,
-    closings,
+    closings: myClosings,
     closeSession,
     snapshotOf,
     activities: records,
