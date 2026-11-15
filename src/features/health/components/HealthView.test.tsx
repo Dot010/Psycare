@@ -77,20 +77,20 @@ describe("Saúde: a lista de remédios vem do psiquiatra", () => {
 describe("Saúde em abas", () => {
   beforeEach(() => window.localStorage.clear());
 
-  it("tem Hoje, Remédios, Exames e Encaminhamento, e cada aba mostra só o seu assunto", async () => {
+  it("tem Hoje, Remédios e Exames e guias, e cada aba mostra só o seu assunto", async () => {
     render(
       <UndoProvider>
         <Both />
       </UndoProvider>,
     );
     const tabs = screen.getAllByRole("tab").map((t) => t.textContent);
-    expect(tabs).toEqual(["Hoje", "Remédios", "Exames", "Encaminhamento"]);
+    expect(tabs).toEqual(["Hoje", "Remédios", "Exames e guias"]);
     expect(screen.getByText("E o corpo, como está?")).toBeInTheDocument();
     expect(screen.queryByText("Meus exames")).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole("tab", { name: "Exames" }));
+    await userEvent.click(screen.getByRole("tab", { name: "Exames e guias" }));
     expect(screen.getByText("Meus exames")).toBeInTheDocument();
     expect(screen.queryByText("E o corpo, como está?")).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole("tab", { name: "Encaminhamento" }));
+    // O encaminhamento fica junto dos exames.
     expect(screen.getByText("Meu encaminhamento")).toBeInTheDocument();
   });
 
@@ -100,7 +100,7 @@ describe("Saúde em abas", () => {
         <HealthView />
       </UndoProvider>,
     );
-    await userEvent.click(screen.getByRole("tab", { name: "Exames" }));
+    await userEvent.click(screen.getByRole("tab", { name: "Exames e guias" }));
     const block = screen
       .getByRole("heading", { name: "Pedidos pelo psiquiatra" })
       .closest("section") as HTMLElement;
