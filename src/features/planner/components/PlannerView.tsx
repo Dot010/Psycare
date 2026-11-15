@@ -29,16 +29,14 @@ import {
   overdue,
   tasksOn,
   toICS,
-  upcoming,
 } from "../logic";
 import type { Task } from "../types";
 import { FocusNow } from "./FocusNow";
 import { TaskDialog } from "./TaskDialog";
 
-type Tab = "hoje" | "lista" | "calendario" | "habitos";
+type Tab = "hoje" | "calendario" | "habitos";
 const TABS: { id: Tab; label: string }[] = [
   { id: "hoje", label: "Hoje" },
-  { id: "lista", label: "Lista" },
   { id: "calendario", label: "Calendário" },
   { id: "habitos", label: "Hábitos" },
 ];
@@ -116,16 +114,10 @@ export default function PlannerView() {
       description="Uma coisa de cada vez. O resto pode esperar."
       width="wide"
       actions={
-        <>
-          <Button variant="outline" onClick={exportICS}>
-            <Download />
-            Exportar .ics
-          </Button>
-          <Button onClick={() => open(undefined, today)}>
-            <Plus />
-            Nova tarefa
-          </Button>
-        </>
+        <Button onClick={() => open(undefined, today)}>
+          <Plus />
+          Nova tarefa
+        </Button>
       }
     >
       <UnderlineTabs label="Visões do Meu dia" tabs={TABS} value={tab} onChange={setTab} />
@@ -137,9 +129,15 @@ export default function PlannerView() {
             <HabitsPanel />
           </Block>
         )}
-        {tab === "lista" && <ListTab tasks={tasks} today={today} row={row} />}
         {tab === "calendario" && (
-          <CalendarTab tasks={tasks} today={today} row={row} onAdd={(date) => open(undefined, date)} />
+          <>
+            <CalendarTab tasks={tasks} today={today} row={row} onAdd={(date) => open(undefined, date)} />
+            {/* Levar as tarefas para a agenda do celular: fica junto do calendário, não no topo da página. */}
+            <Button variant="outline" onClick={exportICS} className="mt-4">
+              <Download />
+              Levar para a agenda do celular
+            </Button>
+          </>
         )}
       </TabPanel>
 
@@ -344,52 +342,6 @@ function TodayTab({
   );
 }
 
-function ListTab({
-  tasks,
-  today,
-  row,
-}: {
-  tasks: Task[];
-  today: string;
-  row: (task: Task) => React.ReactNode;
-}) {
-  const late = overdue(tasks, today);
-  const free = inbox(tasks);
-  const todays = tasksOn(tasks, today);
-  const next = upcoming(tasks, today);
-  return (
-    <PageColumns>
-      {late.length > 0 && (
-        <Block label="Ficou para trás" title="Ficou para trás">
-          <ul>{late.map(row)}</ul>
-        </Block>
-      )}
-      <Block label="Hoje" title="Hoje">
-        {todays.length ? (
-          <ul>{todays.map(row)}</ul>
-        ) : (
-          <p className="text-muted-foreground">Nada para hoje.</p>
-        )}
-      </Block>
-      {next.map(([date, list]) => (
-        <Block key={date} label={dayLabel(date, today)} title={dayLabel(date, today)}>
-          <ul>{list.map(row)}</ul>
-        </Block>
-      ))}
-      <Block label="Sem dia" title="Sem dia" tone="sand">
-        <p className="-mt-2 mb-2 text-sm text-muted-foreground">
-          Ideias soltas. Quando souber o dia, escolha em &quot;Quando?&quot;.
-        </p>
-        {free.length ? (
-          <ul>{free.map(row)}</ul>
-        ) : (
-          <p className="text-muted-foreground">Nada solto por aqui.</p>
-        )}
-      </Block>
-    </PageColumns>
-  );
-}
-
 function CalendarTab({
   tasks,
   today,
@@ -411,6 +363,7 @@ function CalendarTab({
       return { year: d.getFullYear(), month: d.getMonth() };
     });
   const chosen = tasksOn(tasks, selected);
+  const free = inbox(tasks);
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
@@ -487,6 +440,20 @@ function CalendarTab({
           <p className="text-muted-foreground">Nada neste dia.</p>
         )}
       </section>
+
+      {/* Tarefas sem dia não cabem no calendário: ficam aqui embaixo, até ganharem um dia. */}
+      {free.length > 0 && (
+        <section
+          aria-label="Sem dia"
+          className="animate-rise space-y-2 rounded-3xl border border-border bg-canvas p-5 md:p-6 lg:col-span-2"
+        >
+          <h2 className="text-lg font-medium text-ink">Sem dia</h2>
+          <p className="text-sm text-muted-foreground">
+            Ideias soltas. Quando souber o dia, escolha em &quot;Quando?&quot;.
+          </p>
+          <ul>{free.map(row)}</ul>
+        </section>
+      )}
     </div>
   );
 }

@@ -13,9 +13,18 @@ import { WaterHelp } from "@/features/garden/components/WaterHelp";
 import { WeekStrip } from "@/features/garden/components/WeekStrip";
 import type { useGarden } from "@/features/garden/hooks/useGarden";
 import { grantWater } from "@/features/garden/water";
+import { useActivities } from "@/features/activities/hooks/useActivities";
+import { useAppointments } from "@/features/appointments/hooks/useAppointments";
+import { DIARY_KEY } from "@/features/diary/hooks/useDiary";
+import type { DiaryEntry } from "@/features/diary/types";
+import { useMessages } from "@/features/messages/hooks/useMessages";
+import { toISODate } from "@/lib/dates";
+import { useLocalStorage } from "@/lib/useLocalStorage";
+import { mockUser } from "@/mocks/user";
 import { tripSeconds, tripStatus } from "@/features/garden/island/boatTrip";
 import { IslandPanel } from "@/features/garden/island/IslandPanel";
 import { foxRef, PLACES, SEASON_NAMES, seasonFor, type PlaceId } from "@/features/garden/island/places";
+import { placeNews } from "@/features/garden/island/news";
 import { useIsland } from "@/features/garden/island/useIsland";
 import { useIslandSound } from "@/features/garden/island/useIslandSound";
 import { useMediaQuery, usePrefersReducedMotion } from "@/lib/motion";
@@ -184,6 +193,21 @@ export function Refuge({ garden }: { garden: Garden }) {
     if (ok) setNaming(false);
   };
 
+  // O que há de novo em cada lugar vem das telas de verdade (atividades, mensagens, consultas, diário).
+  const { assignments } = useActivities();
+  const { chats } = useMessages();
+  const { appointments } = useAppointments();
+  const [diary] = useLocalStorage<DiaryEntry[]>(DIARY_KEY, mockUser.diaryEntries);
+  const news = selected
+    ? placeNews(selected, {
+        assignments,
+        chats,
+        appointments,
+        diaryPages: diary.length,
+        now: `${toISODate(new Date())}T${new Date().toTimeString().slice(0, 5)}`,
+      })
+    : null;
+
   const panel = selected ? (
     <IslandPanel
       place={selected}
@@ -194,6 +218,7 @@ export function Refuge({ garden }: { garden: Garden }) {
       pouring={garden.pouring}
       onPour={garden.pour}
       onStartTrip={startTrip}
+      news={news}
       onClose={() => setSelected(null)}
     />
   ) : null;

@@ -17,6 +17,8 @@ export interface IslandPanelProps {
   toNext?: number | null;
   pouring: boolean;
   onPour: () => void;
+  /** Uma linha viva do lugar (ex.: "2 atividades esperando você"), vinda das outras telas do app. */
+  news?: string | null;
   /** No cais: sair de barco respirando (quantas respirações). */
   onStartTrip?: (cycles: number) => void;
   onClose: () => void;
@@ -35,6 +37,7 @@ export function IslandPanel({
   pouring,
   onPour,
   onStartTrip,
+  news = null,
   onClose,
 }: IslandPanelProps) {
   const p = placeById(place);
@@ -51,6 +54,7 @@ export function IslandPanel({
             {p.label}
           </h2>
           <p className="text-sm text-muted-foreground">{p.hint}</p>
+          {news && <p className="mt-1 text-sm font-medium text-brand-ink">{news}</p>}
         </div>
         <button
           type="button"

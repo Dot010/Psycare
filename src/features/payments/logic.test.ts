@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupByProfessional, totalOpen } from "./logic";
+import { chargesFromClosings, groupByProfessional, totalOpen } from "./logic";
 import type { Charge } from "./types";
 
 const c = (
@@ -45,5 +45,49 @@ describe("groupByProfessional", () => {
 
   it("ignora cobrança de profissional desconhecido", () => {
     expect(groupByProfessional([c("1", "pro_x", "2026-09-15", "pending")])).toEqual([]);
+  });
+});
+
+describe("cobranças lançadas pelo profissional", () => {
+  const appointments = [
+    {
+      id: "9",
+      profissional: "Dr. Rafael Nunes",
+      data: "2026-11-10",
+      hora: "10:00",
+      status: "confirmado" as const,
+      tipo: "online" as const,
+    },
+  ];
+  it("viram cobrança do profissional certo, e só as das consultas do paciente", () => {
+    const charges = chargesFromClosings(
+      [
+        {
+          sessionId: "ag_9",
+          patientId: "usr_01",
+          date: "2026-11-10",
+          outcome: "realizada",
+          charge: 300,
+          paid: false,
+        },
+        {
+          sessionId: "s1",
+          patientId: "pac_marina",
+          date: "2026-11-10",
+          outcome: "realizada",
+          charge: 180,
+          paid: false,
+        },
+      ],
+      appointments,
+    );
+    expect(charges).toEqual([
+      expect.objectContaining({
+        professionalId: "pro_med_01",
+        amount: 300,
+        status: "pending",
+        description: "Consulta de psiquiatria",
+      }),
+    ]);
   });
 });

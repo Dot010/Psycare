@@ -10,12 +10,16 @@ import { MESSAGE_MAX, sendMessageSchema, type Chat } from "@/features/messages/t
 import { useLocalStorage } from "@/lib/useLocalStorage";
 import { cn } from "@/lib/utils";
 import { mockUser } from "@/mocks/user";
+import { withAllChats } from "@/features/messages/logic";
 import { LIVE_PATIENT_ID, PATIENTS } from "../data";
+import { useProIdentity } from "./ProIdentity";
 
 export default function ProMessages() {
-  const [chats, setChats] = useLocalStorage<Chat[]>(CHATS_KEY, mockUser.chats);
+  const me = useProIdentity();
+  const [stored, setChats] = useLocalStorage<Chat[]>(CHATS_KEY, mockUser.chats);
   const [text, setText] = useState("");
-  const chat = chats[0];
+  // Cada profissional vê só a conversa dele com o paciente.
+  const chat = withAllChats(stored, mockUser.chats).find((c) => c.doctorName === me.name);
   const live = PATIENTS.find((p) => p.id === LIVE_PATIENT_ID);
 
   const send = (e: React.FormEvent) => {
@@ -29,7 +33,7 @@ export default function ProMessages() {
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
     setChats((current) =>
-      current.map((c) =>
+      withAllChats(current, mockUser.chats).map((c) =>
         c.id === chat.id ? { ...c, lastMessage: message.content, messages: [...c.messages, message] } : c,
       ),
     );
