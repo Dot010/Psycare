@@ -31,6 +31,8 @@ export interface FoxProps {
   /** Pulo de alegria: muda o número e ela pula. */
   joy: number;
   onPet: () => void;
+  /** No barco: ela senta ali (um pouco menor) e respira junto, em vez de andar. */
+  seat?: MutableRefObject<Vector3> | null;
 }
 
 const angleLerp = (a: number, b: number, k: number) => {
@@ -39,7 +41,7 @@ const angleLerp = (a: number, b: number, k: number) => {
   return a + d * k;
 };
 
-export function Fox({ target, face, position, animate, joy, onPet }: FoxProps) {
+export function Fox({ target, face, position, animate, joy, onPet, seat = null }: FoxProps) {
   const gltf = useLoader(GLTFLoader, FOX_URL);
   const root = useRef<Group>(null);
   const ring = useRef<Group>(null);
@@ -128,6 +130,31 @@ export function Fox({ target, face, position, animate, joy, onPet }: FoxProps) {
     const dt = Math.min(rawDelta, 0.05);
     const s = state.current;
     const now = performance.now() / 1000;
+
+    // No barco: sentada na popa, olhando para a frente, deitadinha (parada).
+    if (seat) {
+      const r = rig.current;
+      node.position.set(seat.current.x, seat.current.y + 0.62, seat.current.z - 0.4);
+      node.rotation.y = 0;
+      node.scale.setScalar(0.62);
+      s.heading = 0;
+      s.speed = 0;
+      s.wander = null;
+      position.current.copy(node.position);
+      if (r.current !== r.actions.sniff) {
+        r.actions.sniff.reset().play();
+        r.current?.crossFadeTo(r.actions.sniff, 0.3, false);
+        r.current = r.actions.sniff;
+      }
+      r.mixer.update(animate ? rawDelta : 0);
+      if (ring.current) ring.current.visible = false;
+      return;
+    }
+    if (node.scale.x !== 1) {
+      // Desceu do barco: volta para o cais.
+      node.scale.setScalar(1);
+      node.position.set(0.6, heightAt(0.6, 10.2), 10.2);
+    }
 
     // Para onde ir: o lugar escolhido, ou um passeio curto de vez em quando.
     let goal = target;

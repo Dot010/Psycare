@@ -418,7 +418,7 @@ export function makeLighthouse(): { group: Group; beam: Group; lampMat: MeshStan
 }
 
 /** Cais com tábuas, postes, boia e o barquinho da respiração. */
-export function makeDock(): { group: Group; boat: Group } {
+export function makeDock(): { group: Group; boat: Group; sail: Mesh } {
   const g = new Group();
   const r = rng(33);
   for (let i = 0; i < 6; i++) {
@@ -466,7 +466,7 @@ export function makeDock(): { group: Group; boat: Group } {
   boat.add(sailMesh);
   boat.position.set(2.6, 0, 3.5);
   g.add(boat);
-  return { group: g, boat };
+  return { group: g, boat, sail: sailMesh };
 }
 
 /** Onde fica cada canteiro, a partir do centro do lugar: 4 canteiros em quadrado, com caminho no meio. */
@@ -728,3 +728,17 @@ export const ROCK = (seed: number) => {
   const r = rng(seed);
   return mesh(new DodecahedronGeometry(0.3 + r() * 0.5, 0), toon(0xb5aba4));
 };
+
+/** A ilhota no fim da travessia de barco: areia, um tufo de grama, uma árvore e uma pedra. */
+export function makeIslet(): Group {
+  const g = new Group();
+  g.add(mesh(new CylinderGeometry(2.3, 2.7, 0.9, 16), toon(0xe6d6b3), 0, 0.15, 0));
+  const grass = mesh(new CylinderGeometry(1.5, 1.7, 0.3, 14), toon(0x7e9a45), 0, 0.7, 0);
+  grass.scale.z = 0.85;
+  g.add(grass);
+  const tree = makeTree(4, 0.9);
+  tree.group.position.set(-0.3, 0.85, -0.2);
+  g.add(tree.group);
+  g.add(mesh(new DodecahedronGeometry(0.45, 0), toon(0x9c948a), 1.3, 0.75, 0.7));
+  return g;
+}
