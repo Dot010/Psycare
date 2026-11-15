@@ -10,12 +10,20 @@ import { cn } from "@/lib/utils";
 import { usePro } from "../hooks/usePro";
 import { ANAMNESIS_FIELDS, FIELD_MAX, GOAL_LABEL, GOAL_MAX, NOTE_MAX, stampLabel } from "../prontuario";
 import type { AnamnesisField, Goal, SessionNote } from "../types";
+import { useProIdentity } from "./ProIdentity";
+import { ExamsTab, MedicationTab } from "./ProntuarioClinico";
 
-type Tab = "evolucao" | "anamnese" | "plano";
-const TABS: { id: Tab; label: string }[] = [
+type Tab = "evolucao" | "anamnese" | "plano" | "medicacao" | "exames";
+const BASE_TABS: { id: Tab; label: string }[] = [
   { id: "evolucao", label: "Evolução" },
   { id: "anamnese", label: "Anamnese" },
   { id: "plano", label: "Plano terapêutico" },
+];
+/** O psiquiatra tem duas abas a mais: o remédio é o centro da consulta. */
+const PSYCHIATRY_TABS: { id: Tab; label: string }[] = [
+  ...BASE_TABS,
+  { id: "medicacao", label: "Medicação" },
+  { id: "exames", label: "Exames" },
 ];
 
 const textarea = cn(fieldControlClass, "min-h-24 resize-y py-3");
@@ -26,12 +34,16 @@ const textarea = cn(fieldControlClass, "min-h-24 resize-y py-3");
  */
 export function Prontuario({ patientId, firstName }: { patientId: string; firstName: string }) {
   const [tab, setTab] = useState<Tab>("evolucao");
+  const { specialty } = useProIdentity();
+  const psychiatry = specialty === "psychiatrist";
+  const TABS = psychiatry ? PSYCHIATRY_TABS : BASE_TABS;
 
   return (
     <Block title="Prontuário" size="lg">
       <p className="-mt-2 mb-4 text-xs leading-relaxed text-muted-foreground">
-        Nada aqui se apaga: corrigir guarda a versão anterior. O registro é guardado por pelo menos 5 anos
-        (CFP 1/2009). Não aparece no app de {firstName}, mas {firstName} tem direito de pedir acesso.
+        Nada aqui se apaga: corrigir guarda a versão anterior.
+        {psychiatry ? "" : " O registro é guardado por pelo menos 5 anos (CFP 1/2009)."} Não aparece no app de{" "}
+        {firstName}, mas {firstName} tem direito de pedir acesso.
       </p>
       <UnderlineTabs
         label="Partes do prontuário"
@@ -44,6 +56,8 @@ export function Prontuario({ patientId, firstName }: { patientId: string; firstN
         {tab === "evolucao" && <Evolutions patientId={patientId} />}
         {tab === "anamnese" && <AnamnesisForm patientId={patientId} />}
         {tab === "plano" && <Plan patientId={patientId} />}
+        {tab === "medicacao" && <MedicationTab patientId={patientId} firstName={firstName} />}
+        {tab === "exames" && <ExamsTab patientId={patientId} firstName={firstName} />}
       </TabPanel>
     </Block>
   );

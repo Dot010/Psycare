@@ -2,16 +2,22 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { UndoProvider } from "@/components/feedback/UndoProvider";
+import { EXAM_CHANGES_KEY } from "../hooks/useExams";
 import { ANAMNESIS_KEY, GOALS_KEY, NOTES_KEY } from "../hooks/usePro";
+import { PROFESSIONALS } from "../identity";
 import { Prontuario } from "./Prontuario";
+import { ProIdentityProvider } from "./ProIdentity";
 
 beforeEach(() => localStorage.clear());
 
-const setup = () =>
+const [psicologa, psiquiatra] = PROFESSIONALS;
+const setup = (pro = psicologa, patientId = "pac_marina", firstName = "Marina") =>
   render(
-    <UndoProvider>
-      <Prontuario patientId="pac_marina" firstName="Marina" />
-    </UndoProvider>,
+    <ProIdentityProvider value={pro}>
+      <UndoProvider>
+        <Prontuario patientId={patientId} firstName={firstName} />
+      </UndoProvider>
+    </ProIdentityProvider>,
   );
 const stored = (key: string) => JSON.parse(localStorage.getItem(key) ?? "null");
 
@@ -76,5 +82,33 @@ describe("Prontuário", () => {
 
     expect(screen.getByText("1 de 1 objetivo alcançado.")).toBeInTheDocument();
     expect(stored(GOALS_KEY)[0]).toMatchObject({ text: "Dormir 6 horas", status: "alcancado" });
+  });
+});
+
+describe("Prontuário do psiquiatra", () => {
+  it("a psicóloga não tem as abas de Medicação e Exames", () => {
+    setup();
+    expect(screen.queryByRole("tab", { name: "Medicação" })).not.toBeInTheDocument();
+  });
+
+  it("Medicação mostra o remédio em uso e a receita", async () => {
+    setup(psiquiatra);
+    await userEvent.click(screen.getByRole("tab", { name: "Medicação" }));
+
+    expect(screen.getByRole("heading", { name: "Escitalopram" })).toBeInTheDocument();
+    expect(screen.getByText("Em uso")).toBeInTheDocument();
+    expect(screen.getByText(/10 mg, 1 comprimido pela manhã/)).toBeInTheDocument();
+  });
+
+  it("Exames: pedir um exame novo para o paciente", async () => {
+    setup(psiquiatra, "pac_pedro", "Pedro");
+    await userEvent.click(screen.getByRole("tab", { name: "Exames" }));
+    expect(screen.getByText("Glicemia", { selector: "p" })).toBeInTheDocument();
+
+    await userEvent.selectOptions(screen.getByLabelText("Exame a pedir"), "TSH");
+    await userEvent.click(screen.getByRole("button", { name: "Pedir exame" }));
+
+    expect(screen.getByText("TSH", { selector: "p" })).toBeInTheDocument();
+    expect(stored(EXAM_CHANGES_KEY).added[0]).toMatchObject({ patientId: "pac_pedro", nome: "TSH", step: 1 });
   });
 });
