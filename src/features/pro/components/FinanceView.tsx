@@ -60,7 +60,12 @@ export default function FinanceView() {
       )
     : undefined;
   const monthName = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(new Date());
-  const visible = ledger.filter((c) => (filter === "todas" ? true : filter === "pagas" ? c.paid : !c.paid));
+  const filtered = ledger.filter((c) => (filter === "todas" ? true : filter === "pagas" ? c.paid : !c.paid));
+  // Por padrão só o mês atual (e o que ainda está pendente de antes); o resto abre com um toque.
+  const [allMonths, setAllMonths] = useState(false);
+  const recent = filtered.filter((c) => c.date.startsWith(month) || !c.paid);
+  const visible = allMonths ? filtered : recent;
+  const [doc, setDoc] = useState<"recibo" | "declaracao">("recibo");
   const canMarkPaid = (c: Charge) =>
     !c.paid && !!c.sessionId && pro.closings.some((x) => x.sessionId === c.sessionId);
 
@@ -149,7 +154,18 @@ export default function FinanceView() {
             className="mb-3"
           />
           {visible.length === 0 ? (
-            <p className="py-4 text-sm text-muted-foreground">Nada por aqui.</p>
+            <div className="py-4 text-sm text-muted-foreground">
+              <p>Nada por aqui neste mês.</p>
+              {filtered.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setAllMonths(true)}
+                  className="mt-1 min-h-11 font-medium text-brand-ink underline underline-offset-2"
+                >
+                  Ver meses anteriores ({filtered.length})
+                </button>
+              )}
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[34rem] text-sm">
@@ -174,7 +190,7 @@ export default function FinanceView() {
                   </tr>
                 </thead>
                 <tbody>
-                  {visible.slice(0, 40).map((c) => (
+                  {visible.map((c) => (
                     <tr key={c.id} className="border-t border-sunken">
                       <td className="py-2.5 tabular-nums">{formatDateBR(c.date)}</td>
                       <th scope="row" className="py-2.5 text-left font-normal">
@@ -201,7 +217,14 @@ export default function FinanceView() {
                           </Button>
                         )}
                         {c.paid && (
-                          <Button size="sm" variant="ghost" onClick={() => setReceipt(c)}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setDoc("recibo");
+                              setReceipt(c);
+                            }}
+                          >
                             Recibo
                           </Button>
                         )}
@@ -210,10 +233,17 @@ export default function FinanceView() {
                   ))}
                 </tbody>
               </table>
-              {visible.length > 40 && (
-                <p className="pt-2 text-xs text-muted-foreground">
-                  Mostrando as 40 mais novas de {visible.length}.
-                </p>
+              {filtered.length > recent.length && (
+                <button
+                  type="button"
+                  aria-expanded={allMonths}
+                  onClick={() => setAllMonths((v) => !v)}
+                  className="mt-2 min-h-11 text-sm font-medium text-brand-ink underline underline-offset-2"
+                >
+                  {allMonths
+                    ? "Mostrar só este mês"
+                    : `Ver meses anteriores (${filtered.length - recent.length})`}
+                </button>
               )}
             </div>
           )}
@@ -224,23 +254,51 @@ export default function FinanceView() {
         <DialogContent className="gap-4 rounded-2xl p-8 sm:max-w-lg">
           {receipt && (
             <>
-              <DialogTitle className="text-2xl font-light">Recibo</DialogTitle>
-              <DialogDescription className="sr-only">Recibo da sessão para o paciente</DialogDescription>
-              <p className="text-base leading-relaxed">
-                Recebi de <strong className="font-semibold">{nameOf(receipt.patientId)}</strong>, CPF [CPF DO
-                PACIENTE], a quantia de{" "}
-                <strong className="font-semibold">{formatCurrencyBRL(receipt.amount)}</strong>, referente a
-                uma {me.specialty === "psychiatrist" ? "consulta de psiquiatria" : "sessão de psicoterapia"}{" "}
-                realizada em {formatDateBR(receipt.date)}.
-              </p>
+              <DialogTitle className="text-2xl font-light">
+                {doc === "recibo" ? "Recibo" : "Declaração de comparecimento"}
+              </DialogTitle>
+              <DialogDescription className="sr-only">Documento da sessão para o paciente</DialogDescription>
+              {!receipt.missed && (
+                <div role="group" aria-label="Qual documento" className="flex gap-2">
+                  {(["recibo", "declaracao"] as const).map((kind) => (
+                    <button
+                      key={kind}
+                      type="button"
+                      aria-pressed={doc === kind}
+                      onClick={() => setDoc(kind)}
+                      className="min-h-9 rounded-full border border-border px-3 text-xs aria-pressed:border-brand-600 aria-pressed:bg-brand-50 aria-pressed:font-semibold aria-pressed:text-brand-ink focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
+                    >
+                      {kind === "recibo" ? "Recibo" : "Declaração"}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {doc === "recibo" || receipt.missed ? (
+                <p className="text-base leading-relaxed">
+                  Recebi de <strong className="font-semibold">{nameOf(receipt.patientId)}</strong>, CPF [CPF
+                  DO PACIENTE], a quantia de{" "}
+                  <strong className="font-semibold">{formatCurrencyBRL(receipt.amount)}</strong>, referente a
+                  uma {me.specialty === "psychiatrist" ? "consulta de psiquiatria" : "sessão de psicoterapia"}{" "}
+                  realizada em {formatDateBR(receipt.date)}.
+                </p>
+              ) : (
+                <p className="text-base leading-relaxed">
+                  Declaro, para os devidos fins, que{" "}
+                  <strong className="font-semibold">{nameOf(receipt.patientId)}</strong> compareceu a{" "}
+                  {me.specialty === "psychiatrist" ? "consulta de psiquiatria" : "sessão de psicoterapia"} em{" "}
+                  {formatDateBR(receipt.date)}, no horário de [HORÁRIO].
+                </p>
+              )}
               <p className="text-sm leading-relaxed">
                 {me.name} · {me.register}
                 <br />
                 CPF [SEU CPF] · [CIDADE], {formatDateBR(pro.today)}
               </p>
               <p className="text-xs text-muted-foreground">
-                Serve para o reembolso do convênio e para o imposto de renda do paciente. Os dados entre
-                colchetes ficam para você preencher.
+                {doc === "recibo" || receipt.missed
+                  ? "Serve para o reembolso do convênio e para o imposto de renda do paciente."
+                  : "Serve para justificar a ausência no trabalho ou na escola. Não informa o motivo do atendimento."}{" "}
+                Os dados entre colchetes ficam para você preencher.
               </p>
               <div className="flex gap-2">
                 <Button onClick={() => window.print()}>
