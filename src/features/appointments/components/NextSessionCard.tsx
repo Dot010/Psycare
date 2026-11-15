@@ -1,9 +1,11 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { CountUp } from "@/components/motion/CountUp";
+import { Block } from "@/components/ui/block";
 import { useAppointments } from "@/features/appointments/hooks/useAppointments";
 import { countdown, nextAppointment } from "@/features/appointments/logic";
-import { toISODate } from "@/lib/dates";
+import { daysBetween, toISODate } from "@/lib/dates";
 import { formatDateBR } from "@/lib/format";
 
 interface NextSessionCardProps {
@@ -11,39 +13,39 @@ interface NextSessionCardProps {
   action?: ReactNode;
 }
 
+/** O cartão amarelo da próxima sessão, igual ao do Início: os dias que faltam em destaque. */
 export function NextSessionCard({ action }: NextSessionCardProps) {
   const { appointments } = useAppointments();
   const now = new Date();
-  const next = nextAppointment(appointments, `${toISODate(now)}T${now.toTimeString().slice(0, 5)}`);
+  const today = toISODate(now);
+  const next = nextAppointment(appointments, `${today}T${now.toTimeString().slice(0, 5)}`);
+  const days = next ? daysBetween(today, next.data) : 0;
 
   return (
-    <section className="rounded-2xl border border-primary/20 bg-primary/5 p-6 shadow-sm">
-      <h2 className="font-heading text-lg font-semibold text-brand-accent">
-        Próxima sessão{next && <span className="font-normal text-foreground"> · {countdown(next, now)}</span>}
-      </h2>
+    <Block tone="sun" title="Próxima sessão">
       {next ? (
-        <dl className="mt-3 space-y-1 text-foreground/90">
-          <div className="flex gap-1.5">
-            <dt className="font-semibold">Profissional:</dt>
-            <dd>{next.profissional}</dd>
-          </div>
-          <div className="flex gap-1.5">
-            <dt className="font-semibold">Quando:</dt>
-            <dd>
-              {formatDateBR(next.data)} às {next.hora} · {next.tipo === "online" ? "Online" : "Presencial"}
-            </dd>
-          </div>
-          {next.observacao && (
-            <div className="flex gap-1.5">
-              <dt className="font-semibold">Lembrar de:</dt>
-              <dd>{next.observacao}</dd>
-            </div>
+        <div className="space-y-3">
+          {days > 0 ? (
+            <p className="flex items-baseline gap-2">
+              <span className="text-5xl leading-none font-semibold tracking-tight">
+                <CountUp value={days} />
+              </span>
+              <span className="text-base">{days === 1 ? "dia" : "dias"}</span>
+            </p>
+          ) : (
+            <p className="text-3xl font-semibold tracking-tight">{countdown(next, now)}</p>
           )}
-        </dl>
+          <p className="text-sm leading-relaxed">
+            {formatDateBR(next.data)} às {next.hora} · {next.tipo === "online" ? "online" : "presencial"}
+            <br />
+            {next.profissional}
+          </p>
+          {next.observacao && <p className="text-sm">Lembrar de: {next.observacao}</p>}
+          {action}
+        </div>
       ) : (
-        <p className="mt-3 text-sm text-muted-foreground">Nenhuma sessão agendada no momento.</p>
+        <p className="text-sm">Nenhuma sessão agendada no momento.</p>
       )}
-      {next && action && <div className="mt-4">{action}</div>}
-    </section>
+    </Block>
   );
 }

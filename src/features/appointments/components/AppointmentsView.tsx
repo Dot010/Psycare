@@ -6,10 +6,13 @@ import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ItemMenu } from "@/components/feedback/ItemMenu";
 import { Page } from "@/components/layout/Page";
+import { PageColumns } from "@/components/layout/PageColumns";
 import { MagneticButton } from "@/components/motion/MagneticButton";
+import { Block } from "@/components/ui/block";
 import { Button } from "@/components/ui/button";
 import { AppointmentModal } from "@/features/appointments/components/AppointmentModal";
 import { NextSessionCard } from "@/features/appointments/components/NextSessionCard";
+import { SessionPrep } from "@/features/appointments/components/SessionPrep";
 import { useAppointments } from "@/features/appointments/hooks/useAppointments";
 import { buildIcs, splitAppointments } from "@/features/appointments/logic";
 import type { Agendamento } from "@/features/appointments/types";
@@ -33,7 +36,7 @@ function AppointmentRow({
   onCancel?: () => void;
 }) {
   return (
-    <li className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
+    <li className="flex items-center justify-between gap-3 border-t border-sunken py-3 first:border-t-0">
       <div className="min-w-0">
         <p className="font-medium text-foreground">{item.profissional}</p>
         <p className="text-sm text-muted-foreground">
@@ -93,11 +96,16 @@ export function AppointmentsView() {
     setModalOpen(true);
   };
 
+  const professionals = [
+    ...new Set(appointments.filter((a) => a.status !== "cancelado").map((a) => a.profissional)),
+  ];
+
   return (
     <Page
-      width="narrow"
-      title="Consultas"
-      description="Suas próximas sessões e o histórico de atendimentos."
+      width="wide"
+      title="Sua próxima sessão"
+      kicker="Consultas"
+      description="Chegue com o que importa já separado."
       actions={
         <MagneticButton
           type="button"
@@ -109,68 +117,93 @@ export function AppointmentsView() {
         </MagneticButton>
       }
     >
-      <NextSessionCard
-        action={
-          <Button disabled title="Demonstração: a sala de vídeo ainda não existe">
-            Entrar na sala (em breve)
-          </Button>
-        }
-      />
-
-      {appointments.length === 0 ? (
-        <EmptyState
-          title="Nenhum agendamento ainda"
-          description="Comece adicionando sua primeira sessão com um profissional."
-          action={
-            <Button onClick={openNew}>
-              <CalendarPlus />
-              Agendar sessão
-            </Button>
-          }
-        />
-      ) : (
-        <>
-          <section className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-xl font-semibold text-foreground">Próximas</h2>
-              {upcoming.length > 0 && (
-                <Button variant="ghost" size="sm" onClick={exportCalendar}>
-                  <Download />
-                  Exportar para o calendário
+      <PageColumns
+        aside={
+          <>
+            <NextSessionCard
+              action={
+                <Button disabled title="Demonstração: a sala de vídeo ainda não existe">
+                  Entrar na sala (em breve)
                 </Button>
-              )}
-            </div>
-            {upcoming.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhuma sessão futura.</p>
-            ) : (
-              <ul className="space-y-3">
-                {upcoming.map((item) => (
-                  <AppointmentRow
-                    key={item.id}
-                    item={item}
-                    onReschedule={() => {
-                      setEditing(item);
-                      setModalOpen(true);
-                    }}
-                    onCancel={() => setCancelling(item)}
-                  />
-                ))}
-              </ul>
+              }
+            />
+            {professionals.length > 0 && (
+              <Block title="Quem cuida de você">
+                <ul className="space-y-3">
+                  {professionals.map((name) => (
+                    <li key={name} className="flex items-center gap-3">
+                      <span
+                        aria-hidden
+                        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-100 font-semibold text-brand-ink"
+                      >
+                        {name.replace(/^(Dra?\.)\s*/, "").charAt(0)}
+                      </span>
+                      <span className="text-sm">{name}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Block>
             )}
-          </section>
+          </>
+        }
+      >
+        <SessionPrep />
 
-          {past.length > 0 && (
-            <section className="space-y-3">
-              <h2 className="text-xl font-semibold text-foreground">Histórico</h2>
-              <ul className="space-y-3">
-                {past.map((item) => (
-                  <AppointmentRow key={item.id} item={item} />
-                ))}
-              </ul>
-            </section>
-          )}
-        </>
-      )}
+        {appointments.length === 0 ? (
+          <EmptyState
+            title="Nenhum agendamento ainda"
+            description="Comece adicionando sua primeira sessão com um profissional."
+            action={
+              <Button onClick={openNew}>
+                <CalendarPlus />
+                Agendar sessão
+              </Button>
+            }
+          />
+        ) : (
+          <>
+            <Block
+              title="Próximas"
+              aside={
+                upcoming.length > 0 && (
+                  <Button variant="ghost" size="sm" onClick={exportCalendar}>
+                    <Download />
+                    Exportar para o calendário
+                  </Button>
+                )
+              }
+            >
+              {upcoming.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhuma sessão futura.</p>
+              ) : (
+                <ul>
+                  {upcoming.map((item) => (
+                    <AppointmentRow
+                      key={item.id}
+                      item={item}
+                      onReschedule={() => {
+                        setEditing(item);
+                        setModalOpen(true);
+                      }}
+                      onCancel={() => setCancelling(item)}
+                    />
+                  ))}
+                </ul>
+              )}
+            </Block>
+
+            {past.length > 0 && (
+              <Block title="Histórico">
+                <ul>
+                  {past.map((item) => (
+                    <AppointmentRow key={item.id} item={item} />
+                  ))}
+                </ul>
+              </Block>
+            )}
+          </>
+        )}
+      </PageColumns>
 
       <AppointmentModal
         open={modalOpen}
