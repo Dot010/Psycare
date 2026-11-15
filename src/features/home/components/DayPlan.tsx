@@ -1,5 +1,6 @@
 "use client";
 
+import { HardMoment } from "@/features/safety/components/HardMoment";
 import { Check, Droplets } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -146,6 +147,12 @@ export function DayPlan({ todayCheckIn, doneToday, drops, onCheckIn, onTagsChang
           </Link>
         </div>
       </div>
+
+      {todayCheckIn?.level !== undefined && (
+        <div className="mt-4">
+          <HardMoment level={todayCheckIn.level} />
+        </div>
+      )}
 
       <ol className="mt-5">
         {steps.map((step, index) => {
