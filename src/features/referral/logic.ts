@@ -61,7 +61,7 @@ export function referralTasks(list: Referral[], patientId: string, today: string
     importance: "medium" as const,
     done: false,
     source: "encaminhamento" as const,
-    href: "/dashboard/health?aba=encaminhamento",
+    href: "/dashboard/health?aba=exames#encaminhamento",
     readonly: true,
   };
   if (stage === "issued") {

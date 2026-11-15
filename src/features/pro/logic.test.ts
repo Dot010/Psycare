@@ -9,6 +9,7 @@ import {
   medicationHistory,
   moodTrend,
   sevenDays,
+  sinceLastSession,
   trendSentence,
 } from "./logic";
 import type { ProSession, SessionClosing } from "./types";
@@ -209,5 +210,40 @@ describe("consulta do psiquiatra", () => {
       ["Escitalopram", "c", ["b"]],
       ["Sertralina", "a", []],
     ]);
+  });
+});
+
+describe("desde a última sessão", () => {
+  const sessions = [
+    { id: "a", patientId: "p", data: "2026-11-05", hora: "09:00", tipo: "online", status: "realizada" },
+    { id: "b", patientId: "p", data: "2026-11-12", hora: "09:00", tipo: "online", status: "confirmado" },
+  ] as Parameters<typeof sinceLastSession>[1];
+
+  it("resume só o que veio depois da última sessão realizada", () => {
+    const recap = sinceLastSession(
+      {
+        moodDays: [
+          { date: "2026-11-04", level: 5 },
+          { date: "2026-11-06", level: 2 },
+          { date: "2026-11-08", level: 4 },
+        ],
+        topics: [{ date: "2026-11-07", title: "Briga em casa" }],
+        meds: [{ nome: "X", dosagem: "", horarios: "", taken: 5, planned: 10 }],
+      },
+      sessions,
+      "p",
+      "2026-11-10",
+    );
+    expect(recap.since).toBe("2026-11-05");
+    expect(recap.lines).toEqual([
+      "Humor: média 3,0 de 5 em 2 dias, com 1 dia difícil.",
+      "Marcou 1 página do diário para conversar: “Briga em casa”.",
+      "Remédios: 50% das doses marcadas nos últimos 7 dias.",
+    ]);
+  });
+
+  it("sem nada compartilhado, não inventa", () => {
+    expect(sinceLastSession({}, sessions, "p", "2026-11-10").lines).toEqual([]);
+    expect(sinceLastSession(null, [], "p", "2026-11-10")).toEqual({ since: null, lines: [] });
   });
 });

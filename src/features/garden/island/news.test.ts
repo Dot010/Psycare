@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { placeNews, type NewsInput } from "@/features/garden/island/news";
+import { placeNews, placesWithNews, type NewsInput } from "@/features/garden/island/news";
 
 const base: NewsInput = {
   assignments: [
@@ -50,5 +50,27 @@ describe("o que há de novo em cada lugar da ilha", () => {
   it("cabana conta as páginas do diário", () => {
     expect(placeNews("cabana", base)).toBe("3 páginas na estante.");
     expect(placeNews("cabana", { ...base, diaryPages: 0 })).toBe("A estante ainda está vazia.");
+  });
+});
+
+describe("lugares com novidade", () => {
+  it("brilham a garrafa com atividade esperando e a consulta esperando confirmação", () => {
+    expect(placesWithNews(base)).toEqual(["garrafa", "consulta"]);
+  });
+  it("sem nada pendente, nenhum brilho", () => {
+    expect(placesWithNews({ ...base, assignments: [], appointments: [] })).toEqual([]);
+  });
+  it("mensagem nova do profissional faz o correio brilhar", () => {
+    const chat = base.chats[0];
+    const answered = {
+      ...chat,
+      messages: [
+        { id: "0", sender: "user" as const, content: "Oi", timestamp: "" },
+        { id: "1", sender: "doctor" as const, content: "Oi! Tudo bem?", timestamp: "" },
+      ],
+    };
+    expect(placesWithNews({ ...base, assignments: [], appointments: [], chats: [answered] })).toEqual([
+      "correio",
+    ]);
   });
 });

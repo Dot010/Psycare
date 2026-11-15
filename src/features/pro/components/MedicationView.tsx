@@ -6,59 +6,65 @@ import { Page } from "@/components/layout/Page";
 import { usePro } from "../hooks/usePro";
 import { adherence } from "../prescriptions";
 
+/**
+ * Adesão em resumo: uma linha por paciente, com quem mais precisa de atenção primeiro.
+ * Os detalhes (cada remédio, horários, sintomas) ficam na ficha do paciente, na aba Medicação.
+ */
 export default function MedicationView({ embedded = false }: { embedded?: boolean }) {
   const pro = usePro();
-  const rows = pro.patients.map((patient) => ({ patient, snap: pro.snapshotOf(patient.id) }));
+  const rows = pro.patients
+    .map((patient) => {
+      const snap = pro.snapshotOf(patient.id);
+      const taken = snap?.meds?.reduce((sum, m) => sum + m.taken, 0) ?? 0;
+      const planned = snap?.meds?.reduce((sum, m) => sum + m.planned, 0) ?? 0;
+      return { patient, snap, taken, planned, percent: adherence(taken, planned) };
+    })
+    .sort((a, b) => (a.percent ?? 101) - (b.percent ?? 101));
 
   return (
     <Page
       embedded={embedded}
       title="Medicação"
-      description="Remédios, adesão e efeitos que os pacientes relatam. Só o que foi compartilhado."
+      description="Quem está tomando os remédios, nos últimos 7 dias. Só o que foi compartilhado."
       width="narrow"
-      className="space-y-10"
+      className="space-y-6"
     >
       <DemoNotice>Dados de exemplo. Nada aqui é prescrição de verdade.</DemoNotice>
-      {rows.map(({ patient, snap }) => (
-        <section key={patient.id} aria-label={patient.name} className="space-y-2">
-          <h2 className="text-2xl font-semibold text-brand-ink">
-            <Link href={`/dashboard/pro/patients/${patient.id}`} className="hover:underline">
-              {patient.name}
+      <ul>
+        {rows.map(({ patient, snap, taken, planned, percent }) => (
+          <li key={patient.id} className="border-t border-border">
+            <Link
+              href={`/dashboard/pro/patients/${patient.id}`}
+              className="flex items-center justify-between gap-3 py-4 hover:text-brand-ink focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none"
+            >
+              <span>
+                <span className="block text-lg font-medium text-foreground">{patient.name}</span>
+                <span className="block text-sm text-muted-foreground">
+                  {!snap?.meds
+                    ? "Não compartilha dados de saúde."
+                    : snap.meds.length === 0
+                      ? "Nenhum remédio cadastrado."
+                      : `${snap.meds.map((m) => m.nome).join(", ")} · ${adherenceText(taken, planned)}`}
+                  {snap?.symptoms && snap.symptoms.length > 0
+                    ? ` · ${snap.symptoms.length} ${snap.symptoms.length === 1 ? "sintoma relatado" : "sintomas relatados"}`
+                    : ""}
+                </span>
+              </span>
+              {percent !== null && (
+                <span
+                  className={
+                    percent < 70
+                      ? "rounded-full bg-sun-100 px-3 py-1 text-sm font-semibold text-sun-700"
+                      : "rounded-full bg-brand-100 px-3 py-1 text-sm font-semibold text-brand-ink"
+                  }
+                >
+                  {percent}%
+                </span>
+              )}
             </Link>
-          </h2>
-          {!snap?.meds && !snap?.symptoms ? (
-            <p className="text-base text-muted-foreground">Não compartilha dados de saúde.</p>
-          ) : (
-            <>
-              {snap.meds && snap.meds.length > 0 ? (
-                <ul>
-                  {snap.meds.map((m) => (
-                    <li key={m.nome} className="border-t border-border py-2 text-base text-foreground">
-                      {m.nome} <span className="text-muted-foreground">{m.dosagem}</span>
-                      <span className="block text-sm text-muted-foreground">
-                        {m.horarios} · {adherenceText(m.taken, m.planned)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-base text-muted-foreground">Nenhum remédio cadastrado.</p>
-              )}
-              {snap.symptoms && snap.symptoms.length > 0 && (
-                <p className="text-sm text-foreground">
-                  <span className="font-medium">Efeitos e sintomas relatados: </span>
-                  {snap.symptoms
-                    .map(
-                      (s) =>
-                        `${s.nome} (${s.vezes}x${s.media !== null ? `, média ${String(s.media).replace(".", ",")}/5` : ""})`,
-                    )
-                    .join(" · ")}
-                </p>
-              )}
-            </>
-          )}
-        </section>
-      ))}
+          </li>
+        ))}
+      </ul>
     </Page>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { HardMoment } from "@/features/safety/components/HardMoment";
 import { Check, Droplets } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -51,11 +52,20 @@ interface DayPlanProps {
   /** Total de gotas que a pessoa já ganhou (despejadas + no regador). */
   drops: number;
   onCheckIn: (level: MoodLevel) => void;
+  /** "Hoje está difícil": mostra só o registro de humor, sem as missões. */
+  essential?: boolean;
   onTagsChange: (tags: string[]) => void;
 }
 
 /** "Seu dia": o check-in e as missões de hoje numa lista só. Fica aberto só o passo da vez. */
-export function DayPlan({ todayCheckIn, doneToday, drops, onCheckIn, onTagsChange }: DayPlanProps) {
+export function DayPlan({
+  todayCheckIn,
+  doneToday,
+  drops,
+  onCheckIn,
+  onTagsChange,
+  essential = false,
+}: DayPlanProps) {
   const [state, setState] = useLocalStorage(MISSIONS_KEY, NO_MISSIONS);
   // undefined = abre sozinho o primeiro passo pendente; "" = tudo fechado.
   const [open, setOpen] = useState<string | undefined>(undefined);
@@ -79,7 +89,7 @@ export function DayPlan({ todayCheckIn, doneToday, drops, onCheckIn, onTagsChang
     for (const id of doneKey.split(",")) grantWater("mission", id);
   }, [doneKey]);
 
-  const steps: Step[] = [
+  const allSteps: Step[] = [
     {
       id: "checkin",
       title: "Como você está?",
@@ -98,6 +108,7 @@ export function DayPlan({ todayCheckIn, doneToday, drops, onCheckIn, onTagsChang
       })),
   ];
 
+  const steps = essential ? allSteps.slice(0, 1) : allSteps;
   const doneCount = steps.filter((step) => step.done).length;
   const firstPending = steps.find((step) => !step.done)?.id ?? "";
   const expanded = open ?? firstPending;
@@ -146,6 +157,12 @@ export function DayPlan({ todayCheckIn, doneToday, drops, onCheckIn, onTagsChang
           </Link>
         </div>
       </div>
+
+      {todayCheckIn?.level !== undefined && (
+        <div className="mt-4">
+          <HardMoment level={todayCheckIn.level} />
+        </div>
+      )}
 
       <ol className="mt-5">
         {steps.map((step, index) => {

@@ -24,7 +24,7 @@ describe("cartão do lugar na ilha", () => {
 
   it("a cabana leva ao diário", () => {
     render(<IslandPanel {...base} place="cabana" />);
-    expect(screen.getByRole("link", { name: "Abrir cabana" })).toHaveAttribute("href", "/dashboard/diary");
+    expect(screen.getByRole("link", { name: "Abrir o diário" })).toHaveAttribute("href", "/dashboard/diary");
   });
 
   it("o cais usa o nome da raposa", () => {

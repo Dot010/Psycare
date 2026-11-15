@@ -11,7 +11,16 @@ const STATUS_LABEL: Record<ProSession["status"], string> = {
   faltou: "Faltou",
 };
 
-export function SessionLine({ session, actions }: { session: ProSession; actions?: ReactNode }) {
+export function SessionLine({
+  session,
+  actions,
+  below,
+}: {
+  session: ProSession;
+  actions?: ReactNode;
+  /** O que abre embaixo da linha (o "Encerrar sessão"). */
+  below?: ReactNode;
+}) {
   const patient = patientById(session.patientId);
   return (
     <li className="flex flex-wrap items-center justify-between gap-3 border-t border-border py-3">
@@ -28,6 +37,7 @@ export function SessionLine({ session, actions }: { session: ProSession; actions
         </p>
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
+      {below && <div className="basis-full">{below}</div>}
     </li>
   );
 }

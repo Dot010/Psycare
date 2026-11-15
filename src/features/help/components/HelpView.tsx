@@ -1,15 +1,9 @@
 "use client";
 
-import { CircleCheck, Mail, ChevronDown } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { z } from "zod";
+import { Mail, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { DemoNotice } from "@/components/feedback/DemoNotice";
 import { Page } from "@/components/layout/Page";
-import { Button } from "@/components/ui/button";
-import { Field } from "@/components/ui/field";
-import { fieldControlClass } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 
 const FAQS = [
   {
@@ -18,9 +12,9 @@ const FAQS = [
       "Só você lê o texto. Se você ativar o compartilhamento em Configurações, o seu profissional vê apenas o título das páginas que você marcar como “Para a próxima consulta”. Você muda isso quando quiser.",
   },
   {
-    question: "Como o jardim cresce?",
+    question: "Como as plantas do Refúgio crescem?",
     answer:
-      "Cada gesto de cuidado (contar como está, escrever no diário, respirar, concluir um hábito ou uma tarefa) enche o regador. Toque em Regar no Início e as plantas crescem. O jardim nunca murcha.",
+      "Cada gesto de cuidado (contar como está, escrever no diário, respirar, concluir um hábito ou uma tarefa) vira uma gota. No Refúgio, abra os Canteiros e toque em Regar: as plantas crescem. Elas nunca murcham.",
   },
   {
     question: "Como peço uma nova receita?",
@@ -30,7 +24,7 @@ const FAQS = [
   {
     question: "Como peço um encaminhamento para a psicóloga?",
     answer:
-      "Em Saúde, na aba Encaminhamento, toque em “Pedir encaminhamento”. O papel é entregue em mãos pelo psiquiatra, e você anota cada etapa até entregar à psicóloga.",
+      "Em Saúde, na aba Exames e guias, toque em “Pedir encaminhamento”. O papel é entregue em mãos pelo psiquiatra, e você anota cada etapa até entregar à psicóloga.",
   },
   {
     question: "Como pago minhas consultas?",
@@ -47,42 +41,13 @@ const CONTACTS = [
   { Icon: Mail, title: "E-mail de suporte", text: "suporte@exemplo.com (endereço de exemplo)." },
 ];
 
-const ticketSchema = z.object({
-  subject: z.string().trim().min(4, "Assunto muito curto").max(120),
-  message: z.string().trim().min(10, "Descreva melhor o problema"),
-});
-
 const panelClass = "space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm";
 const panelTitleClass = "border-b border-border pb-3 text-base font-bold text-foreground";
 
 export default function HelpView() {
-  const [subject, setSubject] = useState("");
-  const [message, setMessage] = useState("");
-  const [isSent, setIsSent] = useState(false);
-  const [error, setError] = useState("");
-  const resetTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  useEffect(() => () => clearTimeout(resetTimer.current), []);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const parsed = ticketSchema.safeParse({ subject, message });
-    if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Dados inválidos");
-      return;
-    }
-    setError("");
-    setIsSent(true);
-    resetTimer.current = setTimeout(() => {
-      setIsSent(false);
-      setSubject("");
-      setMessage("");
-    }, 3000);
-  };
-
   return (
-    <Page title="Ajuda" description="Tire suas dúvidas ou entre em contato com a equipe." width="narrow">
-      <DemoNotice>Os contatos e o formulário abaixo são de exemplo: nada é enviado a ninguém.</DemoNotice>
+    <Page title="Ajuda" description="Tire suas dúvidas ou fale com a equipe por e-mail." width="narrow">
+      <DemoNotice>O e-mail abaixo é de exemplo.</DemoNotice>
       <p className="rounded-xl bg-brand-50 p-4 text-sm text-brand-ink">
         Precisa de ajuda agora? Ligue{" "}
         <a className="font-semibold underline" href="tel:188">
@@ -108,8 +73,8 @@ export default function HelpView() {
         ))}
       </ul>
 
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
-        <section className={cn(panelClass, "md:col-span-7")}>
+      <div>
+        <section className={panelClass}>
           <h2 className={panelTitleClass}>Perguntas frequentes</h2>
           <div className="space-y-3">
             {FAQS.map((faq) => (
@@ -124,56 +89,6 @@ export default function HelpView() {
               </details>
             ))}
           </div>
-        </section>
-
-        <section className={cn(panelClass, "md:col-span-5")}>
-          <h2 className={panelTitleClass}>Abrir chamado</h2>
-
-          {isSent ? (
-            <div
-              role="status"
-              className="space-y-2 rounded-xl border border-brand-200 bg-brand-50 p-4 text-center"
-            >
-              <CircleCheck className="mx-auto size-6 text-brand-accent" aria-hidden />
-              <p className="text-xs font-bold text-brand-ink">Chamado simulado</p>
-              <p className="text-xs text-brand-ink">
-                Na versão real, enviaríamos para a equipe. Aqui nada foi enviado.
-              </p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <Field
-                label="Assunto"
-                placeholder="Ex: Dúvida sobre fatura"
-                required
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-              />
-              <div className="space-y-1">
-                <label htmlFor="ticket-message" className="block text-xs font-medium text-muted-foreground">
-                  Mensagem
-                </label>
-                <textarea
-                  id="ticket-message"
-                  rows={4}
-                  required
-                  maxLength={1000}
-                  placeholder="Descreva o que está acontecendo..."
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className={cn(fieldControlClass, "resize-none")}
-                />
-              </div>
-              {error && (
-                <p role="alert" className="text-xs text-danger-600">
-                  {error}
-                </p>
-              )}
-              <Button type="submit" className="w-full">
-                Enviar chamado
-              </Button>
-            </form>
-          )}
         </section>
       </div>
     </Page>

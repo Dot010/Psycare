@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useGarden } from "@/features/garden/hooks/useGarden";
@@ -106,5 +106,31 @@ describe("Seu dia", () => {
 
     expect(checkin).toHaveAttribute("aria-expanded", "false");
     expect(screen.queryByRole("radio", { name: /Bem/ })).not.toBeInTheDocument();
+  });
+
+  it("registrar 'muito mal' oferece respiração, o plano de segurança e o 188", async () => {
+    render(<Harness />);
+    expect(screen.queryByRole("region", { name: "Para um momento difícil" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("radio", { name: /Muito mal/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Registrar humor" }));
+    const help = screen.getByRole("region", { name: "Para um momento difícil" });
+    expect(within(help).getByRole("link", { name: /Respirar um minuto/ })).toHaveAttribute(
+      "href",
+      "/dashboard/breathing",
+    );
+    expect(within(help).getByRole("link", { name: /plano de segurança/ })).toHaveAttribute(
+      "href",
+      "/dashboard/safety",
+    );
+    expect(within(help).getByRole("link", { name: /Ligar 188/ })).toHaveAttribute("href", "tel:188");
+  });
+});
+
+describe("Hoje está difícil", () => {
+  it("no modo essencial, o Seu dia mostra só o registro de humor", () => {
+    render(
+      <DayPlan doneToday={new Set()} drops={0} onCheckIn={() => {}} onTagsChange={() => {}} essential />,
+    );
+    expect(screen.getByText(/^0 de 1/)).toBeInTheDocument();
   });
 });

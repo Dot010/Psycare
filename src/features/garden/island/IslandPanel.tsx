@@ -22,7 +22,21 @@ export interface IslandPanelProps {
   /** No cais: sair de barco respirando (quantas respirações). */
   onStartTrip?: (cycles: number) => void;
   onClose: () => void;
+  /** A atividade do lugar (escrever na Cabana, a pedra na Praia, o 5-4-3-2-1 no Farol). */
+  children?: React.ReactNode;
 }
+
+/** O que o botão de cada lugar faz, em palavras (leva à página de verdade no app). */
+const ACTION: Record<PlaceId, string> = {
+  canteiros: "",
+  cabana: "Abrir o diário",
+  farol: "Abrir meu plano de segurança",
+  cais: "",
+  garrafa: "Ver as atividades",
+  correio: "Ver as mensagens",
+  consulta: "Ver as consultas",
+  praia: "Ver o que vai para a sessão",
+};
 
 const linkClass =
   "inline-flex min-h-11 items-center justify-center rounded-full bg-strong px-5 text-sm font-medium text-white focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none";
@@ -39,6 +53,7 @@ export function IslandPanel({
   onStartTrip,
   news = null,
   onClose,
+  children,
 }: IslandPanelProps) {
   const p = placeById(place);
   const fox = foxRef(foxName);
@@ -65,6 +80,8 @@ export function IslandPanel({
           <X className="size-5" aria-hidden />
         </button>
       </div>
+
+      {children}
 
       {place === "canteiros" && (
         <div className="mt-3">
@@ -162,11 +179,7 @@ export function IslandPanel({
       {place !== "canteiros" && !(place === "cais" && onStartTrip) && (
         <div className="mt-4 flex flex-wrap gap-2">
           <Link href={p.href} className={linkClass}>
-            {place === "cais"
-              ? `Respirar com ${fox}`
-              : place === "farol"
-                ? "Abrir meu plano de segurança"
-                : `Abrir ${p.label.toLowerCase()}`}
+            {place === "cais" ? `Respirar com ${fox}` : ACTION[place]}
           </Link>
         </div>
       )}

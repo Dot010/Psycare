@@ -40,15 +40,16 @@ import { toISODate } from "@/lib/dates";
 import { formatDateBR } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-type Tab = "hoje" | "remedios" | "exames" | "encaminhamento";
+// O encaminhamento é papel, como o exame: fica junto, na aba Exames (o endereço antigo leva para lá).
+type Tab = "hoje" | "remedios" | "exames";
 const TABS: { id: Tab; label: string }[] = [
   { id: "hoje", label: "Hoje" },
   { id: "remedios", label: "Remédios" },
-  { id: "exames", label: "Exames" },
-  { id: "encaminhamento", label: "Encaminhamento" },
+  { id: "exames", label: "Exames e guias" },
 ];
 
 function tabFrom(value: string | null | undefined): Tab {
+  if (value === "encaminhamento") return "exames";
   return TABS.some((t) => t.id === value) ? (value as Tab) : "hoje";
 }
 
@@ -295,12 +296,6 @@ export default function HealthView() {
           </Block>
         )}
 
-        {tab === "encaminhamento" && (
-          <Block size="lg">
-            <ReferralSection />
-          </Block>
-        )}
-
         {tab === "exames" && requested.length > 0 && (
           <Block title="Pedidos pelo psiquiatra" size="lg">
             <ul>
@@ -380,6 +375,12 @@ export default function HealthView() {
                 ))}
               </ul>
             )}
+          </Block>
+        )}
+
+        {tab === "exames" && (
+          <Block size="lg">
+            <ReferralSection />
           </Block>
         )}
       </TabPanel>

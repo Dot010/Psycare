@@ -9,6 +9,7 @@ import { addDays } from "@/features/health/logic";
 import { formatCurrencyBRL } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { CONDUCT_LABEL, EVOLUTION_MAX } from "../logic";
+import { evolutionTemplate } from "../prontuario";
 import type { CloseSessionInput } from "../hooks/usePro";
 import type { PrescriptionChange } from "../types";
 
@@ -110,6 +111,15 @@ export function CloseSession({ patientName, fee, today, noun, by, onClose, onCan
               placeholder="Como chegou, o que foi trabalhado, o que ficou combinado."
               className={cn(fieldControlClass, "min-h-28 resize-y py-3")}
             />
+            {!evolution.trim() && (
+              <button
+                type="button"
+                onClick={() => setEvolution(evolutionTemplate(isConsult ? "psychiatrist" : "psychologist"))}
+                className="min-h-9 text-xs font-medium text-brand-ink underline underline-offset-2"
+              >
+                Usar modelo
+              </button>
+            )}
             <p className="text-xs text-muted-foreground">
               Vai para o prontuário de {first}. Não aparece no app de {first}, mas {first} tem direito de
               pedir acesso ao prontuário{isConsult ? "" : " (CFP 1/2009)"}.

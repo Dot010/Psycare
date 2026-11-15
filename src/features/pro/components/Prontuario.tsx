@@ -8,7 +8,16 @@ import { TabPanel, UnderlineTabs } from "@/components/ui/underline-tabs";
 import { formatDateBR } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { usePro } from "../hooks/usePro";
-import { ANAMNESIS_FIELDS, FIELD_MAX, GOAL_LABEL, GOAL_MAX, NOTE_MAX, stampLabel } from "../prontuario";
+import {
+  anamnesisFields,
+  CONDUCT_STATUS_LABEL,
+  evolutionTemplate,
+  FIELD_MAX,
+  GOAL_LABEL,
+  GOAL_MAX,
+  NOTE_MAX,
+  stampLabel,
+} from "../prontuario";
 import type { AnamnesisField, Goal, SessionNote } from "../types";
 import { useProIdentity } from "./ProIdentity";
 import { ExamsTab, MedicationTab } from "./ProntuarioClinico";
@@ -21,7 +30,9 @@ const BASE_TABS: { id: Tab; label: string }[] = [
 ];
 /** O psiquiatra tem duas abas a mais: o remédio é o centro da consulta. */
 const PSYCHIATRY_TABS: { id: Tab; label: string }[] = [
-  ...BASE_TABS,
+  { id: "evolucao", label: "Evolução" },
+  { id: "anamnese", label: "Anamnese" },
+  { id: "plano", label: "Conduta" },
   { id: "medicacao", label: "Medicação" },
   { id: "exames", label: "Exames" },
 ];
@@ -29,8 +40,9 @@ const PSYCHIATRY_TABS: { id: Tab; label: string }[] = [
 const textarea = cn(fieldControlClass, "min-h-24 resize-y py-3");
 
 /**
- * O prontuário do paciente (CFP 1/2009): evolução de cada sessão, anamnese e plano terapêutico.
- * Nada se apaga; corrigir guarda a versão anterior com data e hora.
+ * O prontuário do paciente: evolução de cada sessão, anamnese e plano terapêutico (ou conduta, no do médico).
+ * Cada profissional tem o seu. Nada se apaga; corrigir guarda a versão anterior com data e hora.
+ * Psicóloga: Resolução CFP 1/2009 (guarda de 5 anos). Psiquiatra: Resolução CFM 1.821/2007 (20 anos).
  */
 export function Prontuario({ patientId, firstName }: { patientId: string; firstName: string }) {
   const [tab, setTab] = useState<Tab>("evolucao");
@@ -41,9 +53,10 @@ export function Prontuario({ patientId, firstName }: { patientId: string; firstN
   return (
     <Block title="Prontuário" size="lg">
       <p className="-mt-2 mb-4 text-xs leading-relaxed text-muted-foreground">
-        Nada aqui se apaga: corrigir guarda a versão anterior.
-        {psychiatry ? "" : " O registro é guardado por pelo menos 5 anos (CFP 1/2009)."} Não aparece no app de{" "}
-        {firstName}, mas {firstName} tem direito de pedir acesso.
+        Este prontuário é só seu: outro profissional não vê. Nada aqui se apaga: corrigir guarda a versão
+        anterior. O registro é guardado por pelo menos{" "}
+        {psychiatry ? "20 anos (CFM 1.821/2007)" : "5 anos (CFP 1/2009)"}. Não aparece no app de {firstName},
+        mas {firstName} tem direito de pedir acesso.
       </p>
       <UnderlineTabs
         label="Partes do prontuário"
@@ -65,6 +78,7 @@ export function Prontuario({ patientId, firstName }: { patientId: string; firstN
 
 function Evolutions({ patientId }: { patientId: string }) {
   const pro = usePro();
+  const { specialty } = useProIdentity();
   const [draft, setDraft] = useState("");
   const notes = pro.notes.filter((n) => n.patientId === patientId);
   const sessionHour = (note: SessionNote) => pro.sessions.find((s) => s.id === note.sessionId)?.hora;
@@ -91,9 +105,16 @@ function Evolutions({ patientId }: { patientId: string }) {
           placeholder="Fora do Encerrar sessão: um contato, uma intercorrência, uma observação."
           className={textarea}
         />
-        <Button type="submit" disabled={!draft.trim()}>
-          Guardar no prontuário
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="submit" disabled={!draft.trim()}>
+            Guardar no prontuário
+          </Button>
+          {!draft.trim() && (
+            <Button type="button" variant="ghost" onClick={() => setDraft(evolutionTemplate(specialty))}>
+              Usar modelo
+            </Button>
+          )}
+        </div>
       </form>
 
       {notes.length === 0 ? (
@@ -214,6 +235,8 @@ function NoteItem({
 
 function AnamnesisForm({ patientId }: { patientId: string }) {
   const pro = usePro();
+  const { specialty } = useProIdentity();
+  const list = anamnesisFields(specialty);
   const current = pro.anamneses[patientId];
   const [fields, setFields] = useState<Partial<Record<AnamnesisField, string>>>(current?.fields ?? {});
   const [saved, setSaved] = useState(false);
@@ -229,9 +252,11 @@ function AnamnesisForm({ patientId }: { patientId: string }) {
       }}
     >
       <p className="text-sm text-muted-foreground">
-        A avaliação da demanda, feita na primeira conversa. Pode ser completada com o tempo.
+        {specialty === "psychiatrist"
+          ? "A primeira consulta: queixa, história, antecedentes e exame do estado mental. Pode ser completada com o tempo."
+          : "A avaliação da demanda, feita na primeira conversa. Pode ser completada com o tempo."}
       </p>
-      {ANAMNESIS_FIELDS.map((field) => (
+      {list.map((field) => (
         <div key={field.id} className="space-y-1">
           <label htmlFor={`anam-${field.id}`} className="block text-sm font-semibold">
             {field.label}
@@ -282,11 +307,13 @@ function AnamnesisForm({ patientId }: { patientId: string }) {
           {current.history.map((h) => (
             <li key={h.until} className="space-y-1 text-sm">
               <span className="block text-xs text-muted-foreground">Valeu até {stampLabel(h.until)}</span>
-              {ANAMNESIS_FIELDS.filter((f) => h.fields[f.id]).map((f) => (
-                <p key={f.id} className="text-muted-foreground">
-                  <strong className="font-medium">{f.label}:</strong> {h.fields[f.id]}
-                </p>
-              ))}
+              {list
+                .filter((f) => h.fields[f.id])
+                .map((f) => (
+                  <p key={f.id} className="text-muted-foreground">
+                    <strong className="font-medium">{f.label}:</strong> {h.fields[f.id]}
+                  </p>
+                ))}
             </li>
           ))}
         </ol>
@@ -297,6 +324,8 @@ function AnamnesisForm({ patientId }: { patientId: string }) {
 
 function Plan({ patientId }: { patientId: string }) {
   const pro = usePro();
+  const psychiatry = useProIdentity().specialty === "psychiatrist";
+  const labels = psychiatry ? CONDUCT_STATUS_LABEL : GOAL_LABEL;
   const [draft, setDraft] = useState("");
   const goals = pro.goals.filter((g) => g.patientId === patientId);
   const done = goals.filter((g) => g.status === "alcancado").length;
@@ -304,9 +333,11 @@ function Plan({ patientId }: { patientId: string }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        {goals.length === 0
-          ? "Os objetivos combinados com a pessoa. Alcançado ou revisto, o objetivo fica no histórico."
-          : `${done} de ${goals.length} ${goals.length === 1 ? "objetivo alcançado" : "objetivos alcançados"}.`}
+        {psychiatry
+          ? "O que foi decidido: remédio, dose, exames e retorno. A conduta de cada consulta encerrada entra aqui sozinha."
+          : goals.length === 0
+            ? "Os objetivos combinados com a pessoa. Alcançado ou revisto, o objetivo fica no histórico."
+            : `${done} de ${goals.length} ${goals.length === 1 ? "objetivo alcançado" : "objetivos alcançados"}.`}
       </p>
       {goals.length > 0 && (
         <ul className="space-y-2">
@@ -318,7 +349,7 @@ function Plan({ patientId }: { patientId: string }) {
                 {goal.text}
               </p>
               <div role="group" aria-label={`Situação de: ${goal.text}`} className="flex flex-wrap gap-2">
-                {(Object.keys(GOAL_LABEL) as Goal["status"][]).map((status) => (
+                {(Object.keys(labels) as Goal["status"][]).map((status) => (
                   <button
                     key={status}
                     type="button"
@@ -331,7 +362,7 @@ function Plan({ patientId }: { patientId: string }) {
                         : "border-border hover:border-brand-600",
                     )}
                   >
-                    {GOAL_LABEL[status]}
+                    {labels[status]}
                   </button>
                 ))}
                 <span className="self-center text-xs text-muted-foreground">
@@ -351,14 +382,18 @@ function Plan({ patientId }: { patientId: string }) {
         }}
       >
         <label htmlFor="novo-objetivo" className="sr-only">
-          Novo objetivo
+          {psychiatry ? "Nova conduta" : "Novo objetivo"}
         </label>
         <input
           id="novo-objetivo"
           value={draft}
           maxLength={GOAL_MAX}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Ex.: dormir pelo menos 6 horas na maioria das noites"
+          placeholder={
+            psychiatry
+              ? "Ex.: manter a dose e pedir TSH antes do retorno"
+              : "Ex.: dormir pelo menos 6 horas na maioria das noites"
+          }
           className={fieldControlClass}
         />
         <Button type="submit" className="shrink-0" disabled={!draft.trim()}>

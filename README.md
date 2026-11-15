@@ -2,9 +2,25 @@
 
 Aplicativo web de acompanhamento em saúde mental: humor, diário e atividades terapêuticas, hábitos, respiração guiada, plano de segurança, saúde e remédios, consultas, mensagens e pagamentos. Tem uma área para o profissional (psicólogo ou psiquiatra) que vê apenas o que o paciente escolhe compartilhar.
 
-Ainda **não há backend**. Login, registro e todos os dados do painel são simulados (veja [Dados de demonstração](#dados-de-demonstração)). O roteiro do que o backend precisa entregar está em [BACKEND.md](BACKEND.md).
+> **É uma demonstração.** O front ainda não usa o servidor: paciente e profissionais conversam porque tudo fica guardado no mesmo navegador. Não use com dados reais. O que falta para uso de verdade está em [O que falta para uso real](#o-que-falta-para-uso-real).
 
 Produção: [psycare-seven.vercel.app](https://psycare-seven.vercel.app)
+
+| Início do paciente                                             | Refúgio (a ilha)                                                                 |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| ![Início: um próximo passo só no topo](docs/prints/inicio.jpg) | ![Refúgio: a ilha 3D com os lugares](docs/prints/refugio.jpg)                    |
+| **Travessia de barco respirando**                              | **Ficha do paciente (profissional)**                                             |
+| ![Barco: a vela enche ao inspirar](docs/prints/barquinho.jpg)  | ![Ficha: desde a última sessão e prontuário](docs/prints/profissional-ficha.jpg) |
+
+## O que o app faz
+
+**Paciente.** Abre no Início com uma coisa só para fazer agora (o remédio, a sessão chegando, como você está, a próxima tarefa). Ao lado: Meu dia (tarefas, calendário e hábitos), Diário, Atividades, Saúde (doses, remédios, exames e guias), Consultas, Mensagens, Plano de segurança e Pagamentos. "Hoje está difícil" deixa só o essencial. Registrar "mal" ou "muito mal" oferece respiração, o plano de segurança e o 188.
+
+**Refúgio.** A ilha 3D, em tela cheia. Cada cuidado do dia vira uma gota, e as gotas regam as plantas dos canteiros (que nunca murcham). Os lugares levam às mesmas telas do app e têm atividades curtas: escrever uma linha na Cabana (uma "coisa boa" acende uma lanterna à noite), a pedra da preocupação na Praia, o 5-4-3-2-1 no Farol e a travessia de barco respirando no Cais. A raposa acompanha, mostra a ilha na primeira visita e pergunta como você está. O que é novo (atividade pedida, mensagem, consulta chegando) brilha.
+
+**Psicóloga e psiquiatra.** Cada um com seu painel, agenda, pacientes, mensagens e financeiro, e com o **prontuário separado**: evolução, anamnese (com os campos de cada especialidade) e plano terapêutico ou conduta. Antes de atender, "Desde a última sessão" resume o que o paciente compartilhou. "Encerrar sessão" grava a evolução, lança a cobrança e pode pedir uma tarefa de casa. O psiquiatra tem ainda receitas, exames, encaminhamentos e adesão.
+
+**Entre eles.** Consultas, mensagens, atividades, receitas, exames, encaminhamentos e cobranças passam de um lado para o outro. O paciente escolhe em Configurações > Privacidade o que cada profissional vê; do diário, só o título do que ele marca para a sessão.
 
 ## Stack
 
@@ -72,17 +88,18 @@ src/
 - **Diário** (`features/diary`): registros com humor, convite do dia e busca. **Atividades** (`features/activities`): roda da vida com comparação entre datas, registro de pensamentos, termômetro emocional, diário do sono, lista de valores e plano de ação. Ficam guardadas para rever e refazer (a roda sugere refazer depois de 30 dias). Os campos de cada atividade estão em `catalog.ts`; para criar uma nova, acrescente ali.
 - **Plano de segurança** (`features/safety`): contatos de emergência (188 e 192) sempre primeiro, passos escritos pela pessoa e pessoas de confiança. O botão de crise do app abre este plano.
 - **Saúde** (`features/health`): tela Hoje com as doses numa linha do tempo, adesão da semana sem cobrança, sintomas com intensidade de 1 a 5, exames com arquivo guardado só no navegador e um resumo de 30 dias para levar à consulta. O app nunca sugere nem altera doses.
-- **Agenda** (`features/appointments`): bloqueia datas passadas e horários em conflito, aceita observações, mostra a contagem para a próxima sessão e exporta `.ics`.
-- **Jardim**: além das gotas por cuidado, há três **missões** por dia (`features/missions`) e um onboarding de três telas (`features/onboarding`).
+- **Consultas** (`features/appointments`): bloqueia datas passadas e horários em conflito, aceita observações, mostra a contagem para a próxima sessão e reúne num só lugar o "Preparar a sessão" (perguntas, o que vai do diário, sintomas e o resumo para mostrar). O Meu dia exporta as tarefas em `.ics`.
+- **Refúgio** (`features/garden/island`): a ilha em three.js/React Three Fiber, com as regras puras em `places.ts`, `boatTrip.ts` e `news.ts`. Além das gotas por cuidado, há três **missões** por dia (`features/missions`) e um onboarding de três telas (`features/onboarding`).
 - **Configurações** (`features/settings`): lembrete diário (só guardado, não há notificações), **Privacidade** (o que o profissional vê), baixar uma cópia dos dados em JSON, apagar tudo e carregar ou limpar dados de exemplo.
 - **Mensagens, pagamentos e ajuda** têm faixa de **Demonstração**: as respostas do profissional são simuladas e nenhuma cobrança é real (`components/feedback/DemoNotice.tsx`).
 
 ### Área do profissional
 
-`features/pro`, rotas em `/dashboard/pro/*`. Contas de demonstração: psicóloga (Dra. Helena Prado) e psiquiatra (Dr. Rafael Nunes); o menu muda conforme a especialidade e **Medicação** é só do psiquiatra. O papel vem da sessão (`lib/session.ts`) e o `proxy.ts` separa as duas áreas (`lib/roles.ts`).
+`features/pro`, rotas em `/dashboard/pro/*`. Contas de demonstração: psicóloga (Dra. Helena Prado) e psiquiatra (Dr. Rafael Nunes); o menu muda conforme a especialidade e **Clínico** (receitas, exames, encaminhamentos e adesão) é só do psiquiatra. O papel vem da sessão (`lib/session.ts`) e o `proxy.ts` separa as duas áreas (`lib/roles.ts`).
 
-- **Painel do dia**, **Pacientes**, **Agenda**, **Atividades** (pedir uma atividade a um paciente), **Mensagens**, **Financeiro** e **Configurações**.
-- O profissional só vê o que o paciente liberou em Configurações > Privacidade (`snapshot.ts`): do diário chegam só os títulos do que foi marcado para a consulta. As notas de sessão são privadas.
+- **Painel do dia**, **Pacientes** (com busca), **Agenda** (encerrar e marcar sessões), **Atividades** (pedir uma atividade a um paciente), **Mensagens** (uma conversa por paciente), **Financeiro** (recibo e declaração de comparecimento) e **Configurações**.
+- O prontuário é de cada profissional (`prontuario.ts`): um não vê o do outro. Guarda de 5 anos no da psicóloga (CFP 1/2009) e de 20 no do psiquiatra (CFM 1.821/2007). O que existia antes da separação ficou com a psicóloga.
+- O profissional só vê o que o paciente liberou em Configurações > Privacidade (`snapshot.ts`): do diário chegam só os títulos do que foi marcado para a consulta.
 - Como não há backend, o paciente de demonstração e o profissional compartilham o `localStorage` do mesmo navegador; os outros pacientes são fictícios (`data.ts`). Em produção, `usePro` é o ponto a trocar por chamadas à API.
 
 ### Convenções
@@ -116,7 +133,7 @@ O hook de pré-commit (Husky) formata os arquivos alterados com Prettier (`.pret
 - `mocks/user.ts` guarda o perfil, hábitos, diário, consultas, faturas etc. As alterações feitas na interface (hábitos, diário, saúde, consultas, mensagens, pagamentos) ficam no `localStorage` do navegador, em chaves `psycare:<área>:v1`, via `useLocalStorage` (`lib/useLocalStorage.ts`). Para voltar aos dados iniciais, limpe o armazenamento do site. Os dados não são criptografados e não saem do navegador.
 - `features/auth/mock-login.ts` simula o login e só responde com `DEMO_MODE=true`.
 - Na primeira entrada pela demonstração, o navegador recebe humor, diário e atividades de exemplo. Em Configurações > Meus dados dá para carregar, limpar ou apagar tudo.
-- Botões sem função real (baixar recibo, redefinir senha, 2FA, sala de vídeo) aparecem desabilitados.
+- Não há sala de vídeo, notificações nem PIX de verdade. O recibo e a declaração saem com campos entre colchetes para o profissional preencher.
 - Não informe dados pessoais, de saúde ou de pagamento reais.
 
 ## Como contribuir
@@ -142,8 +159,27 @@ Antes de aceitar dados reais são necessários backend, autenticação gerenciad
 
 `prefers-reduced-motion` é respeitado no CSS, no Framer Motion, no GSAP e no 3D (vira fundo estático). Efeitos de hover só ligam em dispositivos com mouse. O three.js só é baixado quando o canvas vai aparecer. A gaveta da Home também se opera por teclado (↑ ↓ na alça).
 
+## O que falta para uso real
+
+1. **Segurança dos dados.** São dados de saúde mental, os mais sensíveis da LGPD. Precisam de servidor, dados cifrados, controle de quem acessa o quê e registro de quem abriu cada prontuário.
+2. **Termos de uso e política de privacidade**, escritos com um advogado, e o consentimento do paciente.
+3. **Revisão clínica** dos textos, das atividades e principalmente do fluxo de crise (botão de ajuda, plano de segurança, resposta a "muito mal") por profissionais de saúde mental.
+4. **O que hoje é de mentira:** PIX, sala de vídeo, notificações e lembretes, e mensagens entre aparelhos diferentes.
+5. **Regras do CFP e do CFM** para atendimento e prontuário eletrônico: guarda, assinatura, acesso do paciente.
+
 ## Próximos passos
 
-- Backend e banco de dados (Supabase ou Prisma).
-- Autenticação real.
-- Chamada de vídeo nas consultas online.
+**Com o back end** (o Django em `backend/` já tem contas, humor, diário, consultas e a ilha; o roteiro está em [BACKEND.md](BACKEND.md)):
+
+- Login e cadastro de verdade no front, e ligar o que o Django já tem.
+- Criar e ligar o resto, um por vez: prontuário, mensagens, saúde, Meu dia, atividades, plano de segurança, receitas, encaminhamentos, cobranças e compartilhamento.
+- Vínculo entre paciente e profissional por convite; horários disponíveis; lembretes e avisos de consulta.
+- Troca entre psicóloga e psiquiatra, com autorização do paciente; cadastro de paciente pelo profissional; telas de erro e sem internet.
+
+**Depois:**
+
+- Modo leve da ilha para celular fraco.
+- Menu do tamanho da pessoa (esconder o que ela não usa).
+- Instalar no celular como aplicativo (PWA).
+- Testes de ponta a ponta no CI e revisão de acessibilidade.
+- Teste com 3 a 5 pessoas de verdade, incluindo profissionais.

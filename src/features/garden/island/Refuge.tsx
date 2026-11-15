@@ -23,8 +23,29 @@ import { useLocalStorage } from "@/lib/useLocalStorage";
 import { mockUser } from "@/mocks/user";
 import { tripSeconds, tripStatus } from "@/features/garden/island/boatTrip";
 import { IslandPanel } from "@/features/garden/island/IslandPanel";
-import { foxRef, PLACES, SEASON_NAMES, seasonFor, type PlaceId } from "@/features/garden/island/places";
-import { placeNews } from "@/features/garden/island/news";
+import {
+  ArrivalCheckIn,
+  CabinWrite,
+  GRATITUDE_PROMPT,
+  Grounding,
+  Tour,
+  TOUR_KEY,
+  WorryStone,
+} from "@/features/garden/island/IslandActivities";
+import {
+  foxRef,
+  nextUnlock,
+  placeById,
+  PLACES,
+  SEASON_NAMES,
+  seasonFor,
+  type PlaceId,
+} from "@/features/garden/island/places";
+import { placeNews, placesWithNews } from "@/features/garden/island/news";
+import { QUESTIONS_KEY } from "@/features/appointments/components/SessionPrep";
+import { MOOD_LABELS } from "@/features/mood/logic";
+import type { MoodLevel } from "@/features/mood/types";
+import { useSafetyPlan } from "@/features/safety/hooks/useSafetyPlan";
 import { useIsland } from "@/features/garden/island/useIsland";
 import { useIslandSound } from "@/features/garden/island/useIslandSound";
 import { useMediaQuery, usePrefersReducedMotion } from "@/lib/motion";
@@ -62,6 +83,19 @@ function hasWebGL(): boolean {
 }
 
 const noSubscribe = () => () => {};
+const NO_QUESTIONS: string[] = [];
+
+/** O passeio da primeira visita: os lugares das atividades, e um último passo com o resto. */
+const TOUR: (PlaceId | null)[] = ["canteiros", "cabana", "praia", "farol", "cais", null];
+const TOUR_TEXT: Record<string, string> = {
+  canteiros: "Cada cuidado do dia vira uma gota. Aqui você rega, e as plantas crescem. Elas nunca murcham.",
+  cabana: "O seu diário. Dá para escrever uma linha aqui mesmo, ou uma coisa boa do dia.",
+  praia: "Escreva numa pedra o que está pesando. Jogue no mar, ou guarde para conversar na sessão.",
+  farol: "Para quando a ansiedade apertar: um exercício curto, o plano de segurança e o CVV.",
+  cais: "Um passeio de barco respirando junto com a raposa.",
+};
+const TOUR_LAST =
+  "Garrafa, Correio e Consulta levam às atividades, às mensagens e às consultas. Quando algum tiver novidade, ele brilha.";
 const pill =
   "flex min-h-11 items-center gap-2 rounded-full border border-white/60 bg-card/85 px-4 text-sm font-medium text-ink shadow-sm backdrop-blur-md focus-visible:ring-3 focus-visible:ring-brand-600/50 focus-visible:outline-none";
 
@@ -197,16 +231,56 @@ export function Refuge({ garden }: { garden: Garden }) {
   const { assignments } = useActivities();
   const { chats } = useMessages();
   const { appointments } = useAppointments();
-  const [diary] = useLocalStorage<DiaryEntry[]>(DIARY_KEY, mockUser.diaryEntries);
+  const [diary, setDiary] = useLocalStorage<DiaryEntry[]>(DIARY_KEY, mockUser.diaryEntries);
+  const [, setQuestions] = useLocalStorage<string[]>(QUESTIONS_KEY, NO_QUESTIONS);
+  const safety = useSafetyPlan();
+  const nowStamp = `${toISODate(new Date())}T${new Date().toTimeString().slice(0, 5)}`;
+  const highlights = placesWithNews({ assignments, chats, appointments, now: nowStamp });
+  const lanterns = diary.filter((entry) => entry.prompt === GRATITUDE_PROMPT).length;
+  const [throwId, setThrowId] = useState(0);
+
+  // Cabana: a linha vira uma página de verdade no Diário (e rende a gota do diário, uma vez por dia).
+  const writeLine = (text: string, gratitude: boolean) => {
+    const level = garden.todayCheckIn?.level ?? 3;
+    setDiary((current) => [
+      {
+        id: crypto.randomUUID(),
+        date: toISODate(new Date()),
+        mood: MOOD_LABELS[level as MoodLevel],
+        moodLevel: level as MoodLevel,
+        title: gratitude ? GRATITUDE_PROMPT : text.split(/\s+/).slice(0, 6).join(" "),
+        content: text,
+        kind: "text",
+        ...(gratitude ? { prompt: GRATITUDE_PROMPT } : {}),
+      },
+      ...current,
+    ]);
+    grantWater("diary");
+  };
+  // Praia: guardar a preocupação leva a frase para "Preparar a sessão".
+  const keepWorry = (text: string) =>
+    setQuestions((current) => (current.includes(text) ? current : [...current, text]));
+
+  // Primeira visita: a raposa mostra os lugares. Depois, pergunta como você está (uma vez por dia).
+  const [tourDone, setTourDone] = useLocalStorage<boolean>(TOUR_KEY, false);
+  const [tourStep, setTourStep] = useState(0);
+  const touring = introDone && !tourDone && !trip;
+  const tourPlace = touring ? TOUR[tourStep] : null;
+  const [arrivalDismissed, setArrivalDismissed] = useState(false);
+  const asking = introDone && tourDone && !trip && !garden.todayCheckIn && !arrivalDismissed && !selected;
   const news = selected
-    ? placeNews(selected, {
-        assignments,
-        chats,
-        appointments,
-        diaryPages: diary.length,
-        now: `${toISODate(new Date())}T${new Date().toTimeString().slice(0, 5)}`,
-      })
+    ? placeNews(selected, { assignments, chats, appointments, diaryPages: diary.length, now: nowStamp })
     : null;
+  const fox = foxRef(island.foxName);
+  const growth = nextUnlock({ careDays, grownPlants, trips: island.trips });
+  const activity =
+    selected === "cabana" ? (
+      <CabinWrite onSave={writeLine} />
+    ) : selected === "praia" ? (
+      <WorryStone onThrow={() => setThrowId((n) => n + 1)} onKeep={keepWorry} />
+    ) : selected === "farol" ? (
+      <Grounding fox={fox} onHelped={() => safety.addTo("coping", `5-4-3-2-1 com ${fox}`)} />
+    ) : null;
 
   const panel = selected ? (
     <IslandPanel
@@ -220,7 +294,9 @@ export function Refuge({ garden }: { garden: Garden }) {
       onStartTrip={startTrip}
       news={news}
       onClose={() => setSelected(null)}
-    />
+    >
+      {activity}
+    </IslandPanel>
   ) : null;
 
   const hud = cn(
@@ -239,7 +315,7 @@ export function Refuge({ garden }: { garden: Garden }) {
         {webgl ? (
           <IslandCanvas
             plants={garden.plants}
-            selected={selected}
+            selected={touring ? (tourPlace ?? null) : selected}
             unlocked={island.unlocked}
             season={season}
             night={night}
@@ -249,6 +325,9 @@ export function Refuge({ garden }: { garden: Garden }) {
             intro={!skipped}
             raining={raining}
             trip={trip}
+            throwId={throwId}
+            lanterns={lanterns}
+            highlights={highlights}
             onReady={() => setSceneReady(true)}
             onSelect={setSelected}
             onGround={() => setSelected(null)}
@@ -427,7 +506,40 @@ export function Refuge({ garden }: { garden: Garden }) {
       )}
 
       {/* O cartão do lugar: ao lado nas telas largas, embaixo (rolando) no celular. */}
-      {panel && !trip && (
+      {/* Primeira visita: um lugar de cada vez, com a câmera indo até ele. */}
+      {touring && tourPlace !== undefined && (
+        <div className="absolute inset-x-3 bottom-[calc(7.5rem+env(safe-area-inset-bottom))] mx-auto max-w-sm md:right-5 md:bottom-auto md:left-auto md:top-24 md:w-80">
+          <Tour
+            step={tourStep}
+            total={TOUR.length}
+            label={tourPlace ? placeById(tourPlace).label : "E mais três lugares"}
+            text={tourPlace ? TOUR_TEXT[tourPlace] : TOUR_LAST}
+            onNext={() => {
+              if (tourStep >= TOUR.length - 1) setTourDone(true);
+              else setTourStep(tourStep + 1);
+            }}
+            onSkip={() => setTourDone(true)}
+          />
+        </div>
+      )}
+
+      {/* Chegada: a raposa pergunta como você está (o mesmo registro do Início). */}
+      {asking && (
+        <div className="absolute inset-x-3 bottom-[calc(7.5rem+env(safe-area-inset-bottom))] mx-auto max-w-md">
+          <ArrivalCheckIn
+            fox={fox}
+            onPick={(level) => {
+              garden.checkIn(level);
+              setJoy((value) => value + 1);
+              setNote("Registrado. Valeu uma gota.");
+              window.setTimeout(() => setNote(null), 2500);
+            }}
+            onSkip={() => setArrivalDismissed(true)}
+          />
+        </div>
+      )}
+
+      {panel && !trip && !touring && (
         <div
           className={cn(
             "absolute inset-x-3 bottom-[calc(7.5rem+env(safe-area-inset-bottom))] max-h-[44dvh] overflow-y-auto rounded-3xl md:inset-x-auto md:top-24 md:right-5 md:bottom-auto md:max-h-[calc(100dvh-14rem)] md:w-80",
@@ -535,6 +647,12 @@ export function Refuge({ garden }: { garden: Garden }) {
             {island.foxName ? `Mudar o nome da ${island.foxName}` : "Dar um nome à raposa"}
           </button>
         </p>
+        {/* O que vai aparecer na ilha em seguida: um motivo gentil para voltar, sem prazo. */}
+        {growth && (
+          <p className="text-center text-xs text-ink [text-shadow:0_1px_6px_rgb(255_255_255/0.8)] dark:text-white dark:[text-shadow:0_1px_6px_rgb(0_0_0/0.6)]">
+            {growth}
+          </p>
+        )}
       </div>
     </section>,
     document.body,

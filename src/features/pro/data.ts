@@ -143,6 +143,20 @@ export function demoSessions(today: string): ProSession[] {
   ];
 }
 
+/** A agenda de exemplo de cada profissional: os mesmos pacientes, em horários diferentes. */
+const PSYCHIATRY_HOURS: Record<string, string> = {
+  "09:00": "11:00",
+  "10:00": "13:00",
+  "14:00": "15:00",
+  "16:30": "17:30",
+};
+export function demoSessionsFor(today: string, specialty: "psychologist" | "psychiatrist"): ProSession[] {
+  const sessions = demoSessions(today);
+  return specialty === "psychiatrist"
+    ? sessions.map((s) => ({ ...s, hora: PSYCHIATRY_HOURS[s.hora] ?? s.hora }))
+    : sessions;
+}
+
 /** Consultas já feitas, de onde saíram as receitas de exemplo. */
 export function demoConsultations(today: string): Consultation[] {
   const done = (id: string, patientId: string, daysAgo: number, hora: string): Consultation => ({

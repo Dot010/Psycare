@@ -46,6 +46,7 @@ import {
 import { breathAt } from "@/features/garden/island/boatTrip";
 import { Animals } from "@/features/garden/island/scene/Animals";
 import { Effects } from "@/features/garden/island/scene/Effects";
+import { Beach, GratitudeLanterns, Highlights } from "@/features/garden/island/scene/Extras";
 import { makeFallenLeaves, makeFoliage, type Foliage } from "@/features/garden/island/scene/foliage";
 import { Fox } from "@/features/garden/island/scene/Fox";
 import { IslandGrass } from "@/features/garden/island/scene/IslandGrass";
@@ -74,6 +75,12 @@ export interface IslandCanvasProps {
   raining?: boolean;
   /** Travessia de barco respirando: quando saiu do cais e quantas respirações. */
   trip?: { startedAt: number; cycles: number } | null;
+  /** Muda a cada pedra jogada no mar, na Praia. */
+  throwId?: number;
+  /** Quantas lanternas da gratidão acender no céu à noite. */
+  lanterns?: number;
+  /** Lugares com novidade: ganham um brilho em cima. */
+  highlights?: PlaceId[];
   /** A cena 3D já está na tela (para a intro começar junto). */
   onReady?: () => void;
 }
@@ -81,6 +88,7 @@ export interface IslandCanvasProps {
 const BED_AT = placeById("canteiros");
 
 const FLY_SECONDS = 3.2;
+const NO_HIGHLIGHTS: PlaceId[] = [];
 
 /**
  * Câmera alta e em diagonal (como o portfólio do Bruno Simon), que chega perto do lugar escolhido.
@@ -444,6 +452,9 @@ function Scene(props: IslandCanvasProps) {
     intro = false,
     raining = false,
     trip = null,
+    throwId = 0,
+    lanterns = 0,
+    highlights = NO_HIGHLIGHTS,
   } = props;
   const high = quality === "high";
   const fox = useRef(new Vector3(0, 0, 2));
@@ -527,6 +538,9 @@ function Scene(props: IslandCanvasProps) {
         boatAt={boatAt}
       />
       <SmallPlaces onSelect={onSelect} />
+      <Beach onSelect={onSelect} throwId={throwId} animate={animate} />
+      <GratitudeLanterns count={lanterns} night={night} animate={animate} />
+      <Highlights places={highlights} animate={animate} />
 
       {/* Os canteiros com as plantas do jardim (as mesmas gotas, as mesmas plantas): uma por canteiro,
           na ordem em que nascem. Canteiro sem planta mostra um montinho de terra com estaca. */}

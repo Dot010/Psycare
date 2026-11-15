@@ -59,6 +59,18 @@ describe("Financeiro", () => {
     await userEvent.click(screen.getByRole("tab", { name: "Todas" }));
     await userEvent.click(screen.getAllByRole("button", { name: "Recibo" })[0]);
     expect(screen.getByRole("dialog")).toHaveTextContent(/Recebi de Marina Costa, CPF \[CPF DO PACIENTE\]/);
+
+    // O mesmo documento vira declaração de comparecimento.
+    await userEvent.click(screen.getByRole("button", { name: "Declaração" }));
+    expect(screen.getByRole("dialog")).toHaveTextContent(/Marina Costa compareceu a sessão de psicoterapia/);
+  });
+
+  it("mostra só o mês atual; os meses anteriores abrem com um toque", async () => {
+    setup();
+    const before = screen.getAllByRole("row").length;
+    await userEvent.click(screen.getByRole("button", { name: /Ver meses anteriores/ }));
+    expect(screen.getAllByRole("row").length).toBeGreaterThan(before);
+    expect(screen.getByRole("button", { name: "Mostrar só este mês" })).toBeInTheDocument();
   });
 
   it("o valor da sessão muda só para as próximas cobranças", async () => {

@@ -10,11 +10,14 @@ import {
   demoConsultations,
   demoPrescriptions,
   demoRequests,
-  demoSessions,
+  demoSessionsFor,
   patientById,
 } from "../data";
 import { detectChange, eligibleConsultations, nextStep, type PrescriptionDraft } from "../prescriptionRules";
+import { ownKey } from "../prontuario";
 import { SESSION_STATUS_KEY } from "./usePro";
+
+const PSYCHIATRIST_ID = "pro_med_01";
 import type {
   Consultation,
   PatientNotice,
@@ -84,8 +87,12 @@ export function usePrescriptions() {
 
   /** Consultas já feitas, mais as de hoje na agenda que não foram canceladas. */
   const consultations: Consultation[] = useMemo(() => {
-    const fromAgenda: Consultation[] = demoSessions(today)
-      .map((session) => ({ session, status: sessionStatus[session.id] ?? session.status }))
+    // A agenda do psiquiatra (cada profissional tem a sua).
+    const fromAgenda: Consultation[] = demoSessionsFor(today, "psychiatrist")
+      .map((session) => ({
+        session,
+        status: sessionStatus[ownKey(PSYCHIATRIST_ID, session.id)] ?? session.status,
+      }))
       .filter(
         ({ session, status }) => session.data <= today && (status === "realizada" || status === "confirmado"),
       )
