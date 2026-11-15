@@ -2,6 +2,7 @@
 
 import { Stagger } from "@/components/motion/Stagger";
 import { DayPlan } from "@/features/home/components/DayPlan";
+import { NextStepCard } from "@/features/home/components/NextStepCard";
 import { SessionMini } from "@/features/home/components/SessionMini";
 import { TodayDoses } from "@/features/home/components/TodayDoses";
 import { WeekMini } from "@/features/home/components/WeekMini";
@@ -12,7 +13,7 @@ import { useProfile } from "@/features/profile/useProfile";
 
 /**
  * Início do paciente. A tela responde "o que eu faço agora?":
- * à esquerda o dia (o que fazer), à direita o que tem hora ou é só para olhar.
+ * no topo, uma coisa só (o próximo passo); embaixo, o dia à esquerda e o que tem hora à direita.
  * O jardim 3D tem página própria (/dashboard/garden), aberta pelo selo de gotas.
  */
 export default function HomeView() {
@@ -36,6 +37,8 @@ export default function HomeView() {
           {timeGreeting(profile.name, now.getHours())}
         </h1>
       </header>
+
+      <NextStepCard checkedIn={Boolean(garden.todayCheckIn)} />
 
       <Stagger className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
         <DayPlan
