@@ -102,7 +102,8 @@ export function CloseSession({ patientName, fee, today, noun, by, onClose, onCan
               className={cn(fieldControlClass, "min-h-28 resize-y py-3")}
             />
             <p className="text-xs text-muted-foreground">
-              Vai para o prontuário de {first}. Só você vê. O paciente nunca vê este texto.
+              Vai para o prontuário de {first}. Não aparece no app de {first}, mas {first} tem direito de
+              pedir acesso ao prontuário (CFP 1/2009).
             </p>
           </div>
 

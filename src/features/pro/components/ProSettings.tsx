@@ -36,7 +36,10 @@ export default function ProSettings() {
         <ul className="max-w-prose list-disc space-y-1 pl-5 text-base text-foreground">
           <li>Você só vê o que o paciente escolheu compartilhar, e ele pode desligar a qualquer momento.</li>
           <li>Do diário, só chegam os títulos do que ele marcou para levar à consulta.</li>
-          <li>Suas notas de sessão são privadas: o paciente não tem acesso.</li>
+          <li>
+            O prontuário não aparece no app do paciente, mas ele tem direito de pedir acesso ao que foi
+            registrado (Resolução CFP 1/2009).
+          </li>
           <li>O app não prescreve nem altera doses. Isso fica com você, fora do app.</li>
         </ul>
       </section>
